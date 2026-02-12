@@ -1,0 +1,2512 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Aplicación para Estudios de Mercado{% endblock %}
+
+{% block content %}
+<header class="app-header">
+    <div class="header-left">
+        <img src="{{ url_for('serve_assets', filename='logo/phiqus_logo_positivo.png') }}" 
+             alt="PhiQus Logo" 
+             class="header-logo logo-light">
+        <img src="{{ url_for('serve_assets', filename='logo/phiqus_logo_negativo.png') }}" 
+             alt="PhiQus Logo" 
+             class="header-logo logo-dark">
+    </div>
+    <h1 class="app-title">Aplicación para Estudios de Mercado</h1>
+    <div class="header-right">
+        <form method="POST" action="{{ url_for('toggle_theme') }}" class="theme-form">
+            <button type="submit" class="btn btn-theme" title="Cambiar tema">
+                <span class="theme-icon">{{ '☀️' if theme == 'dark' else '🌙' }}</span>
+                <span class="theme-text">{{ 'Modo claro' if theme == 'dark' else 'Modo oscuro' }}</span>
+            </button>
+        </form>
+        <a href="{{ url_for('logout') }}" class="btn btn-logout">🚪 Cerrar sesión</a>
+    </div>
+</header>
+
+<main class="app-main">
+    <nav class="tabs-nav" role="tablist">
+        <button class="tab-btn active" role="tab" data-tab="nacional" aria-selected="true">🦅 Nacional</button>
+        <button class="tab-btn" role="tab" data-tab="estatal" aria-selected="false">🏛️ Estatal</button>
+        <button class="tab-btn" role="tab" data-tab="ciudades" aria-selected="false">🏙️ Ciudades</button>
+        <button class="tab-btn" role="tab" data-tab="municipios" aria-selected="false">🏘️ Municipios</button>
+        <button class="tab-btn" role="tab" data-tab="localidades" aria-selected="false">📍 Localidades</button>
+    </nav>
+
+    <div class="chart-style-section">
+        <div class="chart-style-group">
+            <label for="chart-palette" class="chart-style-label">Paleta de colores:</label>
+            <select id="chart-palette" class="chart-style-select" aria-label="Paleta de colores">
+                <option value="default">Por defecto</option>
+                <option value="custom">Personalizada</option>
+            </select>
+        </div>
+        <div class="chart-palette-preview" id="chart-palette-preview">
+            <span class="chart-style-label">Colores activos:</span>
+            <div class="palette-swatches" id="palette-swatches">
+                <div class="palette-swatch" id="palette-swatch-1" title="#0576F3"></div>
+                <div class="palette-swatch" id="palette-swatch-2" title="#36F48C"></div>
+                <div class="palette-swatch" id="palette-swatch-3" title="#F47806"></div>
+                <div class="palette-swatch" id="palette-swatch-4" title="#F3F40B"></div>
+                <div class="palette-swatch" id="palette-swatch-5" title="#F479F4"></div>
+            </div>
+        </div>
+        <div class="chart-style-group chart-palette-custom" id="chart-palette-custom" hidden>
+            <label class="chart-style-label">Editar colores:</label>
+            <div class="chart-palette-inputs">
+                <div class="palette-color-item">
+                    <input type="color" id="palette-picker-1" class="palette-picker" value="#0576F3" title="Seleccionar color 1">
+                    <input type="text" id="palette-color-1" class="palette-input" maxlength="7" placeholder="#0576F3" value="#0576F3" title="O ingresa HEX">
+                </div>
+                <div class="palette-color-item">
+                    <input type="color" id="palette-picker-2" class="palette-picker" value="#36F48C" title="Seleccionar color 2">
+                    <input type="text" id="palette-color-2" class="palette-input" maxlength="7" placeholder="#36F48C" value="#36F48C" title="O ingresa HEX">
+                </div>
+                <div class="palette-color-item">
+                    <input type="color" id="palette-picker-3" class="palette-picker" value="#F47806" title="Seleccionar color 3">
+                    <input type="text" id="palette-color-3" class="palette-input" maxlength="7" placeholder="#F47806" value="#F47806" title="O ingresa HEX">
+                </div>
+                <div class="palette-color-item">
+                    <input type="color" id="palette-picker-4" class="palette-picker" value="#F3F40B" title="Seleccionar color 4">
+                    <input type="text" id="palette-color-4" class="palette-input" maxlength="7" placeholder="#F3F40B" value="#F3F40B" title="O ingresa HEX">
+                </div>
+                <div class="palette-color-item">
+                    <input type="color" id="palette-picker-5" class="palette-picker" value="#F479F4" title="Seleccionar color 5">
+                    <input type="text" id="palette-color-5" class="palette-input" maxlength="7" placeholder="#F479F4" value="#F479F4" title="O ingresa HEX">
+                </div>
+            </div>
+        </div>
+        <div class="chart-style-group">
+            <label for="chart-font-size" class="chart-style-label">Tamaño de texto:</label>
+            <select id="chart-font-size" class="chart-style-select" aria-label="Tamaño de fuente en gráficas">
+                <option value="12">12px</option>
+                <option value="14" selected>14px (por defecto)</option>
+                <option value="16">16px</option>
+                <option value="18">18px</option>
+                <option value="20">20px</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="tab-panels">
+        <section class="tab-panel active" id="panel-nacional" role="tabpanel">
+            <div class="kpis-grid">
+                <div class="kpi-card">
+                    <h3 class="kpi-title">PIB Nacional (USD)</h3>
+                    <div class="kpi-value" id="kpi-pib-usd">—</div>
+                    <div class="kpi-date" id="kpi-pib-usd-date">Cargando...</div>
+                </div>
+                <div class="kpi-card">
+                    <h3 class="kpi-title">Tasa de cambio (USD/MXN)</h3>
+                    <div class="kpi-value" id="kpi-tipo-cambio">—</div>
+                    <div class="kpi-date" id="kpi-tipo-cambio-date">Cargando...</div>
+                </div>
+                <div class="kpi-card">
+                    <h3 class="kpi-title">Inflación (%)</h3>
+                    <div class="kpi-value" id="kpi-inflacion">—</div>
+                    <div class="kpi-date" id="kpi-inflacion-date">Cargando...</div>
+                </div>
+                <div class="kpi-card">
+                    <h3 class="kpi-title">PIB Nacional (MXN)</h3>
+                    <div class="kpi-value" id="kpi-pib-mxn">—</div>
+                    <div class="kpi-date" id="kpi-pib-mxn-date">Cargando...</div>
+                </div>
+            </div>
+            <div class="kpis-footer">
+                <button type="button" class="btn btn-ia" id="btn-analizar-ia" disabled>
+                    🤖 Analizar con IA
+                </button>
+            </div>
+            <div class="ia-response" id="ia-response" hidden>
+                <h4 class="ia-response-title">Análisis con IA</h4>
+                <div class="ia-response-content" id="ia-response-content"></div>
+            </div>
+            <div class="kpis-table-section">
+                <div class="kpis-table-header">
+                    <h4>Datos de indicadores</h4>
+                    <button type="button" class="btn btn-download" id="btn-download-csv">📥 Descargar CSV</button>
+                </div>
+                <div class="kpis-table-wrapper">
+                    <table class="kpis-table" id="kpis-table">
+                        <thead>
+                            <tr>
+                                <th>Indicador</th>
+                                <th>Valor</th>
+                                <th>Fecha</th>
+                            </tr>
+                        </thead>
+                        <tbody id="kpis-table-body"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="indicadores-section">
+                <div class="indicadores-dropdown-wrapper">
+                    <label for="indicador-nacional" class="indicadores-label">Consultar indicador:</label>
+                    <select id="indicador-nacional" class="indicadores-select" aria-label="Seleccionar indicador nacional">
+                        <option value="">— Seleccionar indicador —</option>
+                        <option value="crecimiento-poblacional">Crecimiento poblacional nacional</option>
+                        <option value="distribucion-poblacion-edad">Distribución de la población por edad</option>
+                        <option value="distribucion-poblacion-sexo">Distribución de la población por sexo</option>
+                        <option value="poblacion-economica-activa">Población Económicamente Activa</option>
+                        <option value="poblacion-sector-actividad">Población por sector de actividad económica</option>
+                        <option value="pib-nacional-total-percapita">PIB Nacional (Total y Per Cápita)</option>
+                        <option value="proyeccion-pib">Proyección PIB</option>
+                        <option value="inflacion-nacional">Inflación nacional</option>
+                        <option value="tipo-cambio-mxn-usd">Tipo de cambio (MXN/USD)</option>
+                        <option value="ied-sector-economico">IED por Sector Económico</option>
+                        <option value="ied-flujo-estado">Flujo de inversión extranjera para un Estado</option>
+                        <option value="ied-pais-origen">IED por País de Origen</option>
+                        <option value="ranking-turismo-mundial">Ranking Turismo Mundial</option>
+                        <option value="balanza-visitantes">Balanza de Visitantes</option>
+                        <option value="participacion-mercado-aereo">Participación Mercado Aéreo</option>
+                        <option value="participacion-internacional-region">Participación Internacional (Región)</option>
+                        <option value="pib-sector-economico">PIB por Sector Económico</option>
+                        <option value="balanza-comercial-producto">Balanza Comercial por Producto</option>
+                        <option value="operaciones-aeroportuarias">Operaciones Aeroportuarias</option>
+                        <option value="actividad-hotelera">Actividad hotelera</option>
+                    </select>
+                </div>
+                <div class="indicador-chart-container" id="indicador-chart-container" hidden>
+                    <div class="indicador-chart-wrapper" id="indicador-chart-wrapper">
+                        <div id="indicador-chart-plot" class="indicador-chart-plot"></div>
+                        <div class="indicador-chart-source">Fuente: INEGI</div>
+                    </div>
+                    <div class="indicador-chart-placeholder" id="indicador-chart-placeholder" hidden>
+                        <p class="indicador-chart-message">Gráfica en desarrollo. Indica cómo generar esta visualización.</p>
+                    </div>
+                    <div class="indicador-chart-tabs" id="indicador-chart-tabs" hidden>
+                        <button type="button" class="btn btn-tab active" id="pib-tab-total" data-metric="total">💰 PIB Total</button>
+                        <button type="button" class="btn btn-tab" id="pib-tab-percapita" data-metric="per_capita">👤 PIB Per Cápita</button>
+                    </div>
+                    <div class="indicador-chart-tabs" id="indicador-chart-tabs-tc" hidden>
+                        <button type="button" class="btn btn-tab active" id="tc-tab-diario" data-metric="diario">📅 Histórico Diario</button>
+                        <button type="button" class="btn btn-tab" id="tc-tab-mensual" data-metric="mensual">📊 Promedio Mensual</button>
+                    </div>
+                    <div class="indicador-chart-tabs" id="indicador-chart-tabs-ied-estado" hidden>
+                        <label for="ied-estado-select" class="chart-style-label">Resaltar Estado:</label>
+                        <select id="ied-estado-select" class="indicadores-select" aria-label="Seleccionar estado a resaltar">
+                            <option value="">— Todos —</option>
+                        </select>
+                    </div>
+                    <div class="indicador-chart-tabs" id="indicador-chart-tabs-balanza" hidden>
+                        <button type="button" class="btn btn-tab active" id="balanza-tab-flujo" data-metric="flujo">📊 Flujo (Entradas vs Salidas)</button>
+                        <button type="button" class="btn btn-tab" id="balanza-tab-saldo" data-metric="saldo">💰 Saldo Neto</button>
+                    </div>
+                    <div class="indicador-chart-tabs" id="indicador-chart-tabs-pma" hidden>
+                        <button type="button" class="btn btn-tab active" id="pma-tab-nacional" data-metric="nacional">✈️ Nacional (por Aerolínea)</button>
+                        <button type="button" class="btn btn-tab" id="pma-tab-internacional" data-metric="internacional">🌎 Internacional (por Región)</button>
+                    </div>
+                    <div class="indicador-chart-actions" id="indicador-chart-actions" hidden>
+                        <button type="button" class="btn btn-download-png" id="btn-download-chart-png">📥 Descargar PNG</button>
+                        <button type="button" class="btn btn-ia" id="btn-analizar-ia-chart">🤖 Analizar con IA</button>
+                    </div>
+                    <div class="ia-response indicador-ia-response" id="indicador-ia-response" hidden>
+                        <h4 class="ia-response-title">Análisis con IA</h4>
+                        <div class="ia-response-content" id="indicador-ia-response-content"></div>
+                    </div>
+                    <div class="indicador-table-section" id="indicador-table-section" hidden>
+                        <div class="kpis-table-header">
+                            <h4>Datos del indicador</h4>
+                            <button type="button" class="btn btn-download" id="btn-download-indicador-csv">📥 Descargar CSV</button>
+                        </div>
+                        <div class="kpis-table-wrapper">
+                            <table class="kpis-table" id="indicador-data-table">
+                                <thead><tr id="indicador-table-head"></tr></thead>
+                                <tbody id="indicador-table-body"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <section class="tab-panel" id="panel-estatal" role="tabpanel">
+            <div class="panel-placeholder">Contenido de nivel Estatal</div>
+        </section>
+        <section class="tab-panel" id="panel-ciudades" role="tabpanel">
+            <div class="panel-placeholder">Contenido de nivel Ciudades</div>
+        </section>
+        <section class="tab-panel" id="panel-municipios" role="tabpanel">
+            <div class="panel-placeholder">Contenido de nivel Municipios</div>
+        </section>
+        <section class="tab-panel" id="panel-localidades" role="tabpanel">
+            <div class="panel-placeholder">Contenido de nivel Localidades</div>
+        </section>
+    </div>
+</main>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    let kpisData = {};
+
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const tabId = btn.dataset.tab;
+            document.querySelectorAll('.tab-btn').forEach(b => {
+                b.classList.remove('active');
+                b.setAttribute('aria-selected', 'false');
+            });
+            document.querySelectorAll('.tab-panel').forEach(panel => {
+                panel.classList.remove('active');
+            });
+            btn.classList.add('active');
+            btn.setAttribute('aria-selected', 'true');
+            const panel = document.getElementById('panel-' + tabId);
+            if (panel) panel.classList.add('active');
+        });
+    });
+
+    const labels = {
+        pib_usd: 'PIB Nacional (USD)',
+        tipo_cambio: 'Tasa de cambio (USD/MXN)',
+        inflacion: 'Inflación (%)',
+        pib_mxn: 'PIB Nacional (MXN)'
+    };
+
+    function fillKpisTable(data) {
+        const tbody = document.getElementById('kpis-table-body');
+        tbody.innerHTML = '';
+        for (const [key, label] of Object.entries(labels)) {
+            const kpi = data[key] || {};
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td>${label}</td><td>${kpi.formatted || 'N/D'}</td><td>${kpi.date || 'N/D'}</td>`;
+            tbody.appendChild(tr);
+        }
+    }
+
+    function downloadCsv() {
+        const rows = [
+            ['Indicador', 'Valor', 'Fecha'],
+            ...Object.entries(labels).map(([key, label]) => {
+                const kpi = kpisData[key] || {};
+                return [label, kpi.formatted || 'N/D', kpi.date || 'N/D'];
+            })
+        ];
+        const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n');
+        const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'indicadores_nacionales.csv';
+        a.click();
+        URL.revokeObjectURL(a.href);
+    }
+
+    document.getElementById('btn-download-csv').addEventListener('click', downloadCsv);
+
+    document.getElementById('btn-analizar-ia').addEventListener('click', async function () {
+        const btn = this;
+        const container = document.getElementById('ia-response');
+        const content = document.getElementById('ia-response-content');
+        btn.disabled = true;
+        btn.textContent = '⏳ Analizando...';
+        container.hidden = false;
+        content.textContent = 'Obteniendo análisis...';
+        try {
+            const resp = await fetch('/api/analizar-ia', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(kpisData)
+            });
+            const data = await resp.json();
+            if (!resp.ok) {
+                content.textContent = 'Error: ' + (data.error || resp.statusText);
+                return;
+            }
+            content.innerHTML = '';
+            const p = document.createElement('div');
+            p.className = 'ia-response-text';
+            p.innerHTML = (data.analisis || '').replace(/\n/g, '<br>');
+            content.appendChild(p);
+        } catch (err) {
+            content.textContent = 'Error de conexión: ' + err.message;
+        } finally {
+            btn.disabled = false;
+            btn.textContent = '🤖 Analizar con IA';
+        }
+    });
+
+    async function loadKpisNacional() {
+        const ids = {
+            pib_usd: ['kpi-pib-usd', 'kpi-pib-usd-date'],
+            tipo_cambio: ['kpi-tipo-cambio', 'kpi-tipo-cambio-date'],
+            inflacion: ['kpi-inflacion', 'kpi-inflacion-date'],
+            pib_mxn: ['kpi-pib-mxn', 'kpi-pib-mxn-date']
+        };
+        try {
+            const resp = await fetch('/api/kpis/nacional');
+            const data = await resp.json();
+            if (!resp.ok) {
+                if (resp.status === 401) throw new Error('Sesión expirada. Inicia sesión nuevamente.');
+                throw new Error(data.error || 'Error al cargar');
+            }
+            kpisData = data;
+            for (const [key, [valId, dateId]] of Object.entries(ids)) {
+                const kpi = data[key];
+                document.getElementById(valId).textContent = kpi?.formatted || 'N/D';
+                document.getElementById(dateId).textContent = kpi?.date || 'N/D';
+            }
+            fillKpisTable(data);
+            document.getElementById('btn-analizar-ia').disabled = false;
+        } catch (err) {
+            const msg = err.message || 'Error al cargar';
+            for (const [, [valId, dateId]] of Object.entries(ids)) {
+                document.getElementById(valId).textContent = 'N/D';
+                document.getElementById(dateId).textContent = msg;
+            }
+            fillKpisTable({});
+        }
+    }
+    loadKpisNacional();
+
+    // === Indicadores nacionales: usar getChartConfig() para paleta, fontSize, fontFamily en TODAS las gráficas ===
+    const PALETA_DEFAULT = ['#0576F3', '#36F48C', '#F47806', '#F3F40B', '#F479F4'];
+    const CHART_FONT_SIZE_KEY = 'edmi_chart_font_size';
+    const CHART_PALETTE_KEY = 'edmi_chart_palette';
+    const CHART_PALETTE_CUSTOM_KEY = 'edmi_chart_palette_custom';
+
+    function getChartFontSize() {
+        const v = parseInt(localStorage.getItem(CHART_FONT_SIZE_KEY) || '14', 10);
+        return [12, 14, 16, 18, 20].includes(v) ? v : 14;
+    }
+
+    function getChartConfig() {
+        return {
+            palette: getChartPalette(),
+            fontSize: getChartFontSize(),
+            titleSize: Math.round(getChartFontSize() * 1.15),
+            fontFamily: 'Aptos Light, sans-serif',
+        };
+    }
+
+    function parseHexColor(s) {
+        const m = String(s).trim().match(/^#?([0-9A-Fa-f]{6})$/);
+        return m ? '#' + m[1] : null;
+    }
+
+    function getChartPalette() {
+        if (localStorage.getItem(CHART_PALETTE_KEY) !== 'custom') {
+            return PALETA_DEFAULT;
+        }
+        try {
+            const stored = JSON.parse(localStorage.getItem(CHART_PALETTE_CUSTOM_KEY) || '[]');
+            const valid = stored.map((c) => parseHexColor(c)).filter(Boolean);
+            return valid.length >= 5 ? valid.slice(0, 5) : PALETA_DEFAULT;
+        } catch {
+            return PALETA_DEFAULT;
+        }
+    }
+
+    function saveCustomPalette() {
+        const colors = [1, 2, 3, 4, 5].map((i) => {
+            const v = document.getElementById('palette-color-' + i).value.trim();
+            return parseHexColor(v) || PALETA_DEFAULT[i - 1];
+        });
+        localStorage.setItem(CHART_PALETTE_CUSTOM_KEY, JSON.stringify(colors));
+    }
+
+    function applyPaletteToDocument() {
+        const palette = getChartPalette();
+        document.documentElement.style.setProperty('--color-primary', palette[0]);
+        document.documentElement.style.setProperty('--color-secondary', palette[1]);
+        document.documentElement.style.setProperty('--color-accent', palette[2]);
+        document.documentElement.style.setProperty('--color-warning', palette[3]);
+        document.documentElement.style.setProperty('--color-highlight', palette[4]);
+        updatePaletteSwatches();
+    }
+
+    function updatePaletteSwatches() {
+        const palette = getChartPalette();
+        [1, 2, 3, 4, 5].forEach((i) => {
+            const swatch = document.getElementById('palette-swatch-' + i);
+            if (swatch) {
+                swatch.style.backgroundColor = palette[i - 1];
+                swatch.title = palette[i - 1];
+            }
+        });
+    }
+
+    function syncPickerToHex(pickerId, hexId) {
+        const picker = document.getElementById(pickerId);
+        const hex = document.getElementById(hexId);
+        if (picker && hex) {
+            const val = picker.value;
+            hex.value = val.toUpperCase();
+        }
+    }
+
+    function syncHexToPicker(hexId, pickerId) {
+        const hex = document.getElementById(hexId);
+        const picker = document.getElementById(pickerId);
+        const parsed = hex && parseHexColor(hex.value);
+        if (parsed && picker) {
+            picker.value = parsed;
+        }
+    }
+
+    applyPaletteToDocument();
+
+    const chartFontSizeSelect = document.getElementById('chart-font-size');
+    chartFontSizeSelect.value = String(getChartFontSize());
+    chartFontSizeSelect.addEventListener('change', function () {
+        const v = parseInt(this.value, 10);
+        localStorage.setItem(CHART_FONT_SIZE_KEY, String(v));
+        renderCurrentChart();
+    });
+
+    const chartPaletteSelect = document.getElementById('chart-palette');
+    const chartPaletteCustom = document.getElementById('chart-palette-custom');
+    chartPaletteSelect.value = localStorage.getItem(CHART_PALETTE_KEY) || 'default';
+    chartPaletteCustom.hidden = chartPaletteSelect.value !== 'custom';
+
+    chartPaletteSelect.addEventListener('change', function () {
+        const isCustom = this.value === 'custom';
+        localStorage.setItem(CHART_PALETTE_KEY, this.value);
+        chartPaletteCustom.hidden = !isCustom;
+        if (isCustom) saveCustomPalette();
+        applyPaletteToDocument();
+        renderCurrentChart();
+    });
+
+    [1, 2, 3, 4, 5].forEach((i) => {
+        const picker = document.getElementById('palette-picker-' + i);
+        const hexInput = document.getElementById('palette-color-' + i);
+        try {
+            const stored = JSON.parse(localStorage.getItem(CHART_PALETTE_CUSTOM_KEY) || '[]');
+            if (stored[i - 1]) {
+                hexInput.value = stored[i - 1];
+                if (picker) picker.value = stored[i - 1];
+            }
+        } catch {}
+        picker.addEventListener('input', function () {
+            syncPickerToHex('palette-picker-' + i, 'palette-color-' + i);
+            saveCustomPalette();
+            applyPaletteToDocument();
+            renderCurrentChart();
+        });
+        hexInput.addEventListener('change', function () {
+            const hex = parseHexColor(this.value);
+            if (hex) {
+                this.value = hex;
+                syncHexToPicker('palette-color-' + i, 'palette-picker-' + i);
+                saveCustomPalette();
+                applyPaletteToDocument();
+                renderCurrentChart();
+            }
+        });
+    });
+
+    const selectIndicador = document.getElementById('indicador-nacional');
+    const chartContainer = document.getElementById('indicador-chart-container');
+    const chartWrapper = document.getElementById('indicador-chart-wrapper');
+    const chartPlaceholder = document.getElementById('indicador-chart-placeholder');
+    const chartActions = document.getElementById('indicador-chart-actions');
+    const indicadorTableSection = document.getElementById('indicador-table-section');
+    const indicadorIaResponse = document.getElementById('indicador-ia-response');
+
+    let indicadorChartData = [];
+
+    let indicadorChartMeta = { indicator: '', source: 'Fuente: INEGI', exportName: '' };
+
+    let proyeccionPibMeta = { tc_fix: 0, tc_date: '' };
+
+    function renderCurrentChart() {
+        const ind = selectIndicador.value;
+        if (ind === 'crecimiento-poblacional' && indicadorChartData.length > 0) {
+            renderCrecimientoPoblacional(indicadorChartData);
+        } else if (ind === 'distribucion-poblacion-edad' && indicadorChartData.length > 0) {
+            renderDistribucionPoblacionEdad(indicadorChartData);
+        } else if (ind === 'distribucion-poblacion-sexo' && indicadorChartData.length > 0) {
+            renderDistribucionPoblacionSexo(indicadorChartData);
+        } else if (ind === 'poblacion-economica-activa' && indicadorChartData.length > 0) {
+            renderPea(indicadorChartData);
+        } else if (ind === 'poblacion-sector-actividad' && indicadorChartData.length > 0) {
+            renderPobSectorActividad(indicadorChartData);
+        } else if (ind === 'pib-nacional-total-percapita' && indicadorChartData.length > 0) {
+            renderPibNacional(indicadorChartData, pibNacionalMetric);
+        } else if (ind === 'proyeccion-pib' && indicadorChartData.length > 0) {
+            renderProyeccionPib(indicadorChartData, proyeccionPibMetric);
+        } else if (ind === 'inflacion-nacional' && indicadorChartData.length > 0) {
+            renderInflacionNacional(indicadorChartData);
+        } else if (ind === 'tipo-cambio-mxn-usd' && (tipoCambioData.diario.length > 0 || tipoCambioData.mensual.length > 0)) {
+            renderTipoCambio(tipoCambioDataMetric);
+        } else if (ind === 'ied-sector-economico' && indicadorChartData.length > 0) {
+            renderIedSectorEconomico(indicadorChartData);
+        } else if (ind === 'ied-flujo-estado' && indicadorChartData.length > 0) {
+            renderIedFlujoEstado(indicadorChartData, iedFlujoEstadoSel);
+        } else if (ind === 'ied-pais-origen' && indicadorChartData.length > 0) {
+            renderIedPaisOrigen(indicadorChartData);
+        } else if (ind === 'ranking-turismo-mundial' && indicadorChartData.length > 0) {
+            renderRankingTurismoMundial(indicadorChartData);
+        } else if (ind === 'balanza-visitantes' && indicadorChartData.length > 0) {
+            renderBalanzaVisitantes(indicadorChartData, balanzaVisitantesMetric);
+        } else if (ind === 'participacion-mercado-aereo' && participacionMercadoAereoData.nacional.length + participacionMercadoAereoData.internacional.length > 0) {
+            renderParticipacionMercadoAereo(participacionMercadoAereoData, participacionMercadoAereoMetric);
+        } else if (ind === 'participacion-internacional-region' && indicadorChartData.length > 0) {
+            renderParticipacionInternacionalRegion(indicadorChartData);
+        }
+    }
+
+    let pibNacionalMetric = 'total';
+    let tipoCambioData = { diario: [], mensual: [] };
+    let tipoCambioDataMetric = 'diario';
+    let proyeccionPibMetric = 'total';
+    let iedFlujoEstadoSel = '';
+    let balanzaVisitantesMetric = 'flujo';
+    let participacionMercadoAereoData = { nacional: [], internacional: [] };
+    let participacionMercadoAereoMetric = 'nacional';
+
+    function renderCrecimientoPoblacional(data) {
+        const cfg = getChartConfig();
+        const { palette, fontSize, titleSize } = cfg;
+        const sorted = [...data].sort((a, b) => a.year - b.year);
+        const firstYear = sorted[0].year;
+        const lastYear = sorted[sorted.length - 1].year;
+        const firstVal = sorted[0].value;
+        const lastVal = sorted[sorted.length - 1].value;
+        const yearsGap = lastYear - firstYear;
+        const cagr = yearsGap > 0 ? Math.pow(lastVal / firstVal, 1.0 / yearsGap) - 1.0 : 0;
+        const cagrPercent = (cagr * 100).toFixed(2);
+
+        const maxVal = Math.max(...sorted.map((r) => r.value));
+        let step = 1e7;
+        if (maxVal > 1e8) step = 2e7;
+        const ymax = Math.max(step, Math.ceil((maxVal + 1) / step) * step);
+        const tickvals = [];
+        for (let v = 0; v <= ymax; v += step) tickvals.push(v);
+        const ticktext = tickvals.map((v) => Math.floor(v).toLocaleString('es-MX'));
+
+        const trace = {
+            type: 'bar',
+            x: sorted.map((r) => r.year),
+            y: sorted.map((r) => r.value),
+            marker: { color: palette[0] },
+            hovertemplate: 'Año %{x}<br>Población: %{y:,}<extra></extra>'
+        };
+
+        const layout = {
+            title: { text: 'Crecimiento poblacional nacional', x: 0.5, xanchor: 'center', font: { family: cfg.fontFamily, size: titleSize } },
+            font: { family: cfg.fontFamily, size: fontSize, color: '#2e2e2e' },
+            showlegend: false,
+            bargap: 0.2,
+            margin: { l: 90, r: 40, t: 70, b: 110 },
+            plot_bgcolor: 'white',
+            paper_bgcolor: 'transparent',
+            xaxis: {
+                tickangle: 90,
+                tickmode: 'array',
+                tickvals: sorted.map((r) => r.year),
+                type: 'category',
+                tickfont: { size: fontSize }
+            },
+            yaxis: {
+                tickmode: 'array',
+                tickvals: tickvals,
+                ticktext: ticktext,
+                gridcolor: 'rgba(0,0,0,0.08)',
+                tickfont: { size: fontSize }
+            },
+            annotations: [{
+                xref: 'paper', yref: 'paper',
+                x: 0.85, y: 1.09,
+                text: `Tasa de crecimiento<br>(<b>${firstYear} – ${lastYear}</b>)<br><b><span style='color:${palette[1]}'>${cagrPercent}% anual</span></b>`,
+                showarrow: false,
+                font: { size: fontSize + 2 }
+            }],
+            autosize: true
+        };
+
+        const plotlyConfig = { responsive: true, displayModeBar: true, locale: 'es' };
+        Plotly.newPlot('indicador-chart-plot', [trace], layout, plotlyConfig);
+    }
+
+    function renderDistribucionPoblacionEdad(data) {
+        const cfg = getChartConfig();
+        const { palette, fontSize, titleSize } = cfg;
+        const sorted = [...data]
+            .filter((r) => (r.pob_0_14 || 0) + (r.pob_15_64 || 0) + (r.pob_65_plus || 0) > 0)
+            .sort((a, b) => a.year - b.year);
+        if (sorted.length === 0) return;
+        const minYear = Math.min(...sorted.map((r) => r.year));
+        const maxYear = Math.max(...sorted.map((r) => r.year));
+        const years = sorted.map((r) => r.year);
+        const m0_14 = sorted.map((r) => Math.round(((r.pob_0_14 || 0) / 1e6) * 10) / 10);
+        const m15_64 = sorted.map((r) => Math.round(((r.pob_15_64 || 0) / 1e6) * 10) / 10);
+        const m65 = sorted.map((r) => Math.round(((r.pob_65_plus || 0) / 1e6) * 10) / 10);
+        const total = sorted.map((r) => {
+            const s = (r.pob_0_14 || 0) + (r.pob_15_64 || 0) + (r.pob_65_plus || 0);
+            return Math.round((s / 1e6) * 10) / 10;
+        });
+        const trace1 = { type: 'bar', name: '0-14 años', x: years, y: m0_14, marker: { color: palette[0] }, text: m0_14.map((v) => v.toFixed(1)), textposition: 'inside' };
+        const trace2 = { type: 'bar', name: '15-64 años', x: years, y: m15_64, marker: { color: palette[1] || palette[0] }, text: m15_64.map((v) => v.toFixed(1)), textposition: 'inside' };
+        const trace3 = { type: 'bar', name: '65+ años', x: years, y: m65, marker: { color: palette[2] || palette[0] }, text: m65.map((v) => v.toFixed(1)), textposition: 'inside' };
+        const trace4 = { type: 'scatter', x: years, y: total.map((v) => v * 1.05), mode: 'text', text: total.map((v) => `Total: ${v.toFixed(1)}M`), textfont: { size: fontSize + 2, color: '#333' }, showlegend: false, hoverinfo: 'skip' };
+        const layout = {
+            barmode: 'stack',
+            title: { text: `Estructura Demográfica (${minYear} - ${maxYear})`, x: 0.5, xanchor: 'center', font: { family: cfg.fontFamily, size: titleSize } },
+            font: { family: cfg.fontFamily, size: fontSize, color: '#2e2e2e' },
+            xaxis: { type: 'category', title: { text: 'Año Censo / Conteo', font: { size: fontSize } }, tickangle: -90, tickfont: { size: fontSize } },
+            yaxis: { title: { text: 'Millones de habitantes', font: { size: fontSize } }, showgrid: true, gridcolor: 'rgba(0,0,0,0.08)', tickfont: { size: fontSize } },
+            legend: { orientation: 'h', y: -0.25, x: 0.5, xanchor: 'center', font: { size: fontSize } },
+            margin: { t: 80, b: 100 },
+            plot_bgcolor: 'white',
+            paper_bgcolor: 'transparent',
+            autosize: true
+        };
+        const plotlyConfig = { responsive: true, displayModeBar: true, locale: 'es' };
+        Plotly.newPlot('indicador-chart-plot', [trace1, trace2, trace3, trace4], layout, plotlyConfig);
+    }
+
+    function renderDistribucionPoblacionSexo(data) {
+        const cfg = getChartConfig();
+        const { palette, fontSize, titleSize } = cfg;
+        const sorted = [...data].sort((a, b) => a.year - b.year);
+        if (sorted.length === 0) return;
+        const maleM = sorted.map((r) => (r.male || 0) / 1e6);
+        const femaleM = sorted.map((r) => (r.female || 0) / 1e6);
+        const ymax = Math.ceil(Math.max(...maleM, ...femaleM) * 1.15);
+        const fmtSpanish = (vals) => vals.map((v) => v.toFixed(1).replace('.', ','));
+        const trace1 = {
+            type: 'bar',
+            name: 'Hombres',
+            x: sorted.map((r) => r.year),
+            y: maleM,
+            marker: { color: palette[0] },
+            text: fmtSpanish(maleM),
+            textposition: 'outside',
+            textfont: { color: '#3e403f', size: fontSize + 1 },
+            hovertemplate: 'Año: %{x}<br>Hombres: %{y:.1f} millones<extra></extra>'
+        };
+        const trace2 = {
+            type: 'bar',
+            name: 'Mujeres',
+            x: sorted.map((r) => r.year),
+            y: femaleM,
+            marker: { color: palette[1] || palette[0] },
+            text: fmtSpanish(femaleM),
+            textposition: 'outside',
+            textfont: { color: '#3e403f', size: fontSize + 1 },
+            hovertemplate: 'Año: %{x}<br>Mujeres: %{y:.1f} millones<extra></extra>'
+        };
+        const layout = {
+            barmode: 'group',
+            bargap: 0.4,
+            bargroupgap: 0.15,
+            title: {
+                text: `Distribución población por sexo (INEGI)<br><span style='font-size:13px;color:#9aa0a6'>(Millones)</span>`,
+                x: 0.5,
+                xanchor: 'center',
+                font: { family: cfg.fontFamily, size: titleSize }
+            },
+            font: { family: cfg.fontFamily, size: fontSize, color: '#2e2e2e' },
+            xaxis: {
+                type: 'category',
+                tickmode: 'array',
+                tickvals: sorted.map((r) => r.year),
+                showgrid: false,
+                tickangle: -90,
+                tickfont: { size: fontSize }
+            },
+            yaxis: {
+                showgrid: true,
+                gridcolor: 'rgba(0,0,0,0.08)',
+                range: [0, ymax],
+                tickfont: { size: fontSize }
+            },
+            legend: {
+                orientation: 'h',
+                yanchor: 'bottom',
+                y: -0.25,
+                xanchor: 'center',
+                x: 0.5,
+                font: { size: fontSize }
+            },
+            plot_bgcolor: 'white',
+            paper_bgcolor: 'transparent',
+            margin: { l: 60, r: 40, t: 90, b: 130 },
+            autosize: true
+        };
+        const plotlyConfig = { responsive: true, displayModeBar: true, locale: 'es' };
+        Plotly.newPlot('indicador-chart-plot', [trace1, trace2], layout, plotlyConfig);
+    }
+
+    function renderPea(data) {
+        const cfg = getChartConfig();
+        const { palette, fontSize, titleSize } = cfg;
+        const sorted = [...data].sort((a, b) => (a.anio - b.anio) || (a.trimestre - b.trimestre));
+        if (sorted.length === 0) return;
+        const ultimo = sorted[sorted.length - 1];
+        const penultimo = sorted.length > 1 ? sorted[sorted.length - 2] : ultimo;
+        const varTrim = ((ultimo.valor / penultimo.valor) - 1) * 100;
+        const trace = {
+            type: 'bar',
+            x: sorted.map((r) => r.fecha_fmt),
+            y: sorted.map((r) => r.valor),
+            marker: { color: palette[0] },
+            hovertemplate: '%{x}<br><b>%{y:,.0f}</b> personas<extra></extra>'
+        };
+        const annotations = [{
+            x: ultimo.fecha_fmt,
+            y: ultimo.valor,
+            text: `<b>${ultimo.valor.toLocaleString('es-MX')}</b><br><span style='color:${varTrim > 0 ? '#00c853' : '#d50000'}'>${varTrim >= 0 ? '+' : ''}${varTrim.toFixed(1)}% vs prev.</span>`,
+            showarrow: true,
+            ax: 0,
+            ay: -60,
+            bgcolor: 'rgba(255,255,255,0.8)',
+            font: { size: fontSize }
+        }];
+        const layout = {
+            title: {
+                text: '<b>Población Económicamente Activa (PEA)</b>',
+                x: 0.5,
+                xanchor: 'center',
+                font: { family: cfg.fontFamily, size: titleSize }
+            },
+            plot_bgcolor: 'white',
+            paper_bgcolor: 'transparent',
+            margin: { t: 80, l: 50, r: 50, b: 120 },
+            font: { family: cfg.fontFamily, size: fontSize, color: '#2e2e2e' },
+            showlegend: false,
+            xaxis: { tickangle: -90, tickfont: { size: fontSize } },
+            yaxis: { showgrid: true, gridcolor: 'rgba(0,0,0,0.08)', tickformat: ',', tickfont: { size: fontSize } },
+            annotations,
+            autosize: true
+        };
+        const plotlyConfig = { responsive: true, displayModeBar: true, locale: 'es' };
+        Plotly.newPlot('indicador-chart-plot', [trace], layout, plotlyConfig);
+    }
+
+    function renderPobSectorActividad(data) {
+        const cfg = getChartConfig();
+        const { palette, fontSize, titleSize } = cfg;
+        const esResidual = data.some((r) => r.es_residual);
+        const colorTags = palette[1] || palette[0];
+        const formatoMillones = (n) => `${(n / 1e6).toFixed(1)}M`;
+        const trace = {
+            type: 'bar',
+            x: data.map((r) => r.sector),
+            y: data.map((r) => r.valor),
+            marker: { color: palette[0] },
+            text: data.map((r) => formatoMillones(r.valor)),
+            textposition: 'auto',
+            textfont: { color: '#ffffff', size: fontSize + 2, family: cfg.fontFamily },
+            hovertemplate: '%{x}<br>%{y:,.0f} personas<extra></extra>'
+        };
+        const annotations = data.map((r) => ({
+            x: r.sector,
+            y: r.valor,
+            text: `<b>${r.pct.toFixed(1)}%</b>`,
+            yshift: 15,
+            showarrow: false,
+            font: { color: colorTags, size: fontSize + 4 }
+        }));
+        const tituloExtra = esResidual ? ' (Estimado)' : '';
+        const layout = {
+            title: {
+                text: `<b>Población Ocupada por Sector${tituloExtra}</b>`,
+                x: 0.5,
+                xanchor: 'center',
+                font: { family: cfg.fontFamily, size: titleSize }
+            },
+            font: { family: cfg.fontFamily, size: fontSize, color: '#2e2e2e' },
+            plot_bgcolor: 'white',
+            paper_bgcolor: 'transparent',
+            yaxis: {
+                showgrid: true,
+                gridcolor: 'rgba(0,0,0,0.08)',
+                tickformat: ',.0f',
+                title: { text: 'Personas', font: { size: fontSize } },
+                tickfont: { size: fontSize }
+            },
+            xaxis: { tickangle: 0, tickfont: { size: fontSize } },
+            annotations,
+            margin: { t: 80, b: 100 },
+            autosize: true
+        };
+        const plotlyConfig = { responsive: true, displayModeBar: true, locale: 'es' };
+        Plotly.newPlot('indicador-chart-plot', [trace], layout, plotlyConfig);
+    }
+
+    function renderPibNacional(data, metricType) {
+        const cfg = getChartConfig();
+        const { palette, fontSize, titleSize } = cfg;
+        const sorted = [...data].sort((a, b) => a.anio - b.anio);
+        if (sorted.length === 0) return;
+        const isTotal = metricType === 'total';
+        const yCol = isTotal ? 'pib_total_mxn_billones' : 'pib_per_capita_mxn';
+        const unitLabel = isTotal ? 'Miles de Millones de Pesos (MXN)' : 'Pesos Mexicanos (MXN)';
+        const suffix = isTotal ? ' MM MXN' : ' MXN';
+        const color = isTotal ? palette[0] : (palette[1] || palette[0]);
+        const ultimoVal = sorted[sorted.length - 1][yCol];
+        const ultimo = sorted[sorted.length - 1];
+        const xIndices = sorted.map((_, i) => i);
+        const n = sorted.length;
+        const trace = {
+            type: 'bar',
+            x: xIndices,
+            y: sorted.map((r) => r[yCol]),
+            marker: { color },
+            name: isTotal ? 'PIB Total MXN' : 'Per Cápita MXN',
+            hovertemplate: `<b>Año:</b> %{customdata}<br><b>Valor:</b> $%{y:,.0f}${suffix}<extra></extra>`,
+            customdata: sorted.map((r) => r.anio)
+        };
+        const layout = {
+            title: {
+                text: `<b>${isTotal ? 'PIB Nacional Total (MXN)' : 'PIB Per Cápita (MXN)'}</b>`,
+                x: 0.5,
+                xanchor: 'center',
+                font: { family: cfg.fontFamily, size: titleSize }
+            },
+            font: { family: cfg.fontFamily, size: fontSize, color: '#2e2e2e' },
+            xaxis: {
+                tickmode: 'array',
+                tickvals: xIndices,
+                ticktext: sorted.map((r) => String(r.anio)),
+                title: { text: 'Año', font: { size: fontSize } },
+                showgrid: false,
+                tickfont: { size: fontSize }
+            },
+            yaxis: {
+                title: { text: unitLabel, font: { size: fontSize } },
+                tickformat: ',.0f',
+                gridcolor: 'rgba(0,0,0,0.08)',
+                tickfont: { size: fontSize }
+            },
+            plot_bgcolor: 'white',
+            paper_bgcolor: 'transparent',
+            showlegend: false,
+            margin: { t: 60, b: 80, l: 80 },
+            annotations: [
+                {
+                    x: n - 1,
+                    y: ultimoVal,
+                    text: `${ultimo.anio}<br>$` + ultimoVal.toLocaleString('es-MX'),
+                    showarrow: true,
+                    arrowhead: 2,
+                    ax: 0,
+                    ay: -40,
+                    bgcolor: 'white',
+                    bordercolor: color,
+                    font: { size: fontSize - 1 }
+                }
+            ],
+            autosize: true
+        };
+        const plotlyConfig = { responsive: true, displayModeBar: true, locale: 'es' };
+        Plotly.newPlot('indicador-chart-plot', [trace], layout, plotlyConfig);
+    }
+
+    function renderProyeccionPib(data, metricType) {
+        const cfg = getChartConfig();
+        const { palette, fontSize, titleSize } = cfg;
+        const sorted = [...data].sort((a, b) => a.anio - b.anio);
+        if (sorted.length === 0) return;
+        const years = sorted.map((r) => String(r.anio));
+        const isTotal = metricType === 'total';
+        const xvals = isTotal ? sorted.map((r) => r.pib_total_mxn_billones) : sorted.map((r) => r.pib_per_capita_mxn);
+        const usdVals = isTotal ? sorted.map((r) => r.pib_total_usd_billones) : sorted.map((r) => r.pib_per_capita_usd);
+        const color = isTotal ? palette[0] : (palette[1] || palette[0]);
+        const title = isTotal ? 'Proyección PIB Nacional Total (Billones MXN)' : 'Proyección PIB Per Cápita (Pesos)';
+        const subTitle = isTotal ? 'Billones de pesos [MXN$]' : 'Pesos [MXN$]';
+        const hoverMxn = isTotal ? 'MXN: $%{x:,.0f} Billones<br>USD: $%{customdata:,.1f} Billions' : 'MXN: $%{x:,.0f}<br>USD: $%{customdata:,.0f}';
+
+        const trace = {
+            type: 'bar',
+            orientation: 'h',
+            y: years,
+            x: xvals,
+            name: isTotal ? 'PIB Total' : 'Per Cápita',
+            marker: { color },
+            customdata: usdVals,
+            hovertemplate: '<b>%{y}</b><br>' + hoverMxn + '<extra></extra>'
+        };
+
+        const layout = {
+            title: {
+                text: `<b>${title}</b><br><sub>${subTitle}</sub>`,
+                x: 0.5,
+                xanchor: 'center',
+                font: { family: cfg.fontFamily, size: titleSize }
+            },
+            font: { family: cfg.fontFamily, size: fontSize, color: '#2e2e2e' },
+            showlegend: false,
+            height: 450,
+            plot_bgcolor: 'white',
+            paper_bgcolor: 'transparent',
+            margin: { l: 50, r: 40, t: 100, b: 80 },
+            xaxis: {
+                showgrid: true,
+                gridcolor: 'lightgray',
+                zeroline: false,
+                tickprefix: '$ '
+            },
+            yaxis: {
+                autorange: 'reversed',
+                type: 'category'
+            },
+            annotations: [
+                { font: { color: 'gray', size: 10 }, showarrow: false, text: 'Fuente: FMI WEO & Banxico (TC FIX: ' + (proyeccionPibMeta.tc_fix ? proyeccionPibMeta.tc_fix.toFixed(2) : 'N/D') + ')', x: 0.5, xref: 'paper', y: -0.12, yref: 'paper' }
+            ],
+            autosize: true
+        };
+
+        const plotlyConfig = { responsive: true, displayModeBar: true, locale: 'es' };
+        Plotly.newPlot('indicador-chart-plot', [trace], layout, plotlyConfig);
+    }
+
+    function renderInflacionNacional(data) {
+        const cfg = getChartConfig();
+        const { palette, fontSize, titleSize } = cfg;
+        const sorted = [...data].sort((a, b) => (a.anio - b.anio) || (a.mes - b.mes));
+        if (sorted.length === 0) return;
+        const ultimo = sorted[sorted.length - 1];
+        const penultimo = sorted.length > 1 ? sorted[sorted.length - 2] : ultimo;
+        const varPct = penultimo.inflacion ? ((ultimo.inflacion / penultimo.inflacion) - 1) * 100 : 0;
+
+        const trace = {
+            type: 'bar',
+            x: sorted.map((r) => r.texto_fecha),
+            y: sorted.map((r) => r.inflacion),
+            marker: { color: palette[0] },
+            hovertemplate: '%{x}<br><b>%{y:.2f}%</b> inflación anual<extra></extra>'
+        };
+
+        const layout = {
+            title: {
+                text: '<b>Inflación Nacional (INPC - Banxico)</b><br><sub>Variación anual %</sub>',
+                x: 0.5,
+                xanchor: 'center',
+                font: { family: cfg.fontFamily, size: titleSize }
+            },
+            font: { family: cfg.fontFamily, size: fontSize, color: '#2e2e2e' },
+            showlegend: false,
+            plot_bgcolor: 'white',
+            paper_bgcolor: 'transparent',
+            margin: { t: 80, l: 50, r: 50, b: 120 },
+            xaxis: { tickangle: -90, tickfont: { size: fontSize } },
+            yaxis: {
+                title: { text: 'Inflación (%)', font: { size: fontSize } },
+                showgrid: true,
+                gridcolor: 'rgba(0,0,0,0.08)',
+                tickformat: ',.1f',
+                tickfont: { size: fontSize }
+            },
+            annotations: [{
+                x: ultimo.texto_fecha,
+                y: ultimo.inflacion,
+                text: `<b>${ultimo.inflacion.toFixed(2)}%</b><br><span style='color:${varPct > 0 ? '#d50000' : '#00c853'}'>${varPct >= 0 ? '+' : ''}${varPct.toFixed(1)}% vs prev.</span>`,
+                showarrow: true,
+                ax: 0,
+                ay: -50,
+                bgcolor: 'rgba(255,255,255,0.9)',
+                font: { size: fontSize }
+            }],
+            autosize: true
+        };
+
+        const plotlyConfig = { responsive: true, displayModeBar: true, locale: 'es' };
+        Plotly.newPlot('indicador-chart-plot', [trace], layout, plotlyConfig);
+    }
+
+    function renderTipoCambio(metricType) {
+        const cfg = getChartConfig();
+        const { palette, fontSize, titleSize } = cfg;
+        const isDiario = metricType === 'diario';
+        const data = isDiario ? tipoCambioData.diario : tipoCambioData.mensual;
+        if (!data || data.length === 0) return;
+        const sorted = [...data].sort((a, b) => a.fecha.localeCompare(b.fecha));
+        const yCol = isDiario ? 'tc' : 'tc_prom_mes';
+        const vals = sorted.map((r) => r[yCol] ?? r.tc ?? 0);
+        const lastVal = vals[vals.length - 1];
+        const lastDate = sorted[sorted.length - 1]?.fecha ?? '';
+        const title = isDiario ? 'Histórico Diario' : 'Promedio Mensual';
+        const formatDec = isDiario ? 2 : 3;
+
+        const trace = {
+            type: 'scatter',
+            mode: 'lines',
+            x: sorted.map((r) => r.fecha),
+            y: vals,
+            line: { color: palette[0], width: 1.5 },
+            hovertemplate: '<b>%{x}</b><br>$%{y:.' + formatDec + 'f} MXN/USD<extra></extra>'
+        };
+
+        const layout = {
+            title: {
+                text: '<b>Tipo de cambio (MXN/USD) - ' + title + '</b>',
+                x: 0.5,
+                xanchor: 'center',
+                font: { family: cfg.fontFamily, size: titleSize }
+            },
+            font: { family: cfg.fontFamily, size: fontSize, color: '#2e2e2e' },
+            yaxis: {
+                title: { text: 'Pesos por USD', font: { size: fontSize } },
+                showgrid: true,
+                gridcolor: 'rgba(0,0,0,0.08)',
+                tickformat: '$.2f',
+                tickfont: { size: fontSize }
+            },
+            xaxis: { tickfont: { size: fontSize } },
+            hovermode: 'x unified',
+            plot_bgcolor: 'white',
+            paper_bgcolor: 'transparent',
+            margin: { t: 70, b: 60 },
+            annotations: [{
+                x: lastDate,
+                y: lastVal,
+                text: '$' + lastVal.toFixed(formatDec),
+                showarrow: true,
+                arrowhead: 2,
+                ax: 40,
+                ay: -20,
+                bgcolor: 'white',
+                bordercolor: palette[0],
+                font: { size: fontSize - 2 }
+            }],
+            autosize: true
+        };
+
+        const plotlyConfig = { responsive: true, displayModeBar: true, locale: 'es' };
+        Plotly.newPlot('indicador-chart-plot', [trace], layout, plotlyConfig);
+    }
+
+    function renderIedSectorEconomico(data) {
+        const cfg = getChartConfig();
+        const { palette, fontSize, titleSize } = cfg;
+        const periodo = data[0]?.periodo || 'ND';
+        const formatShort = (x) => {
+            if (x >= 1000) return `$${(x / 1000).toFixed(1)}B`;
+            return `$${x.toFixed(0)}M`;
+        };
+        const maxv = Math.max(...data.map((r) => r.monto_mdd));
+        const texts = data.map((r) => formatShort(r.monto_mdd));
+        const positions = data.map((r) =>
+            maxv && r.monto_mdd >= 0.15 * maxv ? 'inside' : 'outside'
+        );
+        const trace = {
+            type: 'bar',
+            x: data.map((r) => r.monto_mdd),
+            y: data.map((r) => r.sector),
+            orientation: 'h',
+            marker: { color: palette[0] },
+            text: texts,
+            textposition: positions,
+            insidetextanchor: 'middle',
+            textfont: {
+                color: positions.map((pos) => (pos === 'inside' ? 'white' : '#333')),
+                family: cfg.fontFamily,
+                size: fontSize,
+            },
+            hovertemplate: '<b>%{y}</b><br>$%{x:,.0f} MDD<extra></extra>',
+        };
+        const layout = {
+            title: {
+                text: `<b>IED por Sector Económico</b><br><span style='font-size:${fontSize}px;color:gray;'>Cifras en MDD (${periodo})</span>`,
+                x: 0.5,
+                xanchor: 'center',
+                font: { family: cfg.fontFamily, size: titleSize },
+            },
+            plot_bgcolor: 'white',
+            paper_bgcolor: 'transparent',
+            font: { family: cfg.fontFamily },
+            xaxis: {
+                showgrid: true,
+                gridcolor: 'rgba(0,0,0,0.08)',
+                title: { text: 'Millones de Dólares', font: { size: fontSize } },
+                tickfont: { size: fontSize },
+            },
+            yaxis: {
+                showgrid: false,
+                automargin: true,
+                categoryorder: 'total ascending',
+                tickfont: { size: fontSize },
+            },
+            margin: { l: 10, r: 50, t: 80, b: 70 },
+            height: 500,
+            autosize: true,
+        };
+        const plotlyConfig = { responsive: true, displayModeBar: true, locale: 'es' };
+        Plotly.newPlot('indicador-chart-plot', [trace], layout, plotlyConfig);
+    }
+
+    function normalizeEstado(s) {
+        if (!s) return '';
+        return String(s).toLowerCase()
+            .replace(/[áàäâ]/g, 'a').replace(/[éèëê]/g, 'e').replace(/[íìïî]/g, 'i')
+            .replace(/[óòöô]/g, 'o').replace(/[úùüû]/g, 'u').replace(/ñ/g, 'n');
+    }
+
+    const ESTADO_ALIASES = {
+        cdmx: 'Ciudad de México', 'ciudad de mexico': 'Ciudad de México', 'distrito federal': 'Ciudad de México',
+        edomex: 'Estado de México', mexico: 'Estado de México',
+        'coahuila de zaragoza': 'Coahuila', 'veracruz de ignacio de la llave': 'Veracruz',
+        'michoacan de ocampo': 'Michoacán', 'quintana roo': 'Quintana Roo', yucatan: 'Yucatán',
+        'nuevo leon': 'Nuevo León', 'san luis potosi': 'San Luis Potosí',
+        'baja california': 'Baja California', 'baja california sur': 'Baja California Sur',
+    };
+
+    function mapEstadoAlias(estado) {
+        const s = normalizeEstado(estado);
+        return ESTADO_ALIASES[s] || estado;
+    }
+
+    function renderIedFlujoEstado(data, estadoSel) {
+        const cfg = getChartConfig();
+        const { palette, fontSize, titleSize } = cfg;
+        const periodo = data[0]?.periodo || 'ND';
+        const estados = data.map((r) => r.entidad);
+        const valores = data.map((r) => r.mdd_4t);
+
+        const estadoNorm = normalizeEstado(estadoSel);
+        const estadoMapped = mapEstadoAlias(estadoSel);
+        const estadoNorm2 = normalizeEstado(estadoMapped);
+
+        let matchIdx = null;
+        for (let i = 0; i < estados.length; i++) {
+            if (normalizeEstado(estados[i]) === estadoNorm || normalizeEstado(estados[i]) === estadoNorm2) {
+                matchIdx = i;
+                break;
+            }
+        }
+
+        const colors = estados.map((_, i) => (i === matchIdx ? (palette[1] || palette[0]) : palette[0]));
+
+        const vmin = Math.min(...valores);
+        const vmax = Math.max(...valores);
+        const yMin = vmin < 0 ? -500 : 0;
+        const yMax = Math.ceil(vmax / 500) * 500 + 500;
+
+        const trace = {
+            type: 'bar',
+            x: estados,
+            y: valores,
+            marker: { color: colors },
+            hovertemplate: '<b>%{x}</b><br>%{y:,.0f} M USD<extra></extra>',
+        };
+
+        const estadoBox = matchIdx !== null ? estados[matchIdx] : estados[0];
+        const valorBox = matchIdx !== null ? valores[matchIdx] : valores[0];
+
+        const layout = {
+            title: {
+                text: `<b>Flujo de inversión extranjera</b><br><span style='font-size:${fontSize}px;color:gray;'>Últimos 4 trimestres, Millones USD · ${periodo}</span>`,
+                x: 0.5,
+                xanchor: 'center',
+                font: { family: cfg.fontFamily, size: titleSize },
+            },
+            plot_bgcolor: 'white',
+            paper_bgcolor: 'transparent',
+            font: { family: cfg.fontFamily, size: fontSize, color: '#2e2e2e' },
+            xaxis: {
+                tickangle: -90,
+                showgrid: false,
+                tickfont: { size: Math.max(10, fontSize - 2) },
+            },
+            yaxis: {
+                title: { text: 'Millones USD', font: { size: fontSize } },
+                showgrid: true,
+                gridcolor: 'rgba(0,0,0,0.08)',
+                zeroline: true,
+                zerolinecolor: '#bbb',
+                range: [yMin, yMax],
+                tickformat: ',.0f',
+                tickfont: { size: fontSize },
+            },
+            margin: { l: 60, r: 50, t: 80, b: 120 },
+            showlegend: false,
+            annotations: [{
+                text: `<b>${estadoBox}</b><br>$${Math.abs(valorBox).toLocaleString('es-MX')} M USD`,
+                xref: 'paper',
+                yref: 'paper',
+                x: 0.92,
+                y: 0.93,
+                showarrow: false,
+                align: 'center',
+                font: { size: fontSize, color: '#444', family: cfg.fontFamily },
+                bgcolor: 'rgba(255,255,255,0.9)',
+                bordercolor: matchIdx !== null ? (palette[1] || palette[0]) : palette[0],
+                borderwidth: 1,
+                borderpad: 8,
+            }],
+            autosize: true,
+        };
+
+        const plotlyConfig = { responsive: true, displayModeBar: true, locale: 'es' };
+        Plotly.newPlot('indicador-chart-plot', [trace], layout, plotlyConfig);
+    }
+
+    function renderIedPaisOrigen(data) {
+        const cfg = getChartConfig();
+        const { palette, fontSize, titleSize } = cfg;
+        const periodo = data[0]?.periodo || 'ND';
+        const trace = {
+            type: 'pie',
+            labels: data.map((r) => r.pais),
+            values: data.map((r) => r.monto_mdd),
+            hole: 0.4,
+            marker: { colors: data.map((_, i) => palette[i % palette.length]) },
+            textinfo: 'percent',
+            hovertemplate: '<b>%{label}</b><br>%{percent}<br>$%{value:,.0f} MDD<extra></extra>',
+        };
+        const layout = {
+            title: {
+                text: `<b>IED por País de Origen</b><br><span style='font-size:${fontSize}px;color:gray;'>Cifras en MDD (${periodo})</span>`,
+                x: 0.5,
+                xanchor: 'center',
+                font: { family: cfg.fontFamily, size: titleSize },
+            },
+            showlegend: true,
+            margin: { t: 80, b: 50, l: 40, r: 40 },
+            font: { family: cfg.fontFamily, size: fontSize },
+            plot_bgcolor: 'white',
+            paper_bgcolor: 'transparent',
+            height: 500,
+            legend: { font: { size: fontSize } },
+            autosize: true,
+        };
+        const plotlyConfig = { responsive: true, displayModeBar: true, locale: 'es' };
+        Plotly.newPlot('indicador-chart-plot', [trace], layout, plotlyConfig);
+    }
+
+    function renderRankingTurismoMundial(data) {
+        const cfg = getChartConfig();
+        const { palette, fontSize, titleSize } = cfg;
+        const years = [...new Set(data.map((r) => r.year))].filter((y) => y > 0).sort((a, b) => a - b);
+        const latestYear = Math.max(...years) || 0;
+        const getValue = (c, y) => {
+            const item = data.find((r) => r.country === c && r.year === y);
+            return item?.val ?? 0;
+        };
+        const countries = [...new Set(data.map((r) => r.country))];
+        const countryOrder = countries
+            .sort((a, b) => getValue(b, latestYear) - getValue(a, latestYear))
+            .slice(0, 10);
+
+        const sortedYears = [...years].sort((a, b) => a - b);
+        const colorMap = {};
+        sortedYears.forEach((y, i) => {
+            if (sortedYears.length >= 3 && i < 3) {
+                colorMap[y] = [palette[2], palette[1], palette[0]][i];
+            } else {
+                colorMap[y] = palette[i % palette.length];
+            }
+        });
+
+        const traces = sortedYears.map((year) => ({
+            type: 'bar',
+            name: String(year),
+            x: countryOrder.map((c) => getValue(c, year)),
+            y: countryOrder,
+            orientation: 'h',
+            marker: { color: colorMap[year] || palette[0] },
+            hovertemplate: '<b>%{y}</b><br>Año %{fullData.name}: $%{x:,.0f} USD<extra></extra>',
+        }));
+
+        const minYear = Math.min(...sortedYears);
+        const maxYear = Math.max(...sortedYears);
+        const layout = {
+            title: {
+                text: `<b>Top Países por Ingresos de Divisas Turísticas</b><br><span style='font-size:${fontSize}px;color:gray;'>Comparativo ${minYear}-${maxYear}</span>`,
+                x: 0.5,
+                xanchor: 'center',
+                font: { family: cfg.fontFamily, size: titleSize },
+            },
+            xaxis: {
+                title: { text: 'Gasto de turistas internacionales (USD)', font: { size: fontSize } },
+                tickformat: '$,.0s',
+                showgrid: true,
+                gridcolor: 'rgba(0,0,0,0.08)',
+                tickfont: { size: fontSize },
+            },
+            yaxis: {
+                categoryorder: 'array',
+                categoryarray: [...countryOrder].reverse(),
+                tickfont: { size: fontSize },
+                automargin: true,
+            },
+            font: { family: cfg.fontFamily, size: fontSize },
+            height: 420,
+            plot_bgcolor: 'white',
+            paper_bgcolor: 'transparent',
+            margin: { t: 70, b: 60, l: 100, r: 40 },
+            legend: { title: { text: 'Año' }, font: { size: fontSize } },
+            barmode: 'stack',
+            autosize: true,
+        };
+
+        const plotlyConfig = { responsive: true, displayModeBar: true, locale: 'es' };
+        Plotly.newPlot('indicador-chart-plot', traces, layout, plotlyConfig);
+    }
+
+    function renderBalanzaVisitantes(data, metric) {
+        const cfg = getChartConfig();
+        const { palette, fontSize, titleSize, fontFamily } = cfg;
+        const years = [...new Set(data.map((r) => Number(r.year)))].sort((a, b) => a - b);
+        const plotYears = years.slice(-10);
+        const plotData = data.filter((r) => plotYears.includes(Number(r.year)));
+
+        const colorIn = palette[1] ?? '#2E7D32';
+        const colorOut = palette[2] ?? '#C62828';
+
+        if (metric === 'saldo') {
+            const trace = {
+                type: 'bar',
+                x: plotData.map((r) => r.year),
+                y: plotData.map((r) => Number(r.balance || 0)),
+                marker: {
+                    color: plotData.map((r) => (Number(r.balance || 0) >= 0 ? colorIn : colorOut))
+                },
+                text: plotData.map((r) => `${(Number(r.balance || 0) / 1e6).toFixed(1)}M`),
+                textposition: 'auto',
+                hovertemplate: 'Año: %{x}<br>Saldo Neto: %{y:,.0f}<extra></extra>'
+            };
+            const layout = {
+                title: {
+                    text: '<b>Saldo Neto: Entradas - Salidas</b>',
+                    x: 0.5,
+                    xanchor: 'center',
+                    font: { family: fontFamily, size: titleSize }
+                },
+                xaxis: { title: { text: 'Año' }, tickfont: { size: fontSize } },
+                yaxis: { title: { text: 'Saldo Neto (Personas)' }, tickfont: { size: fontSize } },
+                font: { family: fontFamily, size: fontSize },
+                height: 420,
+                plot_bgcolor: 'white',
+                paper_bgcolor: 'transparent',
+                margin: { t: 70, b: 60, l: 90, r: 40 },
+                showlegend: false,
+                autosize: true
+            };
+            Plotly.newPlot('indicador-chart-plot', [trace], layout, { responsive: true, displayModeBar: true, locale: 'es' });
+        } else {
+            const trace1 = {
+                type: 'bar',
+                name: 'Entradas (Visitantes)',
+                x: plotData.map((r) => r.year),
+                y: plotData.map((r) => Number(r.entradas || 0)),
+                marker: { color: colorIn },
+                text: plotData.map((r) => `${(Number(r.entradas || 0) / 1e6).toFixed(1)}M`),
+                textposition: 'auto',
+                hovertemplate: 'Año: %{x}<br>Entradas: %{y:,.0f}<extra></extra>'
+            };
+            const trace2 = {
+                type: 'bar',
+                name: 'Salidas (Mexicanos)',
+                x: plotData.map((r) => r.year),
+                y: plotData.map((r) => Number(r.salidas || 0)),
+                marker: { color: colorOut },
+                text: plotData.map((r) => `${(Number(r.salidas || 0) / 1e6).toFixed(1)}M`),
+                textposition: 'auto',
+                hovertemplate: 'Año: %{x}<br>Salidas: %{y:,.0f}<extra></extra>'
+            };
+            const layout = {
+                title: {
+                    text: '<b>Flujo de Personas: Entradas vs Salidas</b>',
+                    x: 0.5,
+                    xanchor: 'center',
+                    font: { family: fontFamily, size: titleSize }
+                },
+                xaxis: { title: { text: 'Año' }, tickfont: { size: fontSize } },
+                yaxis: { title: { text: 'Número de Personas' }, tickfont: { size: fontSize } },
+                barmode: 'group',
+                font: { family: fontFamily, size: fontSize },
+                legend: { orientation: 'h', y: -0.18, x: 0.5, xanchor: 'center', font: { size: fontSize } },
+                height: 420,
+                plot_bgcolor: 'white',
+                paper_bgcolor: 'transparent',
+                margin: { t: 70, b: 100, l: 90, r: 40 },
+                autosize: true
+            };
+            Plotly.newPlot('indicador-chart-plot', [trace1, trace2], layout, { responsive: true, displayModeBar: true, locale: 'es' });
+        }
+    }
+
+    function renderParticipacionMercadoAereo(data, metric) {
+        const cfg = getChartConfig();
+        const { palette, fontSize, titleSize, fontFamily } = cfg;
+        const esPercent = (x, dec = 1) => {
+            const s = `${(x * 100).toFixed(dec)}%`;
+            return s.replace('.', ',');
+        };
+
+        if (metric === 'internacional') {
+            const items = data.internacional || [];
+            const labels = items.length > 0 ? items.map((r) => r.region || '') : ['Sin datos'];
+            const values = items.length > 0 ? items.map((r) => Number(r.pasajeros || 0)) : [1];
+            const colors = labels.map((_, i) => palette[i % palette.length]);
+            const trace = {
+                type: 'pie',
+                labels,
+                values,
+                textinfo: items.length > 0 ? 'label+percent' : 'label',
+                textposition: 'outside',
+                textfont: { family: fontFamily, size: fontSize + 2 },
+                marker: { colors, line: { color: 'white', width: 2 } },
+                pull: new Array(labels.length).fill(0.02),
+                sort: false,
+                direction: 'clockwise',
+                hovertemplate: items.length > 0 ? '<b>%{label}</b><br>%{percent}<br>%{value:,.0f} pasajeros<extra></extra>' : '%{label}<extra></extra>',
+                domain: { x: [0, 0.85], y: [0, 1] }
+            };
+            const layout = {
+                title: { text: '<b>Pasajeros Internacionales por Región</b>', x: 0.5, xanchor: 'center', font: { family: fontFamily, size: titleSize } },
+                font: { family: fontFamily, size: fontSize },
+                height: 420,
+                margin: { l: 50, r: 20, t: 70, b: 80 },
+                plot_bgcolor: 'white',
+                paper_bgcolor: 'transparent',
+                showlegend: true,
+                legend: { x: 1.02, y: 0.5 },
+                autosize: true
+            };
+            Plotly.newPlot('indicador-chart-plot', [trace], layout, { responsive: true, displayModeBar: true, locale: 'es' });
+        } else {
+            const items = data.nacional || [];
+            const labels = items.length > 0 ? items.map((r) => r.aerolinea || '') : ['Sin datos'];
+            const values = items.length > 0 ? items.map((r) => Number(r.participacion || 0)) : [1];
+            const labelPct = values.map((v) => (v > 0 && v <= 1 ? esPercent(v) : '0%'));
+            const textPositions = values.map((v) => (v < 0.006 || v > 1 ? 'outside' : 'inside'));
+            const colors = labels.map((_, i) => palette[i % palette.length]);
+            const trace = {
+                type: 'pie',
+                labels,
+                values,
+                text: labelPct,
+                textinfo: 'text',
+                textposition: textPositions,
+                textfont: { family: fontFamily, size: fontSize + 2 },
+                marker: { colors, line: { color: 'white', width: 2 } },
+                pull: new Array(labels.length).fill(0.02),
+                sort: false,
+                direction: 'clockwise',
+                hovertemplate: '<b>%{label}</b><br>%{percent}<extra></extra>',
+                domain: { x: [0, 0.85], y: [0, 1] }
+            };
+            const layout = {
+                title: { text: '<b>Participación de Mercado Aéreo</b>', x: 0.5, xanchor: 'center', font: { family: fontFamily, size: titleSize } },
+                font: { family: fontFamily, size: fontSize },
+                height: 420,
+                margin: { l: 50, r: 20, t: 70, b: 80 },
+                plot_bgcolor: 'white',
+                paper_bgcolor: 'transparent',
+                showlegend: true,
+                legend: { x: 1.02, y: 0.5 },
+                autosize: true
+            };
+            Plotly.newPlot('indicador-chart-plot', [trace], layout, { responsive: true, displayModeBar: true, locale: 'es' });
+        }
+    }
+
+    function renderParticipacionInternacionalRegion(data) {
+        const cfg = getChartConfig();
+        const { palette, fontSize, titleSize, fontFamily } = cfg;
+        const labels = data.map((r) => r.region || '');
+        const values = data.map((r) => Number(r.pasajeros || 0));
+        const pExtended = [...palette, ...palette, ...palette];
+        const colorsMap = {};
+        labels.forEach((name) => {
+            const l = String(name).toLowerCase();
+            if (l.includes('mexicana')) colorsMap[name] = pExtended[0];
+            else if (l.includes('estadouniden') || l.includes('canadá') || l.includes('canada')) colorsMap[name] = pExtended[1];
+            else if (l.includes('canadien')) colorsMap[name] = pExtended[2];
+            else if (l.includes('europe')) colorsMap[name] = '#a6a6a6';
+            else if (l.includes('centro') || l.includes('sudameric')) colorsMap[name] = '#ff9f18';
+            else if (l.includes('asia')) colorsMap[name] = '#9467bd';
+            else colorsMap[name] = '#b0b0b0';
+        });
+        const colors = labels.map((n, i) => colorsMap[n] ?? palette[i % palette.length]);
+        const trace = {
+            type: 'pie',
+            labels,
+            values,
+            textinfo: 'label+percent',
+            textposition: 'outside',
+            textfont: { family: fontFamily, size: fontSize + 2 },
+            marker: { colors, line: { color: 'white', width: 2 } },
+            pull: new Array(data.length).fill(0.02),
+            sort: false,
+            direction: 'clockwise',
+            hovertemplate: '<b>%{label}</b><br>%{percent}<br>%{value:,.0f} pasajeros<extra></extra>',
+            domain: { x: [0, 0.85], y: [0, 1] }
+        };
+        const layout = {
+            title: { text: '<b>Pasajeros Internacionales por Región</b>', x: 0.5, xanchor: 'center', font: { family: fontFamily, size: titleSize } },
+            font: { family: fontFamily, size: fontSize },
+            height: 420,
+            margin: { l: 50, r: 20, t: 70, b: 80 },
+            plot_bgcolor: 'white',
+            paper_bgcolor: 'transparent',
+            showlegend: true,
+            legend: { x: 1.02, y: 0.5 },
+            autosize: true
+        };
+        Plotly.newPlot('indicador-chart-plot', [trace], layout, { responsive: true, displayModeBar: true, locale: 'es' });
+    }
+
+    function fillIndicadorTable(data, columns) {
+        const thead = document.getElementById('indicador-table-head');
+        const tbody = document.getElementById('indicador-table-body');
+        thead.innerHTML = columns.map((c) => `<th>${c}</th>`).join('');
+        tbody.innerHTML = data.map((row) =>
+            '<tr>' + columns.map((c) => `<td>${row[c] ?? ''}</td>`).join('') + '</tr>'
+        ).join('');
+    }
+
+    function downloadIndicadorCsv() {
+        const ind = selectIndicador.value;
+        if (ind === 'participacion-internacional-region') {
+            if (indicadorChartData.length === 0) return;
+        } else if (ind === 'participacion-mercado-aereo') {
+            const pma = participacionMercadoAereoMetric === 'nacional' ? participacionMercadoAereoData.nacional : participacionMercadoAereoData.internacional;
+            if (pma.length === 0) return;
+        } else if (indicadorChartData.length === 0) return;
+        let cols, rows;
+        if (ind === 'crecimiento-poblacional') {
+            cols = ['Año', 'Población'];
+            rows = [cols, ...indicadorChartData.map((r) => [r.year, r.value])];
+        } else if (ind === 'distribucion-poblacion-edad') {
+            cols = ['Año', '0-14 años', '15-64 años', '65+ años'];
+            rows = [cols, ...indicadorChartData.map((r) => [r.year, r.pob_0_14, r.pob_15_64, r.pob_65_plus])];
+        } else if (ind === 'distribucion-poblacion-sexo') {
+            cols = ['Año', 'Hombres', 'Mujeres'];
+            rows = [cols, ...indicadorChartData.map((r) => [r.year, r.male, r.female])];
+        } else if (ind === 'poblacion-economica-activa') {
+            cols = ['Periodo', 'PEA'];
+            rows = [cols, ...indicadorChartData.map((r) => [r.fecha_fmt, r.valor])];
+        } else if (ind === 'poblacion-sector-actividad') {
+            cols = ['Sector', 'Valor', 'Porcentaje'];
+            rows = [cols, ...indicadorChartData.map((r) => [r.sector, r.valor.toLocaleString('es-MX'), r.pct.toFixed(1) + '%'])];
+        } else if (ind === 'pib-nacional-total-percapita') {
+            cols = ['Año', 'PIB Total (MM MXN)', 'PIB Per Cápita (MXN)'];
+            rows = [cols, ...indicadorChartData.map((r) => [r.anio, r.pib_total_mxn_billones.toLocaleString('es-MX'), r.pib_per_capita_mxn.toLocaleString('es-MX')])];
+        } else if (ind === 'proyeccion-pib') {
+            cols = ['Año', 'PIB Total (Billones MXN)', 'PIB Total (Billones USD)', 'PIB Per Cápita (MXN)', 'PIB Per Cápita (USD)'];
+            rows = [cols, ...indicadorChartData.map((r) => [r.anio, r.pib_total_mxn_billones.toLocaleString('es-MX'), r.pib_total_usd_billones.toLocaleString('es-MX'), r.pib_per_capita_mxn.toLocaleString('es-MX'), r.pib_per_capita_usd.toLocaleString('es-MX')])];
+        } else if (ind === 'inflacion-nacional') {
+            cols = ['Periodo', 'Inflación (%)'];
+            rows = [cols, ...indicadorChartData.map((r) => [r.texto_fecha || `${r.mes}/${r.anio}`, (r.inflacion || 0).toFixed(2) + '%'])];
+        } else if (ind === 'tipo-cambio-mxn-usd') {
+            const tcData = tipoCambioDataMetric === 'diario' ? tipoCambioData.diario : tipoCambioData.mensual;
+            const tcCol = tipoCambioDataMetric === 'diario' ? 'tc' : 'tc_prom_mes';
+            cols = ['Fecha', 'T.C. (MXN/USD)'];
+            rows = [cols, ...tcData.map((r) => [r.fecha, (r[tcCol] ?? 0).toFixed(tipoCambioDataMetric === 'diario' ? 2 : 3)])];
+        } else if (ind === 'ied-sector-economico') {
+            cols = ['Sector', 'Monto (MDD)', 'Periodo'];
+            rows = [cols, ...indicadorChartData.map((r) => [r.sector, (r.monto_mdd ?? 0).toFixed(2), r.periodo ?? ''])];
+        } else if (ind === 'ied-flujo-estado') {
+            cols = ['Posición', 'Entidad', 'Monto (M USD)', 'Periodo'];
+            rows = [cols, ...indicadorChartData.map((r) => [r.rank, r.entidad, (r.mdd_4t ?? 0).toLocaleString('es-MX'), r.periodo ?? ''])];
+        } else if (ind === 'ied-pais-origen') {
+            cols = ['País', 'Monto (MDD)', 'Periodo'];
+            rows = [cols, ...indicadorChartData.map((r) => [r.pais, (r.monto_mdd ?? 0).toFixed(2), r.periodo ?? ''])];
+        } else if (ind === 'balanza-visitantes') {
+            cols = ['Año', 'Entradas', 'Salidas', 'Saldo Neto'];
+            rows = [cols, ...indicadorChartData.map((r) => [r.year, (r.entradas ?? 0).toLocaleString('es-MX'), (r.salidas ?? 0).toLocaleString('es-MX'), (r.balance ?? 0).toLocaleString('es-MX')])];
+        } else if (ind === 'participacion-internacional-region') {
+            cols = ['Región', 'Pasajeros'];
+            rows = [cols, ...indicadorChartData.map((r) => [r.region, (r.pasajeros ?? 0).toLocaleString('es-MX')])];
+        } else if (ind === 'participacion-mercado-aereo') {
+            const pma = participacionMercadoAereoMetric === 'nacional' ? participacionMercadoAereoData.nacional : participacionMercadoAereoData.internacional;
+            if (participacionMercadoAereoMetric === 'nacional') {
+                cols = ['Aerolínea', 'Participación'];
+                rows = [cols, ...pma.map((r) => [r.aerolinea, ((r.participacion || 0) * 100).toFixed(2) + '%'])];
+            } else {
+                cols = ['Región', 'Pasajeros'];
+                rows = [cols, ...pma.map((r) => [r.region, (r.pasajeros ?? 0).toLocaleString('es-MX')])];
+            }
+        } else if (ind === 'ranking-turismo-mundial') {
+            const rtYears = [...new Set(indicadorChartData.map((r) => r.year))].filter((y) => y > 0).sort((a, b) => a - b);
+            const rtCountries = [...new Set(indicadorChartData.map((r) => r.country))].sort((a, b) => {
+                const maxY = Math.max(...rtYears);
+                const va = indicadorChartData.find((r) => r.country === a && r.year === maxY)?.val ?? 0;
+                const vb = indicadorChartData.find((r) => r.country === b && r.year === maxY)?.val ?? 0;
+                return vb - va;
+            }).slice(0, 10);
+            cols = ['País', ...rtYears.map((y) => String(y))];
+            const getVal = (c, y) => indicadorChartData.find((r) => r.country === c && r.year === y)?.val ?? 0;
+            rows = [cols, ...rtCountries.map((c) => [c, ...rtYears.map((y) => (getVal(c, y) || 0).toLocaleString('es-MX'))])];
+        } else {
+            return;
+        }
+        const csv = rows.map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n');
+        const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = (indicadorChartMeta.exportName || 'indicador') + '.csv';
+        a.click();
+        URL.revokeObjectURL(a.href);
+    }
+
+    document.getElementById('btn-download-indicador-csv').addEventListener('click', downloadIndicadorCsv);
+
+    document.getElementById('btn-download-chart-png').addEventListener('click', function () {
+        const name = indicadorChartMeta.exportName || 'grafica';
+        Plotly.downloadImage('indicador-chart-plot', { format: 'png', width: 1280, height: 720, filename: name });
+    });
+
+    document.getElementById('btn-analizar-ia-chart').addEventListener('click', async function () {
+        const btn = this;
+        const content = document.getElementById('indicador-ia-response-content');
+        btn.disabled = true;
+        btn.textContent = '⏳ Analizando...';
+        indicadorIaResponse.hidden = false;
+        content.textContent = 'Obteniendo análisis...';
+        try {
+            const resp = await fetch('/api/analizar-ia-indicador', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    indicator: indicadorChartMeta.indicator || 'Indicador',
+                    data: indicadorChartData
+                })
+            });
+            const data = await resp.json();
+            if (!resp.ok) {
+                content.textContent = 'Error: ' + (data.error || resp.statusText);
+                return;
+            }
+            content.innerHTML = '';
+            const p = document.createElement('div');
+            p.className = 'ia-response-text';
+            p.innerHTML = (data.analisis || '').replace(/\n/g, '<br>');
+            content.appendChild(p);
+        } catch (err) {
+            content.textContent = 'Error de conexión: ' + err.message;
+        } finally {
+            btn.disabled = false;
+            btn.textContent = '🤖 Analizar con IA';
+        }
+    });
+
+    async function loadCrecimientoPoblacional() {
+        const msg = chartPlaceholder.querySelector('.indicador-chart-message');
+        const tabsDiv = document.getElementById('indicador-chart-tabs');
+        msg.textContent = 'Cargando datos...';
+        chartWrapper.hidden = true;
+        chartPlaceholder.hidden = false;
+        chartActions.hidden = true;
+        indicadorTableSection.hidden = true;
+        indicadorIaResponse.hidden = true;
+        tabsDiv.hidden = true;
+        try {
+            const resp = await fetch('/api/indicadores/crecimiento-poblacional');
+            const data = await resp.json();
+            if (!resp.ok) throw new Error(data.error || 'Error al cargar');
+            chartPlaceholder.hidden = true;
+            chartWrapper.hidden = false;
+            chartActions.hidden = false;
+            indicadorTableSection.hidden = false;
+            indicadorChartData = data;
+            indicadorChartMeta = { indicator: 'Crecimiento poblacional nacional', source: 'Fuente: INEGI', exportName: 'crecimiento_poblacional_nacional' };
+            document.querySelector('.indicador-chart-source').textContent = indicadorChartMeta.source;
+            renderCrecimientoPoblacional(data);
+            const tableData = data.map((r) => ({ 'Año': r.year, 'Población': r.value.toLocaleString('es-MX') }));
+            fillIndicadorTable(tableData, ['Año', 'Población']);
+        } catch (err) {
+            msg.textContent = 'Error: ' + err.message;
+            chartPlaceholder.hidden = false;
+            chartWrapper.hidden = true;
+            chartActions.hidden = true;
+            indicadorTableSection.hidden = true;
+        }
+    }
+
+    async function loadPibNacionalTotalPerCapita() {
+        const msg = chartPlaceholder.querySelector('.indicador-chart-message');
+        const tabsDiv = document.getElementById('indicador-chart-tabs');
+        msg.textContent = 'Cargando datos...';
+        chartWrapper.hidden = true;
+        chartPlaceholder.hidden = false;
+        chartActions.hidden = true;
+        indicadorTableSection.hidden = true;
+        indicadorIaResponse.hidden = true;
+        tabsDiv.hidden = true;
+        try {
+            const resp = await fetch('/api/indicadores/pib-nacional-total-percapita');
+            const data = await resp.json();
+            if (!resp.ok) throw new Error(data.error || 'Error al cargar');
+            chartPlaceholder.hidden = true;
+            chartWrapper.hidden = false;
+            chartActions.hidden = false;
+            indicadorTableSection.hidden = false;
+            tabsDiv.hidden = false;
+            indicadorChartData = data;
+            pibNacionalMetric = 'total';
+            document.getElementById('pib-tab-total').classList.add('active');
+            document.getElementById('pib-tab-percapita').classList.remove('active');
+            indicadorChartMeta = { indicator: 'PIB Nacional (Total y Per Cápita)', source: 'Fuente: Banco Mundial / Open Exchange Rates', exportName: 'pib_nacional_total' };
+            document.querySelector('.indicador-chart-source').textContent = indicadorChartMeta.source;
+            renderPibNacional(data, pibNacionalMetric);
+            const tableData = data.map((r) => ({
+                'Año': r.anio,
+                'PIB Total (MM MXN)': (r.pib_total_mxn_billones || 0).toLocaleString('es-MX'),
+                'PIB Per Cápita (MXN)': (r.pib_per_capita_mxn || 0).toLocaleString('es-MX')
+            }));
+            fillIndicadorTable(tableData, ['Año', 'PIB Total (MM MXN)', 'PIB Per Cápita (MXN)']);
+        } catch (err) {
+            msg.textContent = 'Error: ' + err.message;
+            chartPlaceholder.hidden = false;
+            chartWrapper.hidden = true;
+            chartActions.hidden = true;
+            indicadorTableSection.hidden = true;
+            tabsDiv.hidden = true;
+        }
+    }
+
+    async function loadPoblacionSectorActividad() {
+        const msg = chartPlaceholder.querySelector('.indicador-chart-message');
+        document.getElementById('indicador-chart-tabs').hidden = true;
+        msg.textContent = 'Cargando datos...';
+        chartWrapper.hidden = true;
+        chartPlaceholder.hidden = false;
+        chartActions.hidden = true;
+        indicadorTableSection.hidden = true;
+        indicadorIaResponse.hidden = true;
+        try {
+            const resp = await fetch('/api/indicadores/poblacion-sector-actividad');
+            const data = await resp.json();
+            if (!resp.ok) throw new Error(data.error || 'Error al cargar');
+            chartPlaceholder.hidden = true;
+            chartWrapper.hidden = false;
+            chartActions.hidden = false;
+            indicadorTableSection.hidden = false;
+            indicadorChartData = data;
+            indicadorChartMeta = { indicator: 'Población por sector de actividad económica', source: 'Fuente: INEGI', exportName: 'pob_sector_actividad' };
+            document.querySelector('.indicador-chart-source').textContent = indicadorChartMeta.source;
+            renderPobSectorActividad(data);
+            const tableData = data.map((r) => ({
+                'Sector': r.sector,
+                'Valor': (r.valor || 0).toLocaleString('es-MX'),
+                'Porcentaje': (r.pct || 0).toFixed(1) + '%'
+            }));
+            fillIndicadorTable(tableData, ['Sector', 'Valor', 'Porcentaje']);
+        } catch (err) {
+            msg.textContent = 'Error: ' + err.message;
+            chartPlaceholder.hidden = false;
+            chartWrapper.hidden = true;
+            chartActions.hidden = true;
+            indicadorTableSection.hidden = true;
+        }
+    }
+
+    async function loadPoblacionEconomicaActiva() {
+        const msg = chartPlaceholder.querySelector('.indicador-chart-message');
+        document.getElementById('indicador-chart-tabs').hidden = true;
+        msg.textContent = 'Cargando datos...';
+        chartWrapper.hidden = true;
+        chartPlaceholder.hidden = false;
+        chartActions.hidden = true;
+        indicadorTableSection.hidden = true;
+        indicadorIaResponse.hidden = true;
+        try {
+            const resp = await fetch('/api/indicadores/poblacion-economica-activa');
+            const data = await resp.json();
+            if (!resp.ok) throw new Error(data.error || 'Error al cargar');
+            chartPlaceholder.hidden = true;
+            chartWrapper.hidden = false;
+            chartActions.hidden = false;
+            indicadorTableSection.hidden = false;
+            indicadorChartData = data;
+            indicadorChartMeta = { indicator: 'Población Económicamente Activa (PEA)', source: 'Fuente: INEGI', exportName: 'pea_inegi' };
+            document.querySelector('.indicador-chart-source').textContent = indicadorChartMeta.source;
+            renderPea(data);
+            const tableData = data.map((r) => ({
+                'Periodo': r.fecha_fmt,
+                'PEA': (r.valor || 0).toLocaleString('es-MX')
+            }));
+            fillIndicadorTable(tableData, ['Periodo', 'PEA']);
+        } catch (err) {
+            msg.textContent = 'Error: ' + err.message;
+            chartPlaceholder.hidden = false;
+            chartWrapper.hidden = true;
+            chartActions.hidden = true;
+            indicadorTableSection.hidden = true;
+        }
+    }
+
+    async function loadDistribucionPoblacionSexo() {
+        const msg = chartPlaceholder.querySelector('.indicador-chart-message');
+        document.getElementById('indicador-chart-tabs').hidden = true;
+        msg.textContent = 'Cargando datos...';
+        chartWrapper.hidden = true;
+        chartPlaceholder.hidden = false;
+        chartActions.hidden = true;
+        indicadorTableSection.hidden = true;
+        indicadorIaResponse.hidden = true;
+        try {
+            const resp = await fetch('/api/indicadores/distribucion-poblacion-sexo');
+            const data = await resp.json();
+            if (!resp.ok) throw new Error(data.error || 'Error al cargar');
+            chartPlaceholder.hidden = true;
+            chartWrapper.hidden = false;
+            chartActions.hidden = false;
+            indicadorTableSection.hidden = false;
+            indicadorChartData = data;
+            indicadorChartMeta = { indicator: 'Distribución de la población por sexo', source: 'Fuente: INEGI', exportName: 'distribucion_sexo' };
+            document.querySelector('.indicador-chart-source').textContent = indicadorChartMeta.source;
+            renderDistribucionPoblacionSexo(data);
+            const tableData = data.map((r) => ({
+                'Año': r.year,
+                'Hombres': (r.male || 0).toLocaleString('es-MX'),
+                'Mujeres': (r.female || 0).toLocaleString('es-MX')
+            }));
+            fillIndicadorTable(tableData, ['Año', 'Hombres', 'Mujeres']);
+        } catch (err) {
+            msg.textContent = 'Error: ' + err.message;
+            chartPlaceholder.hidden = false;
+            chartWrapper.hidden = true;
+            chartActions.hidden = true;
+            indicadorTableSection.hidden = true;
+        }
+    }
+
+    async function loadTipoCambioMxnUsd() {
+        const msg = chartPlaceholder.querySelector('.indicador-chart-message');
+        document.getElementById('indicador-chart-tabs').hidden = true;
+        document.getElementById('indicador-chart-tabs-tc').hidden = true;
+        document.getElementById('indicador-chart-tabs-ied-estado').hidden = true;
+        msg.textContent = 'Cargando tipo de cambio...';
+        chartWrapper.hidden = true;
+        chartPlaceholder.hidden = false;
+        chartActions.hidden = true;
+        indicadorTableSection.hidden = true;
+        indicadorIaResponse.hidden = true;
+        try {
+            const resp = await fetch('/api/indicadores/tipo-cambio-mxn-usd');
+            const result = await resp.json();
+            if (!resp.ok) throw new Error(result.error || 'Error al cargar');
+            tipoCambioData = { diario: result.diario || [], mensual: result.mensual || [] };
+            indicadorChartData = tipoCambioData.diario;
+            tipoCambioDataMetric = 'diario';
+            document.getElementById('tc-tab-diario').classList.add('active');
+            document.getElementById('tc-tab-mensual').classList.remove('active');
+            indicadorChartMeta = { indicator: 'Tipo de cambio (MXN/USD)', source: 'Fuente: Banxico (SIE SF43718)', exportName: 'tipo_cambio_diario' };
+            document.querySelector('.indicador-chart-source').textContent = indicadorChartMeta.source;
+            chartPlaceholder.hidden = true;
+            chartWrapper.hidden = false;
+            chartActions.hidden = false;
+            indicadorTableSection.hidden = false;
+            document.getElementById('indicador-chart-tabs-tc').hidden = false;
+            renderTipoCambio('diario');
+            const tableData = (tipoCambioData.diario.slice(-100) || []).map((r) => ({ 'Fecha': r.fecha, 'T.C.': (r.tc ?? 0).toFixed(2) }));
+            fillIndicadorTable(tableData, ['Fecha', 'T.C.']);
+        } catch (err) {
+            msg.textContent = 'Error: ' + err.message;
+            chartPlaceholder.hidden = false;
+            chartWrapper.hidden = true;
+            chartActions.hidden = true;
+            indicadorTableSection.hidden = true;
+        }
+    }
+
+    async function loadInflacionNacional() {
+        const msg = chartPlaceholder.querySelector('.indicador-chart-message');
+        document.getElementById('indicador-chart-tabs').hidden = true;
+        msg.textContent = 'Cargando inflación nacional...';
+        chartWrapper.hidden = true;
+        chartPlaceholder.hidden = false;
+        chartActions.hidden = true;
+        indicadorTableSection.hidden = true;
+        indicadorIaResponse.hidden = true;
+        try {
+            const resp = await fetch('/api/indicadores/inflacion-nacional');
+            const data = await resp.json();
+            if (!resp.ok) throw new Error(data.error || 'Error al cargar');
+            chartPlaceholder.hidden = true;
+            chartWrapper.hidden = false;
+            chartActions.hidden = false;
+            indicadorTableSection.hidden = false;
+            indicadorChartData = data;
+            indicadorChartMeta = { indicator: 'Inflación nacional', source: 'Fuente: Banxico (INPC SP1)', exportName: 'inflacion_nacional' };
+            document.querySelector('.indicador-chart-source').textContent = indicadorChartMeta.source;
+            renderInflacionNacional(data);
+            const tableData = data.map((r) => ({
+                'Periodo': r.texto_fecha || `${r.mes}/${r.anio}`,
+                'Inflación (%)': (r.inflacion || 0).toFixed(2) + '%'
+            }));
+            fillIndicadorTable(tableData, ['Periodo', 'Inflación (%)']);
+        } catch (err) {
+            msg.textContent = 'Error: ' + err.message;
+            chartPlaceholder.hidden = false;
+            chartWrapper.hidden = true;
+            chartActions.hidden = true;
+            indicadorTableSection.hidden = true;
+        }
+    }
+
+    async function loadProyeccionPib() {
+        const msg = chartPlaceholder.querySelector('.indicador-chart-message');
+        const tabsDiv = document.getElementById('indicador-chart-tabs');
+        msg.textContent = 'Cargando proyecciones del FMI y tipo de cambio...';
+        chartWrapper.hidden = true;
+        chartPlaceholder.hidden = false;
+        chartActions.hidden = true;
+        indicadorTableSection.hidden = true;
+        indicadorIaResponse.hidden = true;
+        tabsDiv.hidden = true;
+        try {
+            const resp = await fetch('/api/indicadores/proyeccion-pib');
+            const result = await resp.json();
+            if (!resp.ok) throw new Error(result.error || 'Error al cargar');
+            const data = result.data || [];
+            proyeccionPibMeta = { tc_fix: result.tc_fix || 0, tc_date: result.tc_date || '' };
+            indicadorChartData = data;
+            proyeccionPibMetric = 'total';
+            document.getElementById('pib-tab-total').classList.add('active');
+            document.getElementById('pib-tab-percapita').classList.remove('active');
+            indicadorChartMeta = { indicator: 'Proyección PIB (FMI WEO)', source: 'Fuente: FMI WEO & Banxico (TC FIX: ' + (proyeccionPibMeta.tc_fix ? proyeccionPibMeta.tc_fix.toFixed(2) : 'N/D') + ')', exportName: 'proyeccion_pib_total' };
+            document.querySelector('.indicador-chart-source').textContent = indicadorChartMeta.source;
+            chartPlaceholder.hidden = true;
+            chartWrapper.hidden = false;
+            chartActions.hidden = false;
+            indicadorTableSection.hidden = false;
+            tabsDiv.hidden = false;
+            renderProyeccionPib(data, proyeccionPibMetric);
+            const tableData = data.map((r) => ({
+                'Año': r.anio,
+                'PIB Total (Billones MXN)': (r.pib_total_mxn_billones || 0).toLocaleString('es-MX'),
+                'PIB Total (Billones USD)': (r.pib_total_usd_billones || 0).toLocaleString('es-MX'),
+                'PIB Per Cápita (MXN)': (r.pib_per_capita_mxn || 0).toLocaleString('es-MX'),
+                'PIB Per Cápita (USD)': (r.pib_per_capita_usd || 0).toLocaleString('es-MX')
+            }));
+            fillIndicadorTable(tableData, ['Año', 'PIB Total (Billones MXN)', 'PIB Total (Billones USD)', 'PIB Per Cápita (MXN)', 'PIB Per Cápita (USD)']);
+        } catch (err) {
+            msg.textContent = 'Error: ' + err.message;
+            chartPlaceholder.hidden = false;
+            chartWrapper.hidden = true;
+            chartActions.hidden = true;
+            indicadorTableSection.hidden = true;
+        }
+    }
+
+    async function loadRankingTurismoMundial() {
+        const msg = chartPlaceholder.querySelector('.indicador-chart-message');
+        document.getElementById('indicador-chart-tabs').hidden = true;
+        document.getElementById('indicador-chart-tabs-tc').hidden = true;
+        document.getElementById('indicador-chart-tabs-ied-estado').hidden = true;
+        document.getElementById('indicador-chart-tabs-balanza').hidden = true;
+        document.getElementById('indicador-chart-tabs-pma').hidden = true;
+        msg.textContent = 'Cargando ranking turismo mundial...';
+        chartWrapper.hidden = true;
+        chartPlaceholder.hidden = false;
+        chartActions.hidden = true;
+        indicadorTableSection.hidden = true;
+        indicadorIaResponse.hidden = true;
+        try {
+            const resp = await fetch('/api/indicadores/ranking-turismo-mundial');
+            const data = await resp.json();
+            if (!resp.ok) throw new Error(data.error || 'Error al cargar');
+            chartPlaceholder.hidden = true;
+            chartWrapper.hidden = false;
+            chartActions.hidden = false;
+            indicadorTableSection.hidden = false;
+            indicadorChartData = data;
+            indicadorChartMeta = {
+                indicator: 'Ranking Turismo Mundial',
+                source: 'Fuente: Banco Mundial (WDI)',
+                exportName: 'ranking_turismo_mundial',
+            };
+            document.querySelector('.indicador-chart-source').textContent = indicadorChartMeta.source;
+            renderRankingTurismoMundial(data);
+
+            const years = [...new Set(data.map((r) => r.year))].filter((y) => y > 0).sort((a, b) => a - b);
+            const maxY = Math.max(...years) || 0;
+            const countries = [...new Set(data.map((r) => r.country))].sort((a, b) => {
+                const va = data.find((r) => r.country === a && r.year === maxY)?.val ?? 0;
+                const vb = data.find((r) => r.country === b && r.year === maxY)?.val ?? 0;
+                return vb - va;
+            }).slice(0, 10);
+            const getVal = (c, y) => data.find((r) => r.country === c && r.year === y)?.val ?? 0;
+            const tableData = countries.map((c) => {
+                const row = { País: c };
+                years.forEach((y) => { row[String(y)] = (getVal(c, y) || 0).toLocaleString('es-MX'); });
+                return row;
+            });
+            fillIndicadorTable(tableData, ['País', ...years.map((y) => String(y))]);
+        } catch (err) {
+            msg.textContent = 'Error: ' + err.message;
+            chartPlaceholder.hidden = false;
+            chartWrapper.hidden = true;
+            chartActions.hidden = true;
+            indicadorTableSection.hidden = true;
+        }
+    }
+
+    async function loadBalanzaVisitantes() {
+        const msg = chartPlaceholder.querySelector('.indicador-chart-message');
+        document.getElementById('indicador-chart-tabs').hidden = true;
+        document.getElementById('indicador-chart-tabs-tc').hidden = true;
+        document.getElementById('indicador-chart-tabs-ied-estado').hidden = true;
+        document.getElementById('indicador-chart-tabs-pma').hidden = true;
+        msg.textContent = 'Cargando Balanza de Visitantes...';
+        chartWrapper.hidden = true;
+        chartPlaceholder.hidden = false;
+        chartActions.hidden = true;
+        indicadorTableSection.hidden = true;
+        indicadorIaResponse.hidden = true;
+        try {
+            const resp = await fetch('/api/indicadores/balanza-visitantes');
+            const data = await resp.json();
+            if (!resp.ok) throw new Error(data.error || 'Error al cargar');
+            chartPlaceholder.hidden = true;
+            chartWrapper.hidden = false;
+            chartActions.hidden = false;
+            indicadorTableSection.hidden = false;
+            indicadorChartData = data;
+            indicadorChartMeta = {
+                indicator: 'Balanza de Visitantes',
+                source: 'Fuente: INEGI (BISE)',
+                exportName: 'balanza_visitantes',
+            };
+            document.querySelector('.indicador-chart-source').textContent = indicadorChartMeta.source;
+            balanzaVisitantesMetric = 'flujo';
+            document.getElementById('balanza-tab-flujo').classList.add('active');
+            document.getElementById('balanza-tab-saldo').classList.remove('active');
+            document.getElementById('indicador-chart-tabs-balanza').hidden = false;
+            renderBalanzaVisitantes(data, balanzaVisitantesMetric);
+            const tableData = data.slice(-10).map((r) => ({
+                Año: r.year,
+                Entradas: (r.entradas ?? 0).toLocaleString('es-MX'),
+                Salidas: (r.salidas ?? 0).toLocaleString('es-MX'),
+                'Saldo Neto': (r.balance ?? 0).toLocaleString('es-MX'),
+            }));
+            fillIndicadorTable(tableData, ['Año', 'Entradas', 'Salidas', 'Saldo Neto']);
+        } catch (err) {
+            msg.textContent = 'Error: ' + err.message;
+            chartPlaceholder.hidden = false;
+            chartWrapper.hidden = true;
+            chartActions.hidden = true;
+            indicadorTableSection.hidden = true;
+        }
+    }
+
+    async function loadParticipacionMercadoAereo() {
+        const msg = chartPlaceholder.querySelector('.indicador-chart-message');
+        document.getElementById('indicador-chart-tabs').hidden = true;
+        document.getElementById('indicador-chart-tabs-tc').hidden = true;
+        document.getElementById('indicador-chart-tabs-ied-estado').hidden = true;
+        document.getElementById('indicador-chart-tabs-balanza').hidden = true;
+        msg.textContent = 'Cargando Participación Mercado Aéreo...';
+        chartWrapper.hidden = true;
+        chartPlaceholder.hidden = false;
+        chartActions.hidden = true;
+        indicadorTableSection.hidden = true;
+        indicadorIaResponse.hidden = true;
+        try {
+            const resp = await fetch('/api/indicadores/participacion-mercado-aereo');
+            const data = await resp.json();
+            if (!resp.ok) throw new Error(data.error || 'Error al cargar');
+            participacionMercadoAereoData = { nacional: data.nacional || [], internacional: data.internacional || [] };
+            if (participacionMercadoAereoData.nacional.length === 0 && participacionMercadoAereoData.internacional.length === 0) {
+                throw new Error('No hay datos disponibles');
+            }
+            chartPlaceholder.hidden = true;
+            chartWrapper.hidden = false;
+            chartActions.hidden = false;
+            indicadorTableSection.hidden = false;
+            indicadorChartMeta = {
+                indicator: 'Participación Mercado Aéreo',
+                source: 'Fuente: AFAC / DataTur',
+                exportName: 'participacion_mercado_aereo',
+            };
+            document.querySelector('.indicador-chart-source').textContent = indicadorChartMeta.source;
+            participacionMercadoAereoMetric = 'nacional';
+            document.getElementById('pma-tab-nacional').classList.add('active');
+            document.getElementById('pma-tab-internacional').classList.remove('active');
+            document.getElementById('indicador-chart-tabs-pma').hidden = false;
+            renderParticipacionMercadoAereo(participacionMercadoAereoData, participacionMercadoAereoMetric);
+            const tabData = participacionMercadoAereoData.nacional.length > 0 ? participacionMercadoAereoData.nacional : participacionMercadoAereoData.internacional;
+            const tableData = participacionMercadoAereoData.nacional.length > 0
+                ? tabData.map((r) => ({ Aerolínea: r.aerolinea, Participación: ((r.participacion || 0) * 100).toFixed(2) + '%' }))
+                : tabData.map((r) => ({ Región: r.region, Pasajeros: (r.pasajeros ?? 0).toLocaleString('es-MX') }));
+            fillIndicadorTable(tableData, participacionMercadoAereoData.nacional.length > 0 ? ['Aerolínea', 'Participación'] : ['Región', 'Pasajeros']);
+        } catch (err) {
+            msg.textContent = 'Error: ' + err.message;
+            chartPlaceholder.hidden = false;
+            chartWrapper.hidden = true;
+            chartActions.hidden = true;
+            indicadorTableSection.hidden = true;
+        }
+    }
+
+    async function loadParticipacionInternacionalRegion() {
+        const msg = chartPlaceholder.querySelector('.indicador-chart-message');
+        document.getElementById('indicador-chart-tabs').hidden = true;
+        document.getElementById('indicador-chart-tabs-tc').hidden = true;
+        document.getElementById('indicador-chart-tabs-ied-estado').hidden = true;
+        document.getElementById('indicador-chart-tabs-balanza').hidden = true;
+        document.getElementById('indicador-chart-tabs-pma').hidden = true;
+        msg.textContent = 'Cargando Participación Internacional por Región...';
+        chartWrapper.hidden = true;
+        chartPlaceholder.hidden = false;
+        chartActions.hidden = true;
+        indicadorTableSection.hidden = true;
+        indicadorIaResponse.hidden = true;
+        try {
+            const resp = await fetch('/api/indicadores/participacion-internacional-region');
+            const data = await resp.json();
+            if (!resp.ok) throw new Error(data.error || 'Error al cargar');
+            chartPlaceholder.hidden = true;
+            chartWrapper.hidden = false;
+            chartActions.hidden = false;
+            indicadorTableSection.hidden = false;
+            indicadorChartData = data;
+            indicadorChartMeta = {
+                indicator: 'Participación Internacional (Región)',
+                source: 'Fuente: AFAC / DataTur (Internacional)',
+                exportName: 'participacion_internacional',
+            };
+            document.querySelector('.indicador-chart-source').textContent = indicadorChartMeta.source;
+            renderParticipacionInternacionalRegion(data);
+            const tableData = data.map((r) => ({
+                Región: r.region,
+                Pasajeros: (r.pasajeros ?? 0).toLocaleString('es-MX'),
+            }));
+            fillIndicadorTable(tableData, ['Región', 'Pasajeros']);
+        } catch (err) {
+            msg.textContent = 'Error: ' + err.message;
+            chartPlaceholder.hidden = false;
+            chartWrapper.hidden = true;
+            chartActions.hidden = true;
+            indicadorTableSection.hidden = true;
+        }
+    }
+
+    async function loadIedPaisOrigen() {
+        const msg = chartPlaceholder.querySelector('.indicador-chart-message');
+        document.getElementById('indicador-chart-tabs').hidden = true;
+        document.getElementById('indicador-chart-tabs-tc').hidden = true;
+        document.getElementById('indicador-chart-tabs-ied-estado').hidden = true;
+        document.getElementById('indicador-chart-tabs-balanza').hidden = true;
+        document.getElementById('indicador-chart-tabs-pma').hidden = true;
+        msg.textContent = 'Cargando IED por país de origen...';
+        chartWrapper.hidden = true;
+        chartPlaceholder.hidden = false;
+        chartActions.hidden = true;
+        indicadorTableSection.hidden = true;
+        indicadorIaResponse.hidden = true;
+        try {
+            const resp = await fetch('/api/indicadores/ied-pais-origen');
+            const data = await resp.json();
+            if (!resp.ok) throw new Error(data.error || 'Error al cargar');
+            chartPlaceholder.hidden = true;
+            chartWrapper.hidden = false;
+            chartActions.hidden = false;
+            indicadorTableSection.hidden = false;
+            indicadorChartData = data;
+            indicadorChartMeta = {
+                indicator: 'IED por País de Origen',
+                source: 'Fuente: Secretaría de Economía',
+                exportName: 'ied_paises',
+            };
+            document.querySelector('.indicador-chart-source').textContent = indicadorChartMeta.source;
+            renderIedPaisOrigen(data);
+            const tableData = data.map((r) => ({
+                País: r.pais,
+                'Monto (MDD)': (r.monto_mdd ?? 0).toFixed(2),
+                Periodo: r.periodo ?? '',
+            }));
+            fillIndicadorTable(tableData, ['País', 'Monto (MDD)', 'Periodo']);
+        } catch (err) {
+            msg.textContent = 'Error: ' + err.message;
+            chartPlaceholder.hidden = false;
+            chartWrapper.hidden = true;
+            chartActions.hidden = true;
+            indicadorTableSection.hidden = true;
+        }
+    }
+
+    async function loadIedFlujoEstado() {
+        const msg = chartPlaceholder.querySelector('.indicador-chart-message');
+        document.getElementById('indicador-chart-tabs').hidden = true;
+        document.getElementById('indicador-chart-tabs-tc').hidden = true;
+        msg.textContent = 'Cargando flujo de inversión por entidad...';
+        chartWrapper.hidden = true;
+        chartPlaceholder.hidden = false;
+        chartActions.hidden = true;
+        indicadorTableSection.hidden = true;
+        indicadorIaResponse.hidden = true;
+        try {
+            const resp = await fetch('/api/indicadores/ied-flujo-estado');
+            const data = await resp.json();
+            if (!resp.ok) throw new Error(data.error || 'Error al cargar');
+            chartPlaceholder.hidden = true;
+            chartWrapper.hidden = false;
+            chartActions.hidden = false;
+            indicadorTableSection.hidden = false;
+            indicadorChartData = data;
+            indicadorChartMeta = {
+                indicator: 'Flujo de inversión extranjera para un Estado',
+                source: 'Fuente: Secretaría de Economía (datos.gob.mx)',
+                exportName: 'ied_flujo_entidad',
+            };
+            document.querySelector('.indicador-chart-source').textContent = indicadorChartMeta.source;
+
+            const estadoSelect = document.getElementById('ied-estado-select');
+            const tabsIed = document.getElementById('indicador-chart-tabs-ied-estado');
+            tabsIed.hidden = false;
+            estadoSelect.innerHTML = '<option value="">— Todos —</option>' +
+                data.map((r) => `<option value="${r.entidad}">${r.entidad}</option>`).join('');
+            iedFlujoEstadoSel = estadoSelect.value || '';
+            renderIedFlujoEstado(data, iedFlujoEstadoSel);
+
+            const tableData = data.map((r) => ({
+                Posición: r.rank,
+                Entidad: r.entidad,
+                'Monto (M USD)': (r.mdd_4t ?? 0).toLocaleString('es-MX'),
+                Periodo: r.periodo ?? '',
+            }));
+            fillIndicadorTable(tableData, ['Posición', 'Entidad', 'Monto (M USD)', 'Periodo']);
+        } catch (err) {
+            msg.textContent = 'Error: ' + err.message;
+            chartPlaceholder.hidden = false;
+            chartWrapper.hidden = true;
+            chartActions.hidden = true;
+            indicadorTableSection.hidden = true;
+        }
+    }
+
+    async function loadIedSectorEconomico() {
+        const msg = chartPlaceholder.querySelector('.indicador-chart-message');
+        document.getElementById('indicador-chart-tabs').hidden = true;
+        document.getElementById('indicador-chart-tabs-tc').hidden = true;
+        document.getElementById('indicador-chart-tabs-ied-estado').hidden = true;
+        document.getElementById('indicador-chart-tabs-balanza').hidden = true;
+        document.getElementById('indicador-chart-tabs-pma').hidden = true;
+        msg.textContent = 'Cargando IED por sector económico...';
+        chartWrapper.hidden = true;
+        chartPlaceholder.hidden = false;
+        chartActions.hidden = true;
+        indicadorTableSection.hidden = true;
+        indicadorIaResponse.hidden = true;
+        try {
+            const resp = await fetch('/api/indicadores/ied-sector-economico');
+            const data = await resp.json();
+            if (!resp.ok) throw new Error(data.error || 'Error al cargar');
+            chartPlaceholder.hidden = true;
+            chartWrapper.hidden = false;
+            chartActions.hidden = false;
+            indicadorTableSection.hidden = false;
+            indicadorChartData = data;
+            indicadorChartMeta = {
+                indicator: 'IED por Sector Económico',
+                source: 'Fuente: Secretaría de Economía',
+                exportName: 'ied_sectores',
+            };
+            document.querySelector('.indicador-chart-source').textContent = indicadorChartMeta.source;
+            renderIedSectorEconomico(data);
+            const tableData = data.map((r) => ({
+                Sector: r.sector,
+                'Monto (MDD)': (r.monto_mdd ?? 0).toFixed(2),
+                Periodo: r.periodo ?? '',
+            }));
+            fillIndicadorTable(tableData, ['Sector', 'Monto (MDD)', 'Periodo']);
+        } catch (err) {
+            msg.textContent = 'Error: ' + err.message;
+            chartPlaceholder.hidden = false;
+            chartWrapper.hidden = true;
+            chartActions.hidden = true;
+            indicadorTableSection.hidden = true;
+        }
+    }
+
+    async function loadDistribucionPoblacionEdad() {
+        const msg = chartPlaceholder.querySelector('.indicador-chart-message');
+        document.getElementById('indicador-chart-tabs').hidden = true;
+        msg.textContent = 'Cargando datos...';
+        chartWrapper.hidden = true;
+        chartPlaceholder.hidden = false;
+        chartActions.hidden = true;
+        indicadorTableSection.hidden = true;
+        indicadorIaResponse.hidden = true;
+        try {
+            const resp = await fetch('/api/indicadores/distribucion-poblacion-edad');
+            const data = await resp.json();
+            if (!resp.ok) throw new Error(data.error || 'Error al cargar');
+            chartPlaceholder.hidden = true;
+            chartWrapper.hidden = false;
+            chartActions.hidden = false;
+            indicadorTableSection.hidden = false;
+            indicadorChartData = data;
+            indicadorChartMeta = { indicator: 'Distribución de la población por edad', source: 'Fuente: INEGI', exportName: 'estructura_poblacional' };
+            document.querySelector('.indicador-chart-source').textContent = indicadorChartMeta.source;
+            renderDistribucionPoblacionEdad(data);
+            const tableData = data.map((r) => ({
+                'Año': r.year,
+                '0-14': (r.pob_0_14 || 0).toLocaleString('es-MX'),
+                '15-64': (r.pob_15_64 || 0).toLocaleString('es-MX'),
+                '65+': (r.pob_65_plus || 0).toLocaleString('es-MX')
+            }));
+            fillIndicadorTable(tableData, ['Año', '0-14', '15-64', '65+']);
+        } catch (err) {
+            msg.textContent = 'Error: ' + err.message;
+            chartPlaceholder.hidden = false;
+            chartWrapper.hidden = true;
+            chartActions.hidden = true;
+            indicadorTableSection.hidden = true;
+        }
+    }
+
+    function showPlaceholder(text) {
+        chartWrapper.hidden = true;
+        chartPlaceholder.hidden = false;
+        chartPlaceholder.querySelector('.indicador-chart-message').textContent = text;
+        chartActions.hidden = true;
+        indicadorTableSection.hidden = true;
+        indicadorIaResponse.hidden = true;
+        document.getElementById('indicador-chart-tabs').hidden = true;
+        document.getElementById('indicador-chart-tabs-tc').hidden = true;
+        document.getElementById('indicador-chart-tabs-ied-estado').hidden = true;
+        document.getElementById('indicador-chart-tabs-balanza').hidden = true;
+        document.getElementById('indicador-chart-tabs-pma').hidden = true;
+    }
+
+    selectIndicador.addEventListener('change', function () {
+        const value = this.value;
+        const label = this.options[this.selectedIndex].text;
+        if (!value) {
+            chartContainer.hidden = true;
+            return;
+        }
+        chartContainer.hidden = false;
+        document.getElementById('indicador-chart-tabs').hidden = true;
+        document.getElementById('indicador-chart-tabs-tc').hidden = true;
+        document.getElementById('indicador-chart-tabs-ied-estado').hidden = true;
+        document.getElementById('indicador-chart-tabs-balanza').hidden = true;
+        document.getElementById('indicador-chart-tabs-pma').hidden = true;
+        if (value === 'crecimiento-poblacional') {
+            loadCrecimientoPoblacional();
+        } else if (value === 'distribucion-poblacion-edad') {
+            loadDistribucionPoblacionEdad();
+        } else if (value === 'distribucion-poblacion-sexo') {
+            loadDistribucionPoblacionSexo();
+        } else if (value === 'poblacion-economica-activa') {
+            loadPoblacionEconomicaActiva();
+        } else if (value === 'poblacion-sector-actividad') {
+            loadPoblacionSectorActividad();
+        } else if (value === 'pib-nacional-total-percapita') {
+            loadPibNacionalTotalPerCapita();
+        } else if (value === 'proyeccion-pib') {
+            loadProyeccionPib();
+        } else if (value === 'inflacion-nacional') {
+            loadInflacionNacional();
+        } else if (value === 'tipo-cambio-mxn-usd') {
+            loadTipoCambioMxnUsd();
+        } else if (value === 'ied-sector-economico') {
+            loadIedSectorEconomico();
+        } else if (value === 'ied-flujo-estado') {
+            loadIedFlujoEstado();
+        } else if (value === 'ied-pais-origen') {
+            loadIedPaisOrigen();
+        } else if (value === 'ranking-turismo-mundial') {
+            loadRankingTurismoMundial();
+        } else if (value === 'balanza-visitantes') {
+            loadBalanzaVisitantes();
+        } else if (value === 'participacion-mercado-aereo') {
+            loadParticipacionMercadoAereo();
+        } else if (value === 'participacion-internacional-region') {
+            loadParticipacionInternacionalRegion();
+        } else {
+            showPlaceholder('Gráfica de «' + label + '» en desarrollo. Indica cómo generar esta visualización.');
+        }
+    });
+
+    document.getElementById('pib-tab-total').addEventListener('click', function () {
+        this.classList.add('active');
+        document.getElementById('pib-tab-percapita').classList.remove('active');
+        if (selectIndicador.value === 'pib-nacional-total-percapita' && indicadorChartData.length > 0) {
+            pibNacionalMetric = 'total';
+            indicadorChartMeta.source = 'Fuente: Banco Mundial / Open Exchange Rates';
+            indicadorChartMeta.exportName = 'pib_nacional_total';
+            renderPibNacional(indicadorChartData, pibNacionalMetric);
+        } else if (selectIndicador.value === 'proyeccion-pib' && indicadorChartData.length > 0) {
+            proyeccionPibMetric = 'total';
+            indicadorChartMeta.exportName = 'proyeccion_pib_total';
+            renderProyeccionPib(indicadorChartData, proyeccionPibMetric);
+        }
+        document.querySelector('.indicador-chart-source').textContent = indicadorChartMeta.source;
+    });
+    document.getElementById('pib-tab-percapita').addEventListener('click', function () {
+        this.classList.add('active');
+        document.getElementById('pib-tab-total').classList.remove('active');
+        if (selectIndicador.value === 'pib-nacional-total-percapita' && indicadorChartData.length > 0) {
+            pibNacionalMetric = 'per_capita';
+            indicadorChartMeta.source = 'Fuente: Banco Mundial / Open Exchange Rates';
+            indicadorChartMeta.exportName = 'pib_nacional_per_capita';
+            renderPibNacional(indicadorChartData, pibNacionalMetric);
+        } else if (selectIndicador.value === 'proyeccion-pib' && indicadorChartData.length > 0) {
+            proyeccionPibMetric = 'per_capita';
+            indicadorChartMeta.exportName = 'proyeccion_pib_per_capita';
+            renderProyeccionPib(indicadorChartData, proyeccionPibMetric);
+        }
+        document.querySelector('.indicador-chart-source').textContent = indicadorChartMeta.source;
+    });
+
+    document.getElementById('tc-tab-diario').addEventListener('click', function () {
+        if (selectIndicador.value !== 'tipo-cambio-mxn-usd' || tipoCambioData.diario.length === 0) return;
+        tipoCambioDataMetric = 'diario';
+        indicadorChartData = tipoCambioData.diario;
+        this.classList.add('active');
+        document.getElementById('tc-tab-mensual').classList.remove('active');
+        indicadorChartMeta.exportName = 'tipo_cambio_diario';
+        renderTipoCambio('diario');
+        const tableData = tipoCambioData.diario.slice(-100).map((r) => ({ 'Fecha': r.fecha, 'T.C.': (r.tc ?? 0).toFixed(2) }));
+        fillIndicadorTable(tableData, ['Fecha', 'T.C.']);
+    });
+    document.getElementById('tc-tab-mensual').addEventListener('click', function () {
+        if (selectIndicador.value !== 'tipo-cambio-mxn-usd' || tipoCambioData.mensual.length === 0) return;
+        tipoCambioDataMetric = 'mensual';
+        indicadorChartData = tipoCambioData.mensual;
+        this.classList.add('active');
+        document.getElementById('tc-tab-diario').classList.remove('active');
+        indicadorChartMeta.exportName = 'tipo_cambio_mensual';
+        renderTipoCambio('mensual');
+        const tableData = tipoCambioData.mensual.map((r) => ({ 'Fecha': r.fecha, 'T.C.': (r.tc_prom_mes ?? 0).toFixed(3) }));
+        fillIndicadorTable(tableData, ['Fecha', 'T.C.']);
+    });
+
+    document.getElementById('ied-estado-select').addEventListener('change', function () {
+        if (selectIndicador.value !== 'ied-flujo-estado' || indicadorChartData.length === 0) return;
+        iedFlujoEstadoSel = this.value || '';
+        renderIedFlujoEstado(indicadorChartData, iedFlujoEstadoSel);
+    });
+
+    document.getElementById('balanza-tab-flujo').addEventListener('click', function () {
+        if (selectIndicador.value !== 'balanza-visitantes' || indicadorChartData.length === 0) return;
+        balanzaVisitantesMetric = 'flujo';
+        this.classList.add('active');
+        document.getElementById('balanza-tab-saldo').classList.remove('active');
+        indicadorChartMeta.exportName = 'balanza_visitantes_flujo';
+        renderBalanzaVisitantes(indicadorChartData, balanzaVisitantesMetric);
+    });
+    document.getElementById('balanza-tab-saldo').addEventListener('click', function () {
+        if (selectIndicador.value !== 'balanza-visitantes' || indicadorChartData.length === 0) return;
+        balanzaVisitantesMetric = 'saldo';
+        this.classList.add('active');
+        document.getElementById('balanza-tab-flujo').classList.remove('active');
+        indicadorChartMeta.exportName = 'balanza_visitantes_saldo';
+        renderBalanzaVisitantes(indicadorChartData, balanzaVisitantesMetric);
+    });
+
+    document.getElementById('pma-tab-nacional').addEventListener('click', function () {
+        if (selectIndicador.value !== 'participacion-mercado-aereo') return;
+        participacionMercadoAereoMetric = 'nacional';
+        this.classList.add('active');
+        document.getElementById('pma-tab-internacional').classList.remove('active');
+        indicadorChartMeta.exportName = 'participacion_mercado_aereo_nacional';
+        renderParticipacionMercadoAereo(participacionMercadoAereoData, participacionMercadoAereoMetric);
+        const tableData = participacionMercadoAereoData.nacional.map((r) => ({ Aerolínea: r.aerolinea, Participación: ((r.participacion || 0) * 100).toFixed(2) + '%' }));
+        fillIndicadorTable(tableData, ['Aerolínea', 'Participación']);
+    });
+    document.getElementById('pma-tab-internacional').addEventListener('click', function () {
+        if (selectIndicador.value !== 'participacion-mercado-aereo') return;
+        participacionMercadoAereoMetric = 'internacional';
+        this.classList.add('active');
+        document.getElementById('pma-tab-nacional').classList.remove('active');
+        indicadorChartMeta.exportName = 'participacion_mercado_aereo_internacional';
+        renderParticipacionMercadoAereo(participacionMercadoAereoData, participacionMercadoAereoMetric);
+        const tableData = participacionMercadoAereoData.internacional.map((r) => ({ Región: r.region, Pasajeros: (r.pasajeros ?? 0).toLocaleString('es-MX') }));
+        fillIndicadorTable(tableData, ['Región', 'Pasajeros']);
+    });
+</script>
+{% endblock %}

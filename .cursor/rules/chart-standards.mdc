@@ -1,0 +1,31 @@
+---
+description: Reglas para implementar gráficas en la aplicación EDMI
+globs: ["**/dashboard.html", "**/templates/**/*.html"]
+---
+
+# Estándares para gráficas
+
+Todas las gráficas del dashboard deben cumplir:
+
+## Configuración obligatoria
+
+Usar `getChartConfig()` que devuelve:
+- `palette` - array de 5 colores HEX (paleta activa)
+- `fontSize` - tamaño base en px
+- `titleSize` - tamaño del título
+- `fontFamily` - 'Aptos Light, sans-serif'
+
+## Colores
+
+- Usar `palette[0]`, `palette[1]`, etc. para barras, líneas, leyendas y anotaciones
+- Nunca hardcodear colores; siempre usar la paleta del config
+
+## Tipografía
+
+- `font.family`: cfg.fontFamily
+- `font.size`: cfg.fontSize
+- Título: cfg.titleSize
+
+## Re-render al cambiar estilos
+
+Al agregar una nueva gráfica, añadir su caso en `renderCurrentChart()` para que se actualice cuando el usuario cambie paleta o tamaño de fuente.

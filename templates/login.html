@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block title %}Iniciar sesión - Aplicación para Estudios de Mercado{% endblock %}
+
+{% block content %}
+<div class="login-container">
+    <div class="login-card">
+        <div class="login-header">
+            <img src="{{ url_for('serve_assets', filename='logo/phiqus_logo_positivo.png') }}" 
+                 alt="PhiQus Logo" 
+                 class="login-logo logo-light">
+            <img src="{{ url_for('serve_assets', filename='logo/phiqus_logo_negativo.png') }}" 
+                 alt="PhiQus Logo" 
+                 class="login-logo logo-dark">
+            <h1 class="login-title">Aplicación para Estudios de Mercado</h1>
+            <p class="login-subtitle">Inicie sesión para continuar</p>
+        </div>
+
+        {% if error %}
+        <div class="alert alert-error">{{ error }}</div>
+        {% endif %}
+
+        <form method="POST" action="{{ url_for('login') }}" class="login-form">
+            <input type="hidden" name="theme" id="theme-input" value="{{ theme|default('light') }}">
+            
+            <div class="form-group">
+                <label for="username">Usuario</label>
+                <input type="text" id="username" name="username" required autofocus 
+                       placeholder="Ingrese su usuario">
+            </div>
+
+            <div class="form-group">
+                <label for="password">Contraseña</label>
+                <input type="password" id="password" name="password" required 
+                       placeholder="Ingrese su contraseña">
+            </div>
+
+            <div class="form-actions">
+                <button type="button" class="theme-toggle" id="theme-toggle" title="Cambiar tema">
+                    <span class="theme-icon">{{ '☀️' if theme == 'dark' else '🌙' }}</span>
+                    <span class="theme-label">{{ 'Modo claro' if theme == 'dark' else 'Modo oscuro' }}</span>
+                </button>
+                <button type="submit" class="btn btn-primary">Iniciar sesión</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Toggle tema antes del login
+    document.getElementById('theme-toggle').addEventListener('click', function() {
+        const body = document.body;
+        const themeInput = document.getElementById('theme-input');
+        const themeIcon = this.querySelector('.theme-icon');
+        const themeLabel = this.querySelector('.theme-label');
+        
+        if (body.classList.contains('theme-light')) {
+            body.classList.remove('theme-light');
+            body.classList.add('theme-dark');
+            themeInput.value = 'dark';
+            themeIcon.textContent = '☀️';
+            themeLabel.textContent = 'Modo claro';
+        } else {
+            body.classList.remove('theme-dark');
+            body.classList.add('theme-light');
+            themeInput.value = 'light';
+            themeIcon.textContent = '🌙';
+            themeLabel.textContent = 'Modo oscuro';
+        }
+    });
+</script>
+{% endblock %}
