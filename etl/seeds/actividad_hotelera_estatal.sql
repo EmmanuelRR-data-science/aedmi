@@ -1,0 +1,4 @@
+-- Seed: Actividad Hotelera por estado (CETM SECTUR).
+-- Para generar los datos: python scripts/export_actividad_hotelera_to_sql.py "ruta/a/6_2.xlsx"
+-- El script creará INSERTs aquí. Tras generarlo, borre el volumen postgres_data y vuelva a levantar
+-- (docker-compose down -v && docker-compose up -d) para que este seed se cargue al crear la BD.

@@ -65,12 +65,15 @@ body {
 .logo-light {
     display: none;
 }
+
 .logo-dark {
     display: none;
 }
+
 .theme-light .logo-light {
     display: block;
 }
+
 .theme-dark .logo-dark {
     display: block;
 }
@@ -261,8 +264,14 @@ body {
         grid-template-columns: 1fr;
         grid-template-rows: auto auto auto;
     }
-    .header-left { justify-content: center; }
-    .header-right { justify-content: center; }
+
+    .header-left {
+        justify-content: center;
+    }
+
+    .header-right {
+        justify-content: center;
+    }
 }
 
 .theme-form {
@@ -537,10 +546,21 @@ body {
     margin-bottom: 0.5rem;
 }
 
-.kpi-card:nth-child(1) .kpi-value { color: var(--color-primary); }
-.kpi-card:nth-child(2) .kpi-value { color: var(--color-secondary); }
-.kpi-card:nth-child(3) .kpi-value { color: var(--color-accent); }
-.kpi-card:nth-child(4) .kpi-value { color: var(--color-highlight); }
+.kpi-card:nth-child(1) .kpi-value {
+    color: var(--color-primary);
+}
+
+.kpi-card:nth-child(2) .kpi-value {
+    color: var(--color-secondary);
+}
+
+.kpi-card:nth-child(3) .kpi-value {
+    color: var(--color-accent);
+}
+
+.kpi-card:nth-child(4) .kpi-value {
+    color: var(--color-highlight);
+}
 
 .kpi-date {
     font-size: 0.75rem;
@@ -715,6 +735,285 @@ body {
     box-shadow: 0 0 0 3px rgba(5, 118, 243, 0.2);
 }
 
+/* Panel Estatal: dos columnas (Estado + Indicador) */
+.indicadores-estatal-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    align-items: end;
+}
+
+.indicadores-estatal-col {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.indicadores-estatal-col .indicadores-select {
+    max-width: 100%;
+}
+
+@media (max-width: 640px) {
+    .indicadores-estatal-row {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Panel Municipal: 3 columnas (Estado, Municipio, Indicador) */
+.indicadores-municipal-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 1.5rem;
+    align-items: end;
+}
+
+.indicadores-municipal-col {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.indicadores-municipal-col .indicadores-select {
+    max-width: 100%;
+}
+
+@media (max-width: 1024px) {
+    .indicadores-municipal-row {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+@media (max-width: 640px) {
+    .indicadores-municipal-row {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Panel Localidades: 4 columnas (Estado, Municipio, Localidad, Indicador) */
+.indicadores-localidades-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+    align-items: end;
+}
+
+@media (max-width: 1280px) {
+    .indicadores-localidades-row {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 640px) {
+    .indicadores-localidades-row {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Dropdown de búsqueda de municipios */
+.municipio-dropdown {
+    position: absolute;
+    z-index: 1000;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    max-height: 300px;
+    overflow-y: auto;
+    box-shadow: var(--shadow);
+    margin-top: 4px;
+    width: 100%;
+    max-width: 400px;
+}
+
+.municipio-dropdown-item {
+    padding: 8px 12px;
+    cursor: pointer;
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-primary);
+    font-size: 14px;
+}
+
+.municipio-dropdown-item:hover {
+    background-color: var(--bg-primary);
+}
+
+.municipio-search-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.municipio-dropdown-item:hover {
+    background-color: var(--bg-primary);
+}
+
+.municipio-dropdown-item:last-child {
+    border-bottom: none;
+}
+
+.indicadores-municipal-col {
+    position: relative;
+}
+
+/* Panel Municipal: 3 KPIs (Población Total, Mujeres, Hombres) */
+.municipal-resumen-kpis {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    margin-top: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.municipal-kpi-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 1rem 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.municipal-kpi-label {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.municipal-kpi-value {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+/* Colores de paleta para los 3 KPIs municipales (igual que .kpi-card) */
+.municipal-kpi-card:nth-child(1) .municipal-kpi-value {
+    color: var(--color-primary);
+}
+
+.municipal-kpi-card:nth-child(2) .municipal-kpi-value {
+    color: var(--color-secondary);
+}
+
+.municipal-kpi-card:nth-child(3) .municipal-kpi-value {
+    color: var(--color-accent);
+}
+
+@media (max-width: 768px) {
+    .municipal-resumen-kpis {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Panel Estatal: 4 indicadores (PIB, Población, Extensión, PIB per cápita) */
+.estatal-resumen-kpis {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.estatal-kpi-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 1rem 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.estatal-kpi-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+}
+
+.estatal-kpi-value {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--color-primary);
+}
+
+.estatal-kpi-meta {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+}
+
+@media (max-width: 900px) {
+    .estatal-resumen-kpis {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 480px) {
+    .estatal-resumen-kpis {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Mapa Estatal (República Mexicana, estado resaltado) */
+.estatal-mapa-wrapper {
+    margin-top: 1.5rem;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 1rem;
+    overflow: hidden;
+}
+
+.estatal-mapa-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+
+.estatal-mapa-title {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.estatal-mapa {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 16 / 9;
+    border-radius: 8px;
+    background: var(--bg-card);
+}
+
+.estatal-mapa-fuente {
+    margin: 0.5rem 0 0 0;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+}
+
+.estatal-demografia-wrapper {
+    margin-top: 0;
+}
+
+.estatal-demografia-chart-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.estatal-demografia-chart-title {
+    margin: 1.5rem 0 0.5rem 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.estatal-demografia-chart-title:first-child {
+    margin-top: 0;
+}
+
+.estatal-demografia-plot {
+    min-height: 560px;
+}
+
 .indicador-chart-container {
     margin-top: 1.5rem;
     background: var(--bg-card);
@@ -722,6 +1021,18 @@ body {
     border-radius: 12px;
     padding: 2rem;
     min-height: 200px;
+}
+
+.indicador-chart-container-estatal {
+    display: flex;
+    flex-direction: column;
+}
+
+.indicador-chart-container-estatal #indicador-chart-wrapper-estatal {
+    flex-shrink: 0;
+    max-height: 600px;
+    overflow-y: auto;
+    overflow-x: hidden;
 }
 
 .indicador-chart-placeholder {
@@ -748,10 +1059,43 @@ body {
     max-height: 450px;
 }
 
+.indicador-chart-wrapper-estatal {
+    max-height: 600px;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
 .indicador-chart-plot {
     width: 100%;
     height: 100%;
     min-height: 320px;
+    overflow: visible;
+}
+
+.indicador-chart-plot img {
+    max-height: 600px;
+    max-width: 100%;
+    object-fit: contain;
+    display: block;
+    margin: 0 auto;
+}
+
+.indicador-chart-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem;
+    flex-wrap: wrap;
+    position: relative;
+    z-index: 10;
+    background: var(--bg-card);
+    padding: 0.5rem 0;
+    flex-shrink: 0;
+}
+
+#indicador-chart-actions-estatal {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-color);
 }
 
 .indicador-chart-source {
@@ -762,23 +1106,31 @@ body {
     color: var(--text-secondary);
 }
 
+.indicador-chart-wrapper-estatal .indicador-chart-source {
+    bottom: 30px;
+}
+
 .indicador-chart-tabs {
     display: flex;
     gap: 0.5rem;
     margin-top: 1rem;
     margin-bottom: 0.5rem;
 }
+
 .indicador-chart-tabs[hidden],
 #indicador-chart-tabs-tc[hidden],
 #indicador-chart-tabs-ied-estado[hidden] {
     display: none !important;
 }
+
 #indicador-chart-tabs-ied-estado {
     align-items: center;
 }
+
 #indicador-chart-tabs-ied-estado #ied-estado-select {
     min-width: 220px;
 }
+
 .indicador-chart-tabs .btn-tab {
     padding: 0.4rem 1rem;
     border-radius: 8px;
@@ -788,10 +1140,12 @@ body {
     color: var(--text-secondary);
     cursor: pointer;
 }
+
 .indicador-chart-tabs .btn-tab:hover {
     background: var(--bg-secondary);
     color: var(--text-primary);
 }
+
 .indicador-chart-tabs .btn-tab.active {
     background: var(--color-primary);
     color: #fff;
@@ -827,6 +1181,11 @@ body {
 }
 
 @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
 }

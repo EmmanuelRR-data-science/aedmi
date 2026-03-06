@@ -29,10 +29,7 @@ def _get_db_port():
 def get_conn():
     """Conexión a PostgreSQL."""
     host = _get_db_host()
-    port = _get_db_port()
-    # Si usamos localhost, el puerto expuesto suele ser 5433 (mapeo Docker)
-    if host == "localhost" and port == "5432":
-        port = os.getenv("POSTGRES_PORT", "5433")
+    port = os.getenv("POSTGRES_PORT", "5432")
     return psycopg2.connect(
         host=host,
         port=int(port),
@@ -371,6 +368,152 @@ def save_inflacion_nacional_to_db(data: list[dict]) -> bool:
         return False
 
 
+def save_crecimiento_poblacional_to_db(data: list[dict]) -> bool:
+    """Guarda crecimiento poblacional nacional en PostgreSQL."""
+    try:
+        with db_connection() as conn:
+            cur = conn.cursor()
+            cur.execute("DELETE FROM crecimiento_poblacional_nacional")
+            for r in data:
+                cur.execute(
+                    "INSERT INTO crecimiento_poblacional_nacional (year, value) VALUES (%s, %s)",
+                    (r["year"], r["value"]),
+                )
+            return True
+    except Exception:
+        return False
+
+
+def save_estructura_poblacional_to_db(data: list[dict]) -> bool:
+    """Guarda estructura poblacional por edad (INEGI) en PostgreSQL."""
+    try:
+        with db_connection() as conn:
+            cur = conn.cursor()
+            cur.execute("DELETE FROM estructura_poblacional_inegi")
+            for r in data:
+                cur.execute(
+                    """INSERT INTO estructura_poblacional_inegi (year, pob_0_14, pob_15_64, pob_65_plus)
+                       VALUES (%s, %s, %s, %s)""",
+                    (r["year"], r.get("pob_0_14"), r.get("pob_15_64"), r.get("pob_65_plus")),
+                )
+            return True
+    except Exception:
+        return False
+
+
+def save_distribucion_sexo_to_db(data: list[dict]) -> bool:
+    """Guarda distribución de población por sexo (INEGI) en PostgreSQL."""
+    try:
+        with db_connection() as conn:
+            cur = conn.cursor()
+            cur.execute("DELETE FROM distribucion_sexo_inegi")
+            for r in data:
+                cur.execute(
+                    "INSERT INTO distribucion_sexo_inegi (year, male, female) VALUES (%s, %s, %s)",
+                    (r["year"], r.get("male"), r.get("female")),
+                )
+            return True
+    except Exception:
+        return False
+
+
+def save_pea_to_db(data: list[dict]) -> bool:
+    """Guarda PEA (Población Económicamente Activa) en PostgreSQL."""
+    try:
+        with db_connection() as conn:
+            cur = conn.cursor()
+            cur.execute("DELETE FROM pea_inegi")
+            for r in data:
+                cur.execute(
+                    "INSERT INTO pea_inegi (anio, trimestre, valor) VALUES (%s, %s, %s)",
+                    (r["anio"], r["trimestre"], r["valor"]),
+                )
+            return True
+    except Exception:
+        return False
+
+
+def save_pob_sector_actividad_to_db(data: list[dict]) -> bool:
+    """Guarda población por sector de actividad en PostgreSQL."""
+    try:
+        with db_connection() as conn:
+            cur = conn.cursor()
+            cur.execute("DELETE FROM pob_sector_actividad")
+            for r in data:
+                cur.execute(
+                    """INSERT INTO pob_sector_actividad (sector, valor, pct, es_residual)
+                       VALUES (%s, %s, %s, %s)""",
+                    (r["sector"], r["valor"], r.get("pct"), r.get("es_residual", False)),
+                )
+            return True
+    except Exception:
+        return False
+
+
+def save_kpis_nacional_to_db(kpis: dict) -> bool:
+    """Guarda KPIs nacionales (resumen) en PostgreSQL. kpis: {indicator: {value, date}}."""
+    try:
+        with db_connection() as conn:
+            cur = conn.cursor()
+            for key, data in kpis.items():
+                val = data.get("value")
+                if val is not None:
+                    try:
+                        num_val = float(str(val).replace(",", ""))
+                    except (ValueError, TypeError):
+                        num_val = None
+                else:
+                    num_val = None
+                date_str = data.get("date") or "N/D"
+                cur.execute(
+                    """INSERT INTO kpis_nacional (indicator, value, date, updated_at)
+                       VALUES (%s, %s, %s, CURRENT_TIMESTAMP)
+                       ON CONFLICT (indicator) DO UPDATE SET
+                           value = EXCLUDED.value, date = EXCLUDED.date, updated_at = CURRENT_TIMESTAMP""",
+                    (key, num_val, date_str),
+                )
+            return True
+    except Exception:
+        return False
+
+
+def save_actividad_hotelera_nacional_to_db(por_anio: list[dict], por_categoria: list[dict]) -> bool:
+    """Guarda actividad hotelera nacional (por año y por categoría) en PostgreSQL."""
+    try:
+        with db_connection() as conn:
+            cur = conn.cursor()
+            cur.execute("DELETE FROM actividad_hotelera_nacional")
+            for r in por_anio:
+                cur.execute(
+                    """INSERT INTO actividad_hotelera_nacional
+                       (anio, cuartos_disponibles_pd, cuartos_ocupados_pd, porc_ocupacion, updated_at)
+                       VALUES (%s, %s, %s, %s, CURRENT_TIMESTAMP)""",
+                    (
+                        r["anio"],
+                        r.get("cuartos_disponibles_pd"),
+                        r.get("cuartos_ocupados_pd"),
+                        r.get("porc_ocupacion"),
+                    ),
+                )
+            cur.execute("DELETE FROM actividad_hotelera_nacional_por_categoria")
+            for r in por_categoria:
+                cur.execute(
+                    """INSERT INTO actividad_hotelera_nacional_por_categoria
+                       (anio, categoria, cuartos_disponibles_pd, cuartos_ocupados_pd, porc_ocupacion)
+                       VALUES (%s, %s, %s, %s, %s)""",
+                    (
+                        r["anio"],
+                        r.get("categoria"),
+                        r.get("cuartos_disponibles_pd"),
+                        r.get("cuartos_ocupados_pd"),
+                        r.get("porc_ocupacion"),
+                    ),
+                )
+            return True
+    except Exception:
+        return False
+
+
 def get_proyeccion_pib_from_db() -> dict | None:
     """
     Obtiene proyección PIB (FMI WEO) desde PostgreSQL.
@@ -536,6 +679,54 @@ def save_balanza_visitantes_to_db(data: list[dict]) -> bool:
         return False
 
 
+def get_balanza_comercial_producto_from_db() -> list[dict] | None:
+    """
+    Obtiene Balanza Comercial por Producto desde PostgreSQL.
+    Retorna [{year, flow_id, trade_value, product}, ...] o None si no hay datos.
+    """
+    try:
+        with db_connection() as conn:
+            cur = conn.cursor()
+            cur.execute(
+                "SELECT year, flow_id, trade_value, product FROM balanza_comercial_producto ORDER BY year, flow_id, product"
+            )
+            rows = cur.fetchall()
+            if not rows:
+                return None
+            return [
+                {
+                    "year": int(r[0]),
+                    "flow_id": int(r[1]),
+                    "trade_value": float(r[2]) if r[2] is not None else 0.0,
+                    "product": r[3] or "Total",
+                }
+                for r in rows
+            ]
+    except Exception:
+        return None
+
+
+def save_balanza_comercial_producto_to_db(data: list[dict]) -> bool:
+    """Guarda Balanza Comercial por Producto en PostgreSQL. Retorna True si tuvo éxito."""
+    try:
+        with db_connection() as conn:
+            cur = conn.cursor()
+            cur.execute("DELETE FROM balanza_comercial_producto")
+            for r in data:
+                cur.execute(
+                    "INSERT INTO balanza_comercial_producto (year, flow_id, product, trade_value) VALUES (%s, %s, %s, %s)",
+                    (
+                        r.get("year"),
+                        r.get("flow_id", 1),
+                        (r.get("product") or "Total")[:200],
+                        r.get("trade_value", 0),
+                    ),
+                )
+            return True
+    except Exception:
+        return False
+
+
 def get_anuncios_combinados_from_db() -> list[dict] | None:
     """
     Obtiene Anuncios de Inversión Combinados desde PostgreSQL.
@@ -661,6 +852,58 @@ def save_participacion_mercado_to_db(data: list[dict]) -> bool:
                 cur.execute(
                     "INSERT INTO participacion_mercado_aereo (aerolinea, participacion) VALUES (%s, %s)",
                     (r.get("aerolinea", ""), r.get("participacion", 0)),
+                )
+            return True
+    except Exception:
+        return False
+
+
+def get_producto_aeropuertos_nacional_from_db() -> list[dict] | None:
+    """Obtiene operaciones por aeropuerto y año desde PostgreSQL. [{anio, aeropuerto, operaciones}, ...]."""
+    try:
+        with db_connection() as conn:
+            cur = conn.cursor()
+            cur.execute(
+                "SELECT anio, aeropuerto, operaciones FROM producto_aeropuertos_nacional ORDER BY anio, operaciones DESC"
+            )
+            rows = cur.fetchall()
+            if not rows:
+                return None
+            return [
+                {"anio": int(r[0]), "aeropuerto": r[1] or "", "operaciones": int(r[2]) if r[2] is not None else 0}
+                for r in rows
+            ]
+    except Exception:
+        return None
+
+
+def save_producto_aeropuertos_nacional_to_db(data: list[dict]) -> bool:
+    """Guarda producto aeropuertos nacional en PostgreSQL. data = [{anio, aeropuerto, operaciones}, ...]."""
+    try:
+        with db_connection() as conn:
+            cur = conn.cursor()
+            cur.execute("DELETE FROM producto_aeropuertos_nacional")
+            agregados = {}
+            for r in data:
+                a = r.get("anio")
+                aer = (r.get("aeropuerto") or "")[:250].strip()
+                op = int(r.get("operaciones", 0) or 0)
+                if not a or not aer: continue
+                key = (a, aer)
+                if key in agregados:
+                    agregados[key]["operaciones"] += op
+                else:
+                    agregados[key] = {"anio": a, "aeropuerto": aer, "operaciones": op}
+                    
+            for key, val in agregados.items():
+                cur.execute(
+                    """
+                    INSERT INTO producto_aeropuertos_nacional (anio, aeropuerto, operaciones) 
+                    VALUES (%s, %s, %s)
+                    ON CONFLICT (anio, aeropuerto) 
+                    DO UPDATE SET operaciones = EXCLUDED.operaciones
+                    """,
+                    (val["anio"], val["aeropuerto"], val["operaciones"]),
                 )
             return True
     except Exception:
@@ -817,3 +1060,1592 @@ def save_proyeccion_pib_to_db(data: list[dict], tc_fix: float, tc_date: str) -> 
             return True
     except Exception:
         return False
+
+
+def get_demografia_estatal_from_db(estado_codigo: str) -> dict | None:
+    """
+    Obtiene demografía estatal desde PostgreSQL (crecimiento, genero, edad).
+    estado_codigo: '01'..'32'. Retorna { crecimiento: [...], genero: [...], edad: [...] } o None si no hay datos.
+    """
+    if not estado_codigo:
+        return None
+    codigo = str(estado_codigo).strip().zfill(2)
+    try:
+        with db_connection() as conn:
+            cur = conn.cursor()
+            out = {"crecimiento": [], "genero": [], "edad": []}
+            cur.execute(
+                "SELECT anio, valor, crecimiento_pct FROM demografia_estatal_crecimiento WHERE estado_codigo = %s ORDER BY anio",
+                (codigo,),
+            )
+            for r in cur.fetchall():
+                out["crecimiento"].append({"anio": r[0], "valor": r[1] or 0, "crecimiento_pct": float(r[2]) if r[2] is not None else None})
+            cur.execute(
+                "SELECT anio, hombres, mujeres FROM demografia_estatal_genero WHERE estado_codigo = %s ORDER BY anio",
+                (codigo,),
+            )
+            for r in cur.fetchall():
+                out["genero"].append({"anio": r[0], "hombres": r[1] or 0, "mujeres": r[2] or 0})
+            cur.execute(
+                "SELECT anio, g_0_19, g_20_64, g_65_plus, no_especificado FROM demografia_estatal_edad WHERE estado_codigo = %s ORDER BY anio",
+                (codigo,),
+            )
+            for r in cur.fetchall():
+                out["edad"].append({
+                    "anio": r[0],
+                    "0-19": r[1] or 0,
+                    "20-64": r[2] or 0,
+                    "65+ años": r[3] or 0,
+                    "No especificado": r[4] or 0,
+                })
+            if out["crecimiento"] or out["genero"] or out["edad"]:
+                return out
+            return None
+    except Exception:
+        return None
+
+
+def save_demografia_estatal_to_db(estado_codigo: str, data: dict) -> bool:
+    """Guarda demografía estatal en PostgreSQL. data = { crecimiento: [...], genero: [...], edad: [...] }. Retorna True si ok."""
+    if not estado_codigo or not data:
+        return False
+    codigo = str(estado_codigo).strip().zfill(2)
+    try:
+        with db_connection() as conn:
+            cur = conn.cursor()
+            cur.execute("DELETE FROM demografia_estatal_crecimiento WHERE estado_codigo = %s", (codigo,))
+            for r in data.get("crecimiento") or []:
+                cur.execute(
+                    "INSERT INTO demografia_estatal_crecimiento (estado_codigo, anio, valor, crecimiento_pct) VALUES (%s, %s, %s, %s)",
+                    (codigo, r.get("anio"), r.get("valor"), r.get("crecimiento_pct")),
+                )
+            cur.execute("DELETE FROM demografia_estatal_genero WHERE estado_codigo = %s", (codigo,))
+            for r in data.get("genero") or []:
+                cur.execute(
+                    "INSERT INTO demografia_estatal_genero (estado_codigo, anio, hombres, mujeres) VALUES (%s, %s, %s, %s)",
+                    (codigo, r.get("anio"), r.get("hombres"), r.get("mujeres")),
+                )
+            cur.execute("DELETE FROM demografia_estatal_edad WHERE estado_codigo = %s", (codigo,))
+            for r in data.get("edad") or []:
+                cur.execute(
+                    """INSERT INTO demografia_estatal_edad (estado_codigo, anio, g_0_19, g_20_64, g_65_plus, no_especificado)
+                       VALUES (%s, %s, %s, %s, %s, %s)""",
+                    (
+                        codigo,
+                        r.get("anio"),
+                        r.get("0-19"),
+                        r.get("20-64"),
+                        r.get("65+ años"),
+                        r.get("No especificado"),
+                    ),
+                )
+            return True
+    except Exception:
+        return False
+
+
+def get_proyecciones_conapo_from_db(estado_codigo: str) -> list[dict] | None:
+    """
+    Obtiene proyecciones CONAPO desde PostgreSQL (2025-2030).
+    estado_codigo: '01'..'32'. Retorna [{anio, total, hombres, mujeres}, ...] o None si no hay datos.
+    """
+    if not estado_codigo:
+        return None
+    codigo = str(estado_codigo).strip().zfill(2)
+    try:
+        with db_connection() as conn:
+            cur = conn.cursor()
+            cur.execute(
+                "SELECT anio, total, hombres, mujeres FROM proyecciones_conapo WHERE estado_codigo = %s ORDER BY anio",
+                (codigo,),
+            )
+            rows = cur.fetchall()
+            if not rows:
+                return None
+            return [
+                {"anio": r[0], "total": r[1] or 0, "hombres": r[2] or 0, "mujeres": r[3] or 0}
+                for r in rows
+            ]
+    except Exception:
+        return None
+
+
+def save_proyecciones_conapo_to_db(estado_codigo: str, data: list[dict]) -> bool:
+    """Guarda proyecciones CONAPO en PostgreSQL. data = [{anio, total, hombres, mujeres}, ...]. Retorna True si ok."""
+    if not estado_codigo or not data:
+        return False
+    codigo = str(estado_codigo).strip().zfill(2)
+    try:
+        with db_connection() as conn:
+            cur = conn.cursor()
+            cur.execute("DELETE FROM proyecciones_conapo WHERE estado_codigo = %s", (codigo,))
+            for r in data:
+                cur.execute(
+                    "INSERT INTO proyecciones_conapo (estado_codigo, anio, total, hombres, mujeres) VALUES (%s, %s, %s, %s, %s)",
+                    (codigo, r.get("anio"), r.get("total"), r.get("hombres"), r.get("mujeres")),
+                )
+            return True
+    except Exception:
+        return False
+
+
+def get_itaee_estatal_from_db(estado_codigo: str) -> dict | None:
+    """
+    Obtiene ITAEE estatal desde PostgreSQL (último año disponible).
+    estado_codigo: '01'..'32'. Retorna {anio, primario, secundario, terciario, total} o None si no hay datos.
+    """
+    if not estado_codigo:
+        return None
+    codigo = str(estado_codigo).strip().zfill(2)
+    try:
+        with db_connection() as conn:
+            cur = conn.cursor()
+            cur.execute(
+                "SELECT anio, sector, valor FROM itaee_estatal WHERE estado_codigo = %s ORDER BY anio DESC, sector",
+                (codigo,),
+            )
+            rows = cur.fetchall()
+            if not rows:
+                return None
+            by_year = {}
+            for r in rows:
+                anio = str(r[0])
+                sector = str(r[1])
+                valor = float(r[2]) if r[2] else 0.0
+                if anio not in by_year:
+                    by_year[anio] = {}
+                by_year[anio][sector] = valor
+            if not by_year:
+                return None
+            # Buscar el año más reciente que tenga un Total mayor a cero
+            for anio in sorted(by_year.keys(), reverse=True):
+                datos = by_year[anio]
+                prim_val = datos.get("Primario") or datos.get("Primarias") or datos.get("Actividades Primarias") or 0.0
+                sec_val = datos.get("Secundario") or datos.get("Secundarias") or datos.get("Actividades Secundarias") or 0.0
+                terc_val = datos.get("Terciario") or datos.get("Terciarias") or datos.get("Actividades Terciarias") or 0.0
+                total_val = datos.get("Total") or datos.get("Total de la economía") or (prim_val + sec_val + terc_val)
+                
+                if total_val > 0:
+                    return {
+                        "anio": anio,
+                        "primario": prim_val,
+                        "secundario": sec_val,
+                        "terciario": terc_val,
+                        "total": total_val
+                    }
+            return None
+    except Exception:
+        return None
+
+
+def get_itaee_estatal_timeline_from_db(estado_codigo: str) -> list[dict]:
+    """
+    Obtiene el histórico del ITAEE estatal desde PostgreSQL.
+    Retorna lista de {anio, primario, secundario, terciario, total} ordenada por año.
+    """
+    if not estado_codigo:
+        return []
+    codigo = str(estado_codigo).strip().zfill(2)
+    try:
+        with db_connection() as conn:
+            cur = conn.cursor()
+            cur.execute(
+                "SELECT anio, sector, valor FROM itaee_estatal WHERE estado_codigo = %s ORDER BY anio ASC, sector",
+                (codigo,),
+            )
+            rows = cur.fetchall()
+            if not rows:
+                return []
+            
+            by_year = {}
+            for r in rows:
+                anio = str(r[0])
+                sector = str(r[1])
+                valor = float(r[2]) if r[2] else 0.0
+                if anio not in by_year:
+                    by_year[anio] = {"anio": anio, "primario": 0.0, "secundario": 0.0, "terciario": 0.0, "total": 0.0}
+                
+                # Normalizar sectores
+                s_key = sector.lower()
+                if "primari" in s_key: by_year[anio]["primario"] = valor
+                elif "secundari" in s_key: by_year[anio]["secundario"] = valor
+                elif "terciari" in s_key: by_year[anio]["terciario"] = valor
+                elif "total" in s_key: by_year[anio]["total"] = valor
+
+            # Calcular totales si faltan
+            for anio in by_year:
+                if by_year[anio]["total"] == 0:
+                    by_year[anio]["total"] = by_year[anio]["primario"] + by_year[anio]["secundario"] + by_year[anio]["terciario"]
+
+            return sorted(by_year.values(), key=lambda x: x["anio"])
+    except Exception:
+        return []
+
+
+def save_itaee_estatal_to_db(estado_codigo: str, data: dict) -> bool:
+    """Guarda ITAEE estatal en PostgreSQL. data = {anio, primario, secundario, terciario, total}. Retorna True si ok."""
+    if not estado_codigo or not data:
+        return False
+    codigo = str(estado_codigo).strip().zfill(2)
+    anio = str(data.get("anio", ""))
+    if not anio:
+        return False
+    try:
+        with db_connection() as conn:
+            cur = conn.cursor()
+            cur.execute("DELETE FROM itaee_estatal WHERE estado_codigo = %s AND anio = %s", (codigo, anio))
+            for sector in ["Primario", "Secundario", "Terciario"]:
+                valor = data.get(sector.lower(), 0.0)
+                cur.execute(
+                    "INSERT INTO itaee_estatal (estado_codigo, anio, sector, valor) VALUES (%s, %s, %s, %s)",
+                    (codigo, anio, sector, valor),
+                )
+            return True
+    except Exception:
+        return False
+
+
+def get_actividad_hotelera_estatal_from_db(
+    estado_codigo: str, anio: int | None = None
+) -> tuple[dict | None, list[int]]:
+    """
+    Obtiene actividad hotelera por estado (y opcionalmente año) desde PostgreSQL.
+    estado_codigo: '01'..'32'. anio: si no se pasa, se usa el año más reciente disponible.
+    Retorna (datos, lista_de_años). datos = {meses, disponibles, ocupados, porc_ocupacion} o None.
+    """
+    if not estado_codigo:
+        return None, []
+    codigo = str(estado_codigo).strip().zfill(2)
+    try:
+        with db_connection() as conn:
+            cur = conn.cursor()
+            cur.execute(
+                "SELECT DISTINCT anio FROM actividad_hotelera_estatal WHERE estado_codigo = %s ORDER BY anio DESC",
+                (codigo,),
+            )
+            years = [r[0] for r in cur.fetchall() if r[0] is not None]
+            if not years:
+                return None, []
+            year_to_use = anio if anio is not None and anio in years else years[0]
+            cur.execute(
+                """SELECT mes_num, disponibles, ocupados, porc_ocupacion
+                   FROM actividad_hotelera_estatal WHERE estado_codigo = %s AND anio = %s ORDER BY mes_num""",
+                (codigo, year_to_use),
+            )
+            rows = cur.fetchall()
+            if not rows or len(rows) < 12:
+                return None, years
+            meses = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"]
+            import math
+            disponibles = [float(r[1]) if r[1] is not None and not math.isnan(float(r[1])) else 0 for r in rows]
+            ocupados = [float(r[2]) if r[2] is not None and not math.isnan(float(r[2])) else 0 for r in rows]
+            porc_ocupacion = [float(r[3]) if r[3] is not None and not math.isnan(float(r[3])) else 0 for r in rows]
+            data = {"meses": meses, "disponibles": disponibles, "ocupados": ocupados, "porc_ocupacion": porc_ocupacion}
+            return data, years
+    except Exception:
+        return None, []
+
+
+def get_exportaciones_estatal_from_db(slug: str = None) -> list[dict]:
+    """
+    Obtiene las exportaciones por estado desde PostgreSQL.
+    Si se pasa slug, filtra por ese estado.
+    Retorna [{year, state_slug, estado_codigo, trade_value}, ...].
+    """
+    try:
+        with db_connection() as conn:
+            cur = conn.cursor()
+            if slug:
+                cur.execute(
+                    """SELECT estado_codigo, estado_slug, anio, trade_value
+                       FROM exportaciones_estatal WHERE estado_slug = %s ORDER BY anio ASC""", (slug,)
+                )
+            else:
+                cur.execute(
+                    """SELECT estado_codigo, estado_slug, anio, trade_value
+                       FROM exportaciones_estatal ORDER BY estado_codigo, anio"""
+                )
+            rows = cur.fetchall()
+            return [
+                {
+                    "year": r[2],
+                    "state_slug": r[1],
+                    "estado_codigo": r[0],
+                    "trade_value": float(r[3]) if r[3] is not None else 0,
+                }
+                for r in rows
+            ]
+    except Exception:
+        return []
+
+def get_exportaciones_estatal_ranking_from_db() -> list[dict]:
+    """Obtiene el ranking de exportaciones por estado del último año."""
+    try:
+        with db_connection() as conn:
+            cur = conn.cursor()
+            cur.execute("SELECT MAX(anio) FROM exportaciones_estatal")
+            latest_year = cur.fetchone()[0]
+            if not latest_year:
+                return []
+            
+            cur.execute("""
+                SELECT estado_slug, estado_codigo, trade_value 
+                FROM exportaciones_estatal 
+                WHERE anio = %s 
+                ORDER BY trade_value DESC
+            """, (latest_year,))
+            
+            rows = cur.fetchall()
+            return [
+                {
+                    "state_slug": r[0],
+                    "estado_codigo": r[1],
+                    "trade_value": float(r[2]) if r[2] is not None else 0,
+                    "year": latest_year
+                } for r in rows
+            ]
+    except Exception:
+        return []
+
+
+def get_mapa_carretero_from_db(estado_nombre: str) -> bytes | None:
+    """Obtiene la imagen del mapa carretero desde PostgreSQL."""
+    if not estado_nombre:
+        return None
+    try:
+        from services.data_sources import ESTADO_NOMBRE_TO_CODIGO
+        codigo = ESTADO_NOMBRE_TO_CODIGO.get(estado_nombre)
+        if not codigo:
+            # Reintentar con coincidencia parcial
+            for k, v in ESTADO_NOMBRE_TO_CODIGO.items():
+                if estado_nombre.lower() in k.lower() or k.lower() in estado_nombre.lower():
+                    codigo = v
+                    break
+        
+        if not codigo:
+            return None
+
+        with db_connection() as conn:
+            cur = conn.cursor()
+            cur.execute("SELECT imagen FROM mapas_carreteros WHERE estado_codigo = %s", (codigo,))
+            row = cur.fetchone()
+            if row:
+                return bytes(row[0])
+            return None
+    except Exception:
+        return None
+
+
+def save_exportaciones_estatal_to_db(data: list[dict]) -> bool:
+    """
+    Guarda exportaciones por estado en PostgreSQL.
+    data = [{year, state_slug, estado_codigo, trade_value}, ...].
+    Retorna True si ok.
+    """
+    if not data:
+        return False
+    try:
+        with db_connection() as conn:
+            cur = conn.cursor()
+            # Limpiar datos existentes antes de insertar nuevos
+            cur.execute("DELETE FROM exportaciones_estatal")
+            for row in data:
+                codigo = str(row.get("estado_codigo", "")).strip().zfill(2)
+                slug = str(row.get("state_slug", "")).strip()
+                anio = int(row.get("year", 0))
+                valor = float(row.get("trade_value", 0))
+                if codigo and slug and anio > 0:
+                    cur.execute(
+                        """INSERT INTO exportaciones_estatal (estado_codigo, estado_slug, anio, trade_value)
+                           VALUES (%s, %s, %s, %s)
+                           ON CONFLICT (estado_codigo, anio) DO UPDATE SET
+                           estado_slug = EXCLUDED.estado_slug,
+                           trade_value = EXCLUDED.trade_value""",
+                        (codigo, slug, anio, valor),
+                    )
+            conn.commit()
+            return True
+    except Exception as e:
+        print(f"Error guardando exportaciones: {e}")
+        return False
+
+
+def save_actividad_hotelera_estatal_to_db(estado_codigo: str, data: dict, anio: int = 2024) -> bool:
+    """Guarda actividad hotelera estatal para un año. data = {meses, disponibles, ocupados, porc_ocupacion}. Retorna True si ok."""
+    if not estado_codigo or not data:
+        return False
+    codigo = str(estado_codigo).strip().zfill(2)
+    disp = data.get("disponibles") or []
+    ocup = data.get("ocupados") or []
+    porc = data.get("porc_ocupacion") or []
+    if len(disp) < 12 or len(ocup) < 12 or len(porc) < 12:
+        return False
+    try:
+        with db_connection() as conn:
+            cur = conn.cursor()
+            cur.execute("DELETE FROM actividad_hotelera_estatal WHERE estado_codigo = %s AND anio = %s", (codigo, anio))
+            import math
+            for mes in range(12):
+                v_disp = disp[mes] if not (isinstance(disp[mes], float) and math.isnan(disp[mes])) else 0
+                v_ocup = ocup[mes] if not (isinstance(ocup[mes], float) and math.isnan(ocup[mes])) else 0
+                v_porc = porc[mes] if not (isinstance(porc[mes], float) and math.isnan(porc[mes])) else 0
+                
+                cur.execute(
+                    """INSERT INTO actividad_hotelera_estatal (estado_codigo, anio, mes_num, disponibles, ocupados, porc_ocupacion)
+                       VALUES (%s, %s, %s, %s, %s, %s)""",
+                    (codigo, anio, mes + 1, v_disp, v_ocup, v_porc),
+                )
+            return True
+    except Exception:
+        return False
+
+
+def save_llegada_turistas_estatal_to_db(estado_codigo: str, anio: int, total: int) -> bool:
+    """Guarda o actualiza llegada de turistas para un estado y año."""
+    try:
+        codigo = str(estado_codigo).strip().zfill(2)
+        with db_connection() as conn:
+            cur = conn.cursor()
+            # Asegurar que la tabla existe
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS llegada_turistas_estatal (
+                    id SERIAL PRIMARY KEY,
+                    estado_codigo CHAR(2) NOT NULL,
+                    anio INTEGER NOT NULL,
+                    turistas_total BIGINT NOT NULL,
+                    UNIQUE(estado_codigo, anio)
+                )
+            """)
+            cur.execute(
+                """INSERT INTO llegada_turistas_estatal (estado_codigo, anio, turistas_total)
+                   VALUES (%s, %s, %s)
+                   ON CONFLICT (estado_codigo, anio) DO UPDATE SET turistas_total = EXCLUDED.turistas_total""",
+                (codigo, anio, total)
+            )
+            return True
+    except Exception:
+        return False
+
+
+def get_aeropuertos_estatal_from_db(estado_codigo: str) -> list[dict]:
+    """
+    Obtiene operaciones aeroportuarias por estado desde PostgreSQL.
+    estado_codigo: '01'..'32'.
+    Retorna [{aeropuerto, grupo, anio, operaciones}, ...] ordenado por año descendente, luego aeropuerto.
+    """
+    if not estado_codigo:
+        return []
+    codigo = str(estado_codigo).strip().zfill(2)
+    try:
+        with db_connection() as conn:
+            cur = conn.cursor()
+            cur.execute(
+                """SELECT aeropuerto, grupo, anio, operaciones
+                   FROM aeropuertos_estatal WHERE estado_codigo = %s ORDER BY anio DESC, aeropuerto""",
+                (codigo,),
+            )
+            rows = cur.fetchall()
+            return [
+                {
+                    "aeropuerto": r[0],
+                    "grupo": r[1] or "",
+                    "anio": r[2],
+                    "operaciones": int(r[3]) if r[3] is not None else 0,
+                }
+                for r in rows
+            ]
+    except Exception:
+        return []
+
+
+def get_municipios_from_db(estado_nombre: str) -> list[dict]:
+    """
+    Obtiene lista de municipios para un estado desde PostgreSQL.
+    Retorna [{nombre, codigo, estado_codigo}, ...] ordenado por nombre.
+    """
+    try:
+        import unicodedata
+        import traceback
+        
+        # Normalizar nombre del estado para búsqueda
+        def normalize_str(s: str) -> str:
+            if not s:
+                return ""
+            return "".join(
+                c for c in unicodedata.normalize("NFD", str(s).lower().strip())
+                if unicodedata.category(c) != "Mn"
+            )
+        
+        with db_connection() as conn:
+            cur = conn.cursor()
+            
+            # Primero verificar si la tabla existe
+            cur.execute("""
+                SELECT EXISTS (
+                    SELECT FROM information_schema.tables 
+                    WHERE table_schema = 'public' 
+                    AND table_name = 'municipios'
+                )
+            """)
+            table_exists = cur.fetchone()[0]
+            
+            if not table_exists:
+                print("Advertencia: La tabla 'municipios' no existe en la base de datos")
+                return []
+            
+            # Buscar por estado_nombre directamente (comparación case-insensitive)
+            cur.execute(
+                """SELECT DISTINCT municipio_nombre, municipio_codigo, estado_codigo, estado_nombre
+                   FROM municipios
+                   WHERE estado_nombre ILIKE %s
+                   ORDER BY municipio_nombre ASC""",
+                (estado_nombre,)
+            )
+            rows = cur.fetchall()
+            
+            # Si no hay resultados exactos, intentar búsqueda más flexible
+            if not rows:
+                estado_norm = normalize_str(estado_nombre)
+                cur.execute(
+                    """SELECT DISTINCT municipio_nombre, municipio_codigo, estado_codigo, estado_nombre
+                       FROM municipios
+                       WHERE municipio_nombre_normalizado LIKE %s
+                       ORDER BY municipio_nombre ASC""",
+                    (f"%{estado_norm}%",)
+                )
+                rows = cur.fetchall()
+            
+            result = [
+                {
+                    "nombre": row[0],
+                    "codigo": row[1],
+                    "estado_codigo": row[2],
+                    "estado_nombre": row[3],
+                }
+                for row in rows
+            ]
+            
+            print(f"Municipios encontrados para '{estado_nombre}': {len(result)}")
+            return result
+    except Exception as e:
+        import traceback
+        print(f"Error obteniendo municipios: {e}")
+        print(traceback.format_exc())
+        return []
+
+
+def save_municipios_to_db(municipios: list[dict]) -> bool:
+    """
+    Guarda lista de municipios en PostgreSQL.
+    municipios = [{nombre, codigo, estado_codigo, estado_nombre}, ...]
+    Retorna True si ok.
+    """
+    if not municipios:
+        return False
+    try:
+        import unicodedata
+        
+        def normalize_str(s: str) -> str:
+            if not s:
+                return ""
+            return "".join(
+                c for c in unicodedata.normalize("NFD", str(s).lower().strip())
+                if unicodedata.category(c) != "Mn"
+            )
+        
+        with db_connection() as conn:
+            cur = conn.cursor()
+            for muni in municipios:
+                nombre = str(muni.get("nombre", "")).strip()
+                codigo = str(muni.get("codigo", "")).strip().zfill(3)
+                estado_codigo = str(muni.get("estado_codigo", "")).strip().zfill(2)
+                estado_nombre = str(muni.get("estado_nombre", "")).strip()
+                nombre_norm = normalize_str(nombre)
+                
+                if nombre and codigo and estado_codigo:
+                    cur.execute(
+                        """INSERT INTO municipios (estado_codigo, estado_nombre, municipio_codigo, municipio_nombre, municipio_nombre_normalizado)
+                           VALUES (%s, %s, %s, %s, %s)
+                           ON CONFLICT (estado_codigo, municipio_codigo) DO UPDATE SET
+                           estado_nombre = EXCLUDED.estado_nombre,
+                           municipio_nombre = EXCLUDED.municipio_nombre,
+                           municipio_nombre_normalizado = EXCLUDED.municipio_nombre_normalizado""",
+                        (estado_codigo, estado_nombre, codigo, nombre, nombre_norm),
+                    )
+            conn.commit()
+            return True
+    except Exception as e:
+        print(f"Error guardando municipios: {e}")
+        import traceback
+        traceback.print_exc()
+        return False
+
+
+def save_distribucion_poblacion_municipal_to_db(data: dict) -> bool:
+    """
+    Guarda datos de distribución de población municipal en PostgreSQL.
+    data debe contener estado_codigo, municipio_codigo, POBTOT, POBFEM, POBMAS
+    y opcionalmente campos de grupos de edad (P_0A4_F, P_0A4_M, etc.).
+    Retorna True si ok.
+    """
+    if not data:
+        return False
+    try:
+        import json
+        
+        estado_codigo = str(data.get("estado_codigo", "")).strip().zfill(2)
+        municipio_codigo = str(data.get("municipio_codigo", "")).strip().zfill(3)
+        pobtot = int(data.get("POBTOT", 0) or 0)
+        pobfem = int(data.get("POBFEM", 0) or 0)
+        pobmas = int(data.get("POBMAS", 0) or 0)
+        
+        if not estado_codigo or not municipio_codigo:
+            return False
+        
+        # Extraer campos básicos y datos adicionales (grupos de edad)
+        campos_basicos = ["estado_codigo", "municipio_codigo", "POBTOT", "POBFEM", "POBMAS"]
+        data_adicional = {k: v for k, v in data.items() if k not in campos_basicos}
+        data_json_str = json.dumps(data_adicional) if data_adicional else None
+        
+        # Obtener nombres de estado y municipio si están disponibles
+        estado_nombre = data.get("estado_nombre", "")
+        municipio_nombre = data.get("municipio_nombre", "")
+        
+        with db_connection() as conn:
+            cur = conn.cursor()
+            cur.execute(
+                """INSERT INTO distribucion_poblacion_municipal 
+                   (estado_codigo, estado_nombre, municipio_codigo, municipio_nombre, pobtot, pobfem, pobmas, data_json)
+                   VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                   ON CONFLICT (estado_codigo, municipio_codigo) DO UPDATE SET
+                   estado_nombre = EXCLUDED.estado_nombre,
+                   municipio_nombre = EXCLUDED.municipio_nombre,
+                   pobtot = EXCLUDED.pobtot,
+                   pobfem = EXCLUDED.pobfem,
+                   pobmas = EXCLUDED.pobmas,
+                   data_json = EXCLUDED.data_json""",
+                (estado_codigo, estado_nombre, municipio_codigo, municipio_nombre, pobtot, pobfem, pobmas, data_json_str),
+            )
+            conn.commit()
+            return True
+    except Exception as e:
+        print(f"Error guardando distribución población municipal: {e}")
+        import traceback
+        traceback.print_exc()
+        return False
+
+
+def save_distribucion_poblacion_municipal_bulk(lista_data: list[dict]) -> int:
+    """
+    Guarda en lote los registros de distribución poblacional municipal.
+    Retorna el número de registros guardados correctamente.
+    """
+    if not lista_data:
+        return 0
+    import json
+    saved = 0
+    try:
+        with db_connection() as conn:
+            cur = conn.cursor()
+            for data in lista_data:
+                estado_codigo = str(data.get("estado_codigo", "")).strip().zfill(2)
+                municipio_codigo = str(data.get("municipio_codigo", "")).strip().zfill(3)
+                if not estado_codigo or not municipio_codigo:
+                    continue
+                pobtot = int(data.get("POBTOT", 0) or 0)
+                pobfem = int(data.get("POBFEM", 0) or 0)
+                pobmas = int(data.get("POBMAS", 0) or 0)
+                campos_basicos = ["estado_codigo", "municipio_codigo", "POBTOT", "POBFEM", "POBMAS"]
+                data_adicional = {k: v for k, v in data.items() if k not in campos_basicos}
+                data_json_str = json.dumps(data_adicional) if data_adicional else None
+                estado_nombre = data.get("estado_nombre", "")
+                municipio_nombre = data.get("municipio_nombre", "")
+                cur.execute(
+                    """INSERT INTO distribucion_poblacion_municipal 
+                       (estado_codigo, estado_nombre, municipio_codigo, municipio_nombre, pobtot, pobfem, pobmas, data_json)
+                       VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                       ON CONFLICT (estado_codigo, municipio_codigo) DO UPDATE SET
+                       estado_nombre = EXCLUDED.estado_nombre,
+                       municipio_nombre = EXCLUDED.municipio_nombre,
+                       pobtot = EXCLUDED.pobtot,
+                       pobfem = EXCLUDED.pobfem,
+                       pobmas = EXCLUDED.pobmas,
+                       data_json = EXCLUDED.data_json""",
+                    (estado_codigo, estado_nombre, municipio_codigo, municipio_nombre, pobtot, pobfem, pobmas, data_json_str),
+                )
+                saved += 1
+            conn.commit()
+        return saved
+    except Exception as e:
+        print(f"Error guardando distribución población municipal (bulk): {e}")
+        import traceback
+        traceback.print_exc()
+        return saved
+
+
+def get_distribucion_poblacion_municipal_from_db(estado_nombre: str, municipio_nombre: str) -> dict | None:
+    """
+    Obtiene distribución de población por municipio desde PostgreSQL.
+    Retorna dict con datos de población por edad y sexo o None si no hay datos.
+    """
+    try:
+        import unicodedata
+        
+        def normalize_str(s: str) -> str:
+            if not s:
+                return ""
+            return "".join(
+                c for c in unicodedata.normalize("NFD", str(s).lower().strip())
+                if unicodedata.category(c) != "Mn"
+            )
+        
+        municipio_norm = normalize_str(municipio_nombre)
+        
+        with db_connection() as conn:
+            cur = conn.cursor()
+            # Verificar si existe la tabla municipios para hacer JOIN
+            cur.execute("""
+                SELECT EXISTS (
+                    SELECT FROM information_schema.tables 
+                    WHERE table_schema = 'public' 
+                    AND table_name = 'municipios'
+                )
+            """)
+            tiene_tabla_municipios = cur.fetchone()[0]
+            
+            if tiene_tabla_municipios:
+                # Buscar usando JOIN con tabla municipios
+                cur.execute(
+                    """SELECT dpm.estado_codigo, dpm.municipio_codigo, dpm.pobtot, dpm.pobfem, dpm.pobmas, dpm.data_json
+                       FROM distribucion_poblacion_municipal dpm
+                       JOIN municipios m ON dpm.estado_codigo = m.estado_codigo 
+                                          AND dpm.municipio_codigo = m.municipio_codigo
+                       WHERE m.municipio_nombre_normalizado LIKE %s 
+                         AND (m.estado_nombre = %s OR m.estado_nombre ILIKE %s)
+                       LIMIT 1""",
+                    (f"%{municipio_norm}%", estado_nombre, f"%{estado_nombre}%")
+                )
+            else:
+                # Buscar directamente en distribucion_poblacion_municipal
+                cur.execute(
+                    """SELECT estado_codigo, municipio_codigo, pobtot, pobfem, pobmas, data_json
+                       FROM distribucion_poblacion_municipal
+                       WHERE municipio_nombre ILIKE %s 
+                         AND (estado_nombre = %s OR estado_nombre ILIKE %s)
+                       LIMIT 1""",
+                    (f"%{municipio_nombre}%", estado_nombre, f"%{estado_nombre}%")
+                )
+            
+            row = cur.fetchone()
+            
+            if not row:
+                return None
+            
+            # Construir diccionario con campos básicos
+            data = {
+                "estado_codigo": row[0],
+                "municipio_codigo": row[1],
+                "POBTOT": int(row[2]) if row[2] else 0,
+                "POBFEM": int(row[3]) if row[3] else 0,
+                "POBMAS": int(row[4]) if row[4] else 0,
+            }
+            
+            # Cargar datos adicionales desde JSON si existe
+            if row[5]:  # data_json
+                import json
+                try:
+                    data_json = json.loads(row[5])
+                    if isinstance(data_json, dict):
+                        data.update(data_json)
+                except Exception:
+                    pass
+            
+            return data
+    except Exception as e:
+        print(f"Error obteniendo distribución población municipal: {e}")
+        return None
+
+
+def get_proyeccion_poblacional_municipal_from_db(estado_nombre: str, municipio_nombre: str) -> list[dict]:
+    """
+    Obtiene proyección poblacional por municipio desde PostgreSQL.
+    Retorna [{anio, sexo, pob}, ...] ordenado por año y sexo.
+    """
+    try:
+        import unicodedata
+        
+        def normalize_str(s: str) -> str:
+            if not s:
+                return ""
+            return "".join(
+                c for c in unicodedata.normalize("NFD", str(s).lower().strip())
+                if unicodedata.category(c) != "Mn"
+            )
+        
+        municipio_norm = normalize_str(municipio_nombre)
+        
+        with db_connection() as conn:
+            cur = conn.cursor()
+            # Verificar si existe tabla municipios
+            cur.execute("""
+                SELECT EXISTS (
+                    SELECT FROM information_schema.tables 
+                    WHERE table_schema = 'public' 
+                    AND table_name = 'municipios'
+                )
+            """)
+            tiene_tabla_municipios = cur.fetchone()[0]
+            
+            if tiene_tabla_municipios:
+                # Buscar con JOIN a municipios
+                cur.execute(
+                    """SELECT ppm.anio, ppm.sexo, ppm.poblacion
+                       FROM proyeccion_poblacional_municipal ppm
+                       JOIN municipios m ON ppm.estado_codigo = m.estado_codigo 
+                                          AND ppm.municipio_codigo = m.municipio_codigo
+                       WHERE m.municipio_nombre_normalizado LIKE %s 
+                         AND (m.estado_nombre = %s OR m.estado_nombre ILIKE %s)
+                       ORDER BY ppm.anio ASC, ppm.sexo ASC""",
+                    (f"%{municipio_norm}%", estado_nombre, f"%{estado_nombre}%")
+                )
+            else:
+                # Buscar directamente en proyeccion_poblacional_municipal
+                cur.execute(
+                    """SELECT anio, sexo, poblacion
+                       FROM proyeccion_poblacional_municipal
+                       WHERE municipio_nombre ILIKE %s 
+                         AND (estado_nombre = %s OR estado_nombre ILIKE %s)
+                       ORDER BY anio ASC, sexo ASC""",
+                    (f"%{municipio_nombre}%", estado_nombre, f"%{estado_nombre}%")
+                )
+            rows = cur.fetchall()
+            
+            return [
+                {
+                    "anio": int(row[0]),
+                    "sexo": str(row[1]),
+                    "pob": int(row[2]) if row[2] else 0,
+                    "poblacion": int(row[2]) if row[2] else 0,
+                }
+                for row in rows
+            ]
+    except Exception as e:
+        print(f"Error obteniendo proyección poblacional municipal: {e}")
+        return []
+
+
+def save_proyeccion_poblacional_municipal_to_db(data: list[dict]) -> bool:
+    """
+    Guarda datos de proyección poblacional municipal en PostgreSQL.
+    data = [{estado_codigo, estado_nombre, municipio_codigo, municipio_nombre, anio, sexo, poblacion}, ...]
+    Retorna True si ok.
+    """
+    if not data:
+        return False
+    try:
+        with db_connection() as conn:
+            cur = conn.cursor()
+            for record in data:
+                estado_codigo = str(record.get("estado_codigo", "")).strip().zfill(2)
+                municipio_codigo = str(record.get("municipio_codigo", "")).strip().zfill(3)
+                estado_nombre = str(record.get("estado_nombre", "")).strip()
+                municipio_nombre = str(record.get("municipio_nombre", "")).strip()
+                anio = int(record.get("anio", 0))
+                sexo = str(record.get("sexo", "")).strip().upper()
+                poblacion = int(record.get("poblacion", 0) or 0)
+                
+                if not estado_codigo or not municipio_codigo or not anio or not sexo:
+                    continue
+                
+                cur.execute(
+                    """INSERT INTO proyeccion_poblacional_municipal 
+                       (estado_codigo, estado_nombre, municipio_codigo, municipio_nombre, anio, sexo, poblacion)
+                       VALUES (%s, %s, %s, %s, %s, %s, %s)
+                       ON CONFLICT (estado_codigo, municipio_codigo, anio, sexo) DO UPDATE SET
+                       estado_nombre = EXCLUDED.estado_nombre,
+                       municipio_nombre = EXCLUDED.municipio_nombre,
+                       poblacion = EXCLUDED.poblacion""",
+                    (estado_codigo, estado_nombre, municipio_codigo, municipio_nombre, anio, sexo, poblacion),
+                )
+            conn.commit()
+            return True
+    except Exception as e:
+        print(f"Error guardando proyección poblacional municipal: {e}")
+        import traceback
+        traceback.print_exc()
+        return False
+
+
+# ——— Localidades (INEGI Censo 2020) ———
+
+def get_localidades_from_db(estado_nombre: str, municipio_nombre: str | None = None) -> list[dict]:
+    """
+    Obtiene lista de localidades desde PostgreSQL.
+    Si municipio_nombre es None, retorna localidades de todo el estado.
+    Retorna [{nombre, codigo, estado_codigo, estado_nombre, municipio_codigo, municipio_nombre}, ...]
+    """
+    try:
+        import unicodedata
+        def normalize_str(s: str) -> str:
+            if not s:
+                return ""
+            return "".join(c for c in unicodedata.normalize("NFD", str(s).lower().strip()) if unicodedata.category(c) != "Mn")
+        estado_norm = normalize_str(estado_nombre)
+        municipio_norm = normalize_str(municipio_nombre) if municipio_nombre else None
+        with db_connection() as conn:
+            cur = conn.cursor()
+            if municipio_nombre:
+                cur.execute(
+                    """SELECT localidad_nombre, loc_codigo, estado_codigo, estado_nombre, municipio_codigo, municipio_nombre
+                       FROM localidades
+                       WHERE estado_nombre ILIKE %s AND municipio_nombre ILIKE %s
+                       ORDER BY localidad_nombre""",
+                    (f"%{estado_nombre}%", f"%{municipio_nombre}%")
+                )
+            else:
+                cur.execute(
+                    """SELECT localidad_nombre, loc_codigo, estado_codigo, estado_nombre, municipio_codigo, municipio_nombre
+                       FROM localidades
+                       WHERE estado_nombre ILIKE %s
+                       ORDER BY municipio_nombre, localidad_nombre""",
+                    (f"%{estado_nombre}%",)
+                )
+            rows = cur.fetchall()
+            return [
+                {
+                    "nombre": str(row[0]) or "",
+                    "codigo": str(row[1]) or "",
+                    "estado_codigo": str(row[2]) or "",
+                    "estado_nombre": str(row[3]) or "",
+                    "municipio_codigo": str(row[4]) or "",
+                    "municipio_nombre": str(row[5]) or "",
+                }
+                for row in rows
+            ]
+    except Exception as e:
+        print(f"Error obteniendo localidades: {e}")
+        return []
+
+
+def save_localidades_to_db(lista: list[dict]) -> bool:
+    """Guarda lista de localidades en PostgreSQL."""
+    if not lista:
+        return False
+    try:
+        with db_connection() as conn:
+            cur = conn.cursor()
+            for r in lista:
+                cur.execute(
+                    """INSERT INTO localidades (estado_codigo, estado_nombre, municipio_codigo, municipio_nombre, loc_codigo, localidad_nombre)
+                       VALUES (%s, %s, %s, %s, %s, %s)
+                       ON CONFLICT (estado_codigo, municipio_codigo, loc_codigo) DO UPDATE SET
+                       estado_nombre = EXCLUDED.estado_nombre,
+                       municipio_nombre = EXCLUDED.municipio_nombre,
+                       localidad_nombre = EXCLUDED.localidad_nombre""",
+                    (
+                        str(r.get("estado_codigo", "")).strip().zfill(2),
+                        str(r.get("estado_nombre", "")).strip(),
+                        str(r.get("municipio_codigo", "")).strip().zfill(3),
+                        str(r.get("municipio_nombre", "")).strip(),
+                        str(r.get("loc_codigo", "")).strip(),
+                        str(r.get("localidad_nombre", "")).strip(),
+                    ),
+                )
+            conn.commit()
+            return True
+    except Exception as e:
+        print(f"Error guardando localidades: {e}")
+        return False
+
+
+def get_distribucion_poblacion_localidad_from_db(estado_nombre: str, municipio_nombre: str, localidad_nombre: str) -> dict | None:
+    """Obtiene distribución de población por localidad desde PostgreSQL."""
+    try:
+        import json
+        import unicodedata
+        def normalize_str(s: str) -> str:
+            if not s:
+                return ""
+            return "".join(c for c in unicodedata.normalize("NFD", str(s).lower().strip()) if unicodedata.category(c) != "Mn")
+        loc_norm = normalize_str(localidad_nombre)
+        with db_connection() as conn:
+            cur = conn.cursor()
+            cur.execute(
+                """SELECT estado_codigo, municipio_codigo, loc_codigo, estado_nombre, municipio_nombre, localidad_nombre, pobtot, pobfem, pobmas, data_json
+                   FROM distribucion_poblacion_localidad
+                   WHERE estado_nombre ILIKE %s AND municipio_nombre ILIKE %s
+                     AND (localidad_nombre ILIKE %s OR localidad_nombre ILIKE %s)
+                   LIMIT 1""",
+                (f"%{estado_nombre}%", f"%{municipio_nombre}%", f"%{localidad_nombre}%", f"%{loc_norm}%")
+            )
+            row = cur.fetchone()
+            if not row:
+                return None
+            data = {
+                "estado_codigo": row[0], "municipio_codigo": row[1], "loc_codigo": row[2],
+                "estado_nombre": row[3], "municipio_nombre": row[4], "localidad_nombre": row[5],
+                "POBTOT": int(row[6]) if row[6] else 0,
+                "POBFEM": int(row[7]) if row[7] else 0,
+                "POBMAS": int(row[8]) if row[8] else 0,
+            }
+            if row[9]:
+                try:
+                    data.update(json.loads(row[9]))
+                except Exception:
+                    pass
+            return data
+    except Exception as e:
+        print(f"Error obteniendo distribución localidad: {e}")
+        return None
+
+
+def save_distribucion_poblacion_localidad_to_db(data: dict) -> bool:
+    """Guarda distribución de población de una localidad en PostgreSQL."""
+    if not data:
+        return False
+    try:
+        import json
+        ec = str(data.get("estado_codigo", "")).strip().zfill(2)
+        mc = str(data.get("municipio_codigo", "")).strip().zfill(3)
+        lc = str(data.get("loc_codigo", "")).strip()
+        if not ec or not mc or not lc:
+            return False
+        pt = int(data.get("POBTOT", 0) or 0)
+        pf = int(data.get("POBFEM", 0) or 0)
+        pm = int(data.get("POBMAS", 0) or 0)
+        campos = ["estado_codigo", "municipio_codigo", "loc_codigo", "estado_nombre", "municipio_nombre", "localidad_nombre", "POBTOT", "POBFEM", "POBMAS"]
+        extra = {k: v for k, v in data.items() if k not in campos}
+        js = json.dumps(extra) if extra else None
+        en = str(data.get("estado_nombre", "")).strip()
+        mn = str(data.get("municipio_nombre", "")).strip()
+        ln = str(data.get("localidad_nombre", "")).strip()
+        with db_connection() as conn:
+            cur = conn.cursor()
+            cur.execute(
+                """INSERT INTO distribucion_poblacion_localidad
+                   (estado_codigo, estado_nombre, municipio_codigo, municipio_nombre, loc_codigo, localidad_nombre, pobtot, pobfem, pobmas, data_json)
+                   VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                   ON CONFLICT (estado_codigo, municipio_codigo, loc_codigo) DO UPDATE SET
+                   estado_nombre = EXCLUDED.estado_nombre,
+                   municipio_nombre = EXCLUDED.municipio_nombre,
+                   localidad_nombre = EXCLUDED.localidad_nombre,
+                   pobtot = EXCLUDED.pobtot,
+                   pobfem = EXCLUDED.pobfem,
+                   pobmas = EXCLUDED.pobmas,
+                   data_json = EXCLUDED.data_json""",
+                (ec, en, mc, mn, lc, ln, pt, pf, pm, js),
+            )
+            conn.commit()
+        return True
+    except Exception as e:
+        print(f"Error guardando distribución localidad: {e}")
+        return False
+
+
+def save_distribucion_poblacion_localidad_bulk(lista_data: list[dict]) -> int:
+    """Guarda en lote distribución de población por localidad. Retorna número de registros insertados."""
+    if not lista_data:
+        return 0
+    import json
+    n = 0
+    try:
+        with db_connection() as conn:
+            cur = conn.cursor()
+            for data in lista_data:
+                ec = str(data.get("estado_codigo", "")).strip().zfill(2)
+                mc = str(data.get("municipio_codigo", "")).strip().zfill(3)
+                lc = str(data.get("loc_codigo", "")).strip()
+                if not ec or not mc or not lc:
+                    continue
+                pt = int(data.get("POBTOT", 0) or 0)
+                pf = int(data.get("POBFEM", 0) or 0)
+                pm = int(data.get("POBMAS", 0) or 0)
+                campos = ["estado_codigo", "municipio_codigo", "loc_codigo", "estado_nombre", "municipio_nombre", "localidad_nombre", "POBTOT", "POBFEM", "POBMAS"]
+                extra = {k: v for k, v in data.items() if k not in campos}
+                js = json.dumps(extra) if extra else None
+                en = str(data.get("estado_nombre", "")).strip()
+                mn = str(data.get("municipio_nombre", "")).strip()
+                ln = str(data.get("localidad_nombre", "")).strip()
+                cur.execute(
+                    """INSERT INTO distribucion_poblacion_localidad
+                       (estado_codigo, estado_nombre, municipio_codigo, municipio_nombre, loc_codigo, localidad_nombre, pobtot, pobfem, pobmas, data_json)
+                       VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                       ON CONFLICT (estado_codigo, municipio_codigo, loc_codigo) DO UPDATE SET
+                       estado_nombre = EXCLUDED.estado_nombre, municipio_nombre = EXCLUDED.municipio_nombre,
+                       localidad_nombre = EXCLUDED.localidad_nombre, pobtot = EXCLUDED.pobtot,
+                       pobfem = EXCLUDED.pobfem, pobmas = EXCLUDED.pobmas, data_json = EXCLUDED.data_json""",
+                    (ec, en, mc, mn, lc, ln, pt, pf, pm, js),
+                )
+                n += 1
+            conn.commit()
+        return n
+    except Exception as e:
+        print(f"Error guardando distribución localidad (bulk): {e}")
+        return n
+
+
+def get_all_distribucion_localidad_para_crecimiento(limit: int = 100000) -> list[dict]:
+    """Lista (estado_codigo, estado_nombre, municipio_codigo, municipio_nombre, loc_codigo, localidad_nombre) para ETL de crecimiento histórico."""
+    try:
+        with db_connection() as conn:
+            cur = conn.cursor()
+            cur.execute(
+                """SELECT estado_codigo, estado_nombre, municipio_codigo, municipio_nombre, loc_codigo, localidad_nombre
+                   FROM distribucion_poblacion_localidad
+                   ORDER BY estado_codigo, municipio_codigo, loc_codigo
+                   LIMIT %s""",
+                (limit,),
+            )
+            rows = cur.fetchall()
+            return [
+                {
+                    "estado_codigo": r[0], "estado_nombre": r[1],
+                    "municipio_codigo": r[2], "municipio_nombre": r[3],
+                    "loc_codigo": r[4], "localidad_nombre": r[5],
+                }
+                for r in rows
+            ]
+    except Exception as e:
+        print(f"Error get_all_distribucion_localidad_para_crecimiento: {e}")
+        return []
+
+
+def get_crecimiento_historico_localidad_from_db(estado_nombre: str, municipio_nombre: str, localidad_nombre: str) -> list[dict]:
+    """Obtiene crecimiento histórico (2005, 2010, 2020) por localidad desde PostgreSQL. Retorna [] si no hay datos."""
+    try:
+        with db_connection() as conn:
+            cur = conn.cursor()
+            cur.execute(
+                """SELECT anio, poblacion, hombres, mujeres
+                   FROM crecimiento_historico_localidad
+                   WHERE estado_nombre ILIKE %s AND municipio_nombre ILIKE %s
+                     AND (localidad_nombre ILIKE %s OR localidad_nombre ILIKE %s)
+                   ORDER BY anio""",
+                (f"%{estado_nombre}%", f"%{municipio_nombre}%", f"%{localidad_nombre}%", f"%{localidad_nombre.strip().lower()}%"),
+            )
+            rows = cur.fetchall()
+            return [
+                {"anio": r[0], "poblacion": r[1], "hombres": r[2], "mujeres": r[3]}
+                for r in rows
+            ]
+    except Exception as e:
+        print(f"Error obteniendo crecimiento histórico localidad: {e}")
+        return []
+
+
+def save_crecimiento_historico_localidad_to_db(
+    estado_codigo: str,
+    estado_nombre: str,
+    municipio_codigo: str,
+    municipio_nombre: str,
+    loc_codigo: str,
+    localidad_nombre: str,
+    registros: list[dict],
+) -> bool:
+    """Guarda crecimiento histórico de una localidad. registros = [{anio, poblacion, hombres, mujeres}, ...]."""
+    if not registros:
+        return False
+    try:
+        with db_connection() as conn:
+            cur = conn.cursor()
+            for r in registros:
+                cur.execute(
+                    """INSERT INTO crecimiento_historico_localidad
+                       (estado_codigo, estado_nombre, municipio_codigo, municipio_nombre, loc_codigo, localidad_nombre, anio, poblacion, hombres, mujeres)
+                       VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                       ON CONFLICT (estado_codigo, municipio_codigo, loc_codigo, anio) DO UPDATE SET
+                       poblacion = EXCLUDED.poblacion, hombres = EXCLUDED.hombres, mujeres = EXCLUDED.mujeres""",
+                    (
+                        estado_codigo, estado_nombre, municipio_codigo, municipio_nombre,
+                        loc_codigo, localidad_nombre,
+                        int(r.get("anio", 0)),
+                        int(r.get("poblacion", 0)),
+                        int(r.get("hombres", 0)),
+                        int(r.get("mujeres", 0)),
+                    ),
+                )
+            conn.commit()
+        return True
+    except Exception as e:
+        print(f"Error guardando crecimiento histórico localidad: {e}")
+        return False
+
+
+def get_ciudades_from_db() -> list[dict]:
+    """Lista de ciudades para el menú (slug, nombre)."""
+    try:
+        with db_connection() as conn:
+            cur = conn.cursor()
+            cur.execute("SELECT slug, nombre FROM ciudades ORDER BY id")
+            return [{"slug": r[0], "nombre": r[1]} for r in cur.fetchall()]
+    except Exception as e:
+        print(f"Error get_ciudades_from_db: {e}")
+        return []
+
+
+def get_ciudad_by_slug_from_db(slug: str) -> dict | None:
+    """Devuelve {slug, nombre, estado_codigo, estado_nombre, municipio_codigo, municipio_nombre, es_entidad_completa} o None."""
+    try:
+        with db_connection() as conn:
+            cur = conn.cursor()
+            cur.execute(
+                "SELECT slug, nombre, estado_codigo, estado_nombre, municipio_codigo, municipio_nombre, es_entidad_completa FROM ciudades WHERE slug = %s",
+                (slug,),
+            )
+            row = cur.fetchone()
+            if not row:
+                return None
+            return {
+                "slug": row[0], "nombre": row[1], "estado_codigo": row[2], "estado_nombre": row[3],
+                "municipio_codigo": row[4], "municipio_nombre": row[5], "es_entidad_completa": row[6],
+            }
+    except Exception as e:
+        print(f"Error get_ciudad_by_slug_from_db: {e}")
+        return None
+
+
+def get_crecimiento_historico_municipal_from_db(estado_codigo: str, municipio_codigo: str | None = None) -> list[dict]:
+    """Crecimiento histórico por municipio (2005, 2010, 2020). Si municipio_codigo es None, agrega todo el estado."""
+    try:
+        with db_connection() as conn:
+            cur = conn.cursor()
+            if municipio_codigo:
+                cur.execute(
+                    """SELECT anio, poblacion, hombres, mujeres FROM crecimiento_historico_municipal
+                       WHERE estado_codigo = %s AND municipio_codigo = %s ORDER BY anio""",
+                    (estado_codigo, municipio_codigo),
+                )
+            else:
+                cur.execute(
+                    """SELECT anio, SUM(poblacion) AS poblacion, SUM(hombres) AS hombres, SUM(mujeres) AS mujeres
+                       FROM crecimiento_historico_municipal WHERE estado_codigo = %s GROUP BY anio ORDER BY anio""",
+                    (estado_codigo,),
+                )
+            rows = cur.fetchall()
+            return [{"anio": r[0], "poblacion": int(r[1]), "hombres": int(r[2]), "mujeres": int(r[3])} for r in rows]
+    except Exception as e:
+        print(f"Error get_crecimiento_historico_municipal_from_db: {e}")
+        return []
+
+
+def save_crecimiento_historico_municipal_bulk(lista: list[dict]) -> int:
+    """Bulk insert crecimiento_historico_municipal. Cada item: estado_codigo, estado_nombre, municipio_codigo, municipio_nombre, anio, poblacion, hombres, mujeres."""
+    if not lista:
+        return 0
+    n = 0
+    try:
+        with db_connection() as conn:
+            cur = conn.cursor()
+            for r in lista:
+                cur.execute(
+                    """INSERT INTO crecimiento_historico_municipal
+                       (estado_codigo, estado_nombre, municipio_codigo, municipio_nombre, anio, poblacion, hombres, mujeres)
+                       VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                       ON CONFLICT (estado_codigo, municipio_codigo, anio) DO UPDATE SET
+                       poblacion = EXCLUDED.poblacion, hombres = EXCLUDED.hombres, mujeres = EXCLUDED.mujeres""",
+                    (
+                        str(r.get("estado_codigo", "")).strip().zfill(2),
+                        str(r.get("estado_nombre", "")).strip(),
+                        str(r.get("municipio_codigo", "")).strip().zfill(3),
+                        str(r.get("municipio_nombre", "")).strip(),
+                        int(r.get("anio", 0)),
+                        int(r.get("poblacion", 0)),
+                        int(r.get("hombres", 0)),
+                        int(r.get("mujeres", 0)),
+                    ),
+                )
+                n += 1
+            conn.commit()
+        return n
+    except Exception as e:
+        print(f"Error save_crecimiento_historico_municipal_bulk: {e}")
+        return n
+
+
+def save_crecimiento_historico_localidad_bulk(lista: list[dict]) -> int:
+    """Bulk insert crecimiento histórico. Cada item: estado_codigo, estado_nombre, municipio_codigo, municipio_nombre, loc_codigo, localidad_nombre, anio, poblacion, hombres, mujeres."""
+    if not lista:
+        return 0
+    n = 0
+    try:
+        with db_connection() as conn:
+            cur = conn.cursor()
+            for r in lista:
+                cur.execute(
+                    """INSERT INTO crecimiento_historico_localidad
+                       (estado_codigo, estado_nombre, municipio_codigo, municipio_nombre, loc_codigo, localidad_nombre, anio, poblacion, hombres, mujeres)
+                       VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                       ON CONFLICT (estado_codigo, municipio_codigo, loc_codigo, anio) DO UPDATE SET
+                       poblacion = EXCLUDED.poblacion, hombres = EXCLUDED.hombres, mujeres = EXCLUDED.mujeres""",
+                    (
+                        str(r.get("estado_codigo", "")).strip().zfill(2),
+                        str(r.get("estado_nombre", "")).strip(),
+                        str(r.get("municipio_codigo", "")).strip().zfill(3),
+                        str(r.get("municipio_nombre", "")).strip(),
+                        str(r.get("loc_codigo", "")).strip(),
+                        str(r.get("localidad_nombre", "")).strip(),
+                        int(r.get("anio", 0)),
+                        int(r.get("poblacion", 0)),
+                        int(r.get("hombres", 0)),
+                        int(r.get("mujeres", 0)),
+                    ),
+                )
+                n += 1
+            conn.commit()
+        return n
+    except Exception as e:
+        print(f"Error guardando crecimiento histórico localidad (bulk): {e}")
+        return n
+
+
+def get_distribucion_poblacion_entidad_from_db(estado_codigo: str) -> dict | None:
+    """Agrega distribución de todos los municipios de un estado (para CDMX). Retorna dict con POBTOT, POBFEM, POBMAS y data_json con grupos de edad sumados."""
+    try:
+        import json
+        with db_connection() as conn:
+            cur = conn.cursor()
+            cur.execute(
+                """SELECT pobtot, pobfem, pobmas, data_json FROM distribucion_poblacion_municipal WHERE estado_codigo = %s""",
+                (estado_codigo.strip().zfill(2),),
+            )
+            rows = cur.fetchall()
+            if not rows:
+                return None
+            pobtot = sum(int(r[0] or 0) for r in rows)
+            pobfem = sum(int(r[1] or 0) for r in rows)
+            pobmas = sum(int(r[2] or 0) for r in rows)
+            merged_json = {}
+            for r in rows:
+                if r[3]:
+                    try:
+                        js = json.loads(r[3])
+                        for k, v in js.items():
+                            if isinstance(v, (int, float)):
+                                merged_json[k] = merged_json.get(k, 0) + int(v)
+                    except Exception:
+                        pass
+            cur.execute("SELECT estado_nombre FROM distribucion_poblacion_municipal WHERE estado_codigo = %s LIMIT 1", (estado_codigo.strip().zfill(2),))
+            nom = cur.fetchone()
+            estado_nombre = nom[0] if nom else ""
+            return {
+                "estado_codigo": estado_codigo.strip().zfill(2), "estado_nombre": estado_nombre,
+                "POBTOT": pobtot, "POBFEM": pobfem, "POBMAS": pobmas,
+                **merged_json,
+            }
+    except Exception as e:
+        print(f"Error get_distribucion_poblacion_entidad_from_db: {e}")
+        return None
+
+
+def save_aeropuertos_estatal_to_db(data: list[dict]) -> bool:
+    """
+    Guarda operaciones aeroportuarias por estado en PostgreSQL.
+    data = [{estado_codigo, aeropuerto, grupo, anio, operaciones}, ...].
+    Retorna True si ok.
+    """
+    if not data:
+        return False
+    try:
+        with db_connection() as conn:
+            cur = conn.cursor()
+            # Limpiar datos existentes antes de insertar nuevos
+            cur.execute("DELETE FROM aeropuertos_estatal")
+            for row in data:
+                codigo = str(row.get("estado_codigo", "")).strip().zfill(2)
+                aeropuerto = str(row.get("aeropuerto", "")).strip()
+                grupo = str(row.get("grupo", "")).strip() or None
+                anio = int(row.get("anio", 0))
+                operaciones = int(row.get("operaciones", 0))
+                if codigo and aeropuerto and anio > 0:
+                    cur.execute(
+                        """INSERT INTO aeropuertos_estatal (estado_codigo, aeropuerto, grupo, anio, operaciones)
+                           VALUES (%s, %s, %s, %s, %s)
+                           ON CONFLICT (estado_codigo, aeropuerto, anio) DO UPDATE SET
+                           grupo = EXCLUDED.grupo,
+                           operaciones = EXCLUDED.operaciones""",
+                        (codigo, aeropuerto, grupo, anio, operaciones),
+                    )
+            conn.commit()
+            return True
+    except Exception as e:
+        print(f"Error guardando aeropuertos: {e}")
+        return False
+
+
+def get_llegada_turistas_estatal_from_db(estado_codigo: str) -> list[dict]:
+    """
+    Retorna histórico de llegada de turistas para un estado.
+    [{anio, turistas_total}, ...] ordenado por año descendente.
+    """
+    try:
+        codigo = str(estado_codigo).strip().zfill(2)
+        with db_connection() as conn:
+            cur = conn.cursor()
+            cur.execute(
+                "SELECT anio, turistas_total FROM llegada_turistas_estatal WHERE estado_codigo = %s ORDER BY anio DESC LIMIT 10",
+                (codigo,)
+            )
+            rows = cur.fetchall()
+            # Ordenar ascendente para la gráfica? El requerimiento dice "10 años más recientes".
+            # Pero Plotly suele preferir orden cronológico.
+            data = [{"anio": r[0], "total": r[1]} for r in rows]
+            data.sort(key=lambda x: x["anio"])
+            return data
+    except Exception:
+        return []
+
+
+# ——— Funciones para Análisis Geo-Económico (PIB y Demografía General) ———
+
+def save_estado_info_general_to_db(estado: str, poblacion: int, extension_km2: int) -> bool:
+    """Guarda información estática (Censo 2020 y km2) de un estado."""
+    try:
+        from services.db import db_connection
+        with db_connection() as conn:
+            cur = conn.cursor()
+            cur.execute(
+                """INSERT INTO estado_info_general (estado, poblacion, extension_km2)
+                   VALUES (%s, %s, %s)
+                   ON CONFLICT (estado) DO UPDATE SET
+                   poblacion = EXCLUDED.poblacion,
+                   extension_km2 = EXCLUDED.extension_km2""",
+                (estado.strip(), poblacion, extension_km2)
+            )
+            conn.commit()
+            return True
+    except Exception as e:
+        print(f"Error guardando estado_info_general para {estado}: {e}")
+        return False
+
+def save_pib_estatal_to_db(data: list[dict]) -> bool:
+    """
+    Guarda el PIB Histórico por Estado en PostgreSQL.
+    data = [{estado, anio, pib_actual, pib_anterior, variacion_pct}, ...]
+    """
+    if not data:
+        return False
+    try:
+        from services.db import db_connection
+        with db_connection() as conn:
+            cur = conn.cursor()
+            for row in data:
+                estado = (row.get("estado") or row.get("Estado") or "").strip()
+                anio = row.get("anio") or row.get("Anio")
+                p_act = row.get("pib_actual") or row.get("PIB_Actual") or 0.0
+                p_ant = row.get("pib_anterior") or row.get("PIB_Anterior") or 0.0
+                v_pct = row.get("variacion_pct") or row.get("Variacion_Pct") or 0.0
+                if estado and anio:
+                    cur.execute(
+                        """INSERT INTO pib_estatal (estado, anio, pib_actual, pib_anterior, variacion_pct)
+                           VALUES (%s, %s, %s, %s, %s)
+                           ON CONFLICT (estado, anio) DO UPDATE SET
+                           pib_actual = EXCLUDED.pib_actual,
+                           pib_anterior = EXCLUDED.pib_anterior,
+                           variacion_pct = EXCLUDED.variacion_pct""",
+                        (estado, anio, p_act, p_ant, v_pct)
+                    )
+            conn.commit()
+            return True
+    except Exception as e:
+        print(f"Error guardando pib_estatal: {e}")
+        return False
+
+def get_geo_economico_from_db(estado: str) -> dict | None:
+    """
+    Retorna datos de PIB e info general para el Análisis Geo-Económico.
+    Retorna: { series: [{anio, pib_actual, pib_anterior, variacion_pct}], poblacion, extension_km2 }
+    """
+    try:
+        from services.db import db_connection
+        estado_clean = estado.strip().lower()
+        with db_connection() as conn:
+            cur = conn.cursor()
+            
+            # 1. Obtener Info General (Población, Extensión)
+            cur.execute(
+                "SELECT poblacion, extension_km2 FROM estado_info_general WHERE LOWER(estado) = %s LIMIT 1",
+                (estado_clean,)
+            )
+            info_row = cur.fetchone()
+            if not info_row:
+                return None
+            pob, ext = info_row
+
+            # 2. Obtener Histórico de PIB
+            cur.execute(
+                "SELECT anio, pib_actual, pib_anterior, variacion_pct FROM pib_estatal WHERE LOWER(estado) = %s ORDER BY anio ASC",
+                (estado_clean,)
+            )
+            rows = cur.fetchall()
+            series = [
+                {"anio": r[0], "pib_actual": float(r[1]), "pib_anterior": float(r[2]), "variacion_pct": float(r[3])} 
+                for r in rows
+            ]
+            
+            return {
+                "series": series,
+                "poblacion": pob,
+                "extension_km2": ext
+            }
+    except Exception as e:
+        print(f"Error get_geo_economico_from_db para {estado}: {e}")
+        return None
+
+# ——— Funciones para Municipios ———
+
+def _normalizar_municipio(s: str) -> str:
+    """Normaliza nombre de municipio para comparación (sin acentos, minúsculas)."""
+    import unicodedata
+    return "".join(
+        c for c in unicodedata.normalize("NFD", str(s).lower().strip())
+        if unicodedata.category(c) != "Mn"
+    )
+
+
+def _estado_nombre_to_codigo(estado_nombre: str) -> str | None:
+    """Convierte nombre de estado a código INEGI (01-32)."""
+    estado_map = {
+        "aguascalientes": "01", "baja california": "02", "baja california sur": "03",
+        "campeche": "04", "coahuila de zaragoza": "05", "colima": "06",
+        "chiapas": "07", "chihuahua": "08", "ciudad de méxico": "09",
+        "durango": "10", "guanajuato": "11", "guerrero": "12",
+        "hidalgo": "13", "jalisco": "14", "méxico": "15",
+        "michoacán de ocampo": "16", "morelos": "17", "nayarit": "18",
+        "nuevo león": "19", "oaxaca": "20", "puebla": "21",
+        "querétaro": "22", "quintana roo": "23", "san luis potosí": "24",
+        "sinaloa": "25", "sonora": "26", "tabasco": "27",
+        "tamaulipas": "28", "tlaxcala": "29", "veracruz de ignacio de la llave": "30",
+        "yucatán": "31", "zacatecas": "32",
+    }
+    estado_norm = _normalizar_municipio(estado_nombre)
+    return estado_map.get(estado_norm)
+
+
+def get_municipios_from_db(estado_nombre: str) -> list[dict]:
+    """
+    Obtiene lista de municipios para un estado desde PostgreSQL.
+    Prioridad: PostgreSQL.
+    Retorna [{nombre, codigo}, ...] ordenado por nombre.
+    """
+    if not estado_nombre:
+        return []
+    estado_codigo = _estado_nombre_to_codigo(estado_nombre)
+    if not estado_codigo:
+        return []
+    try:
+        with db_connection() as conn:
+            cur = conn.cursor()
+            cur.execute(
+                """SELECT municipio_nombre, municipio_codigo
+                   FROM municipios 
+                   WHERE estado_codigo = %s 
+                   ORDER BY municipio_nombre""",
+                (estado_codigo,),
+            )
+            rows = cur.fetchall()
+            return [
+                {"nombre": r[0], "codigo": r[1]}
+                for r in rows
+            ]
+    except Exception:
+        return []

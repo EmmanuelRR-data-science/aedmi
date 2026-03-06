@@ -1,0 +1,110 @@
+{
+"crecimiento": [
+{
+"anio": 1990,
+"valor": 1276323,
+"crecimiento_pct": null
+},
+{
+"anio": 1995,
+"valor": 1336496,
+"crecimiento_pct": 4.71
+},
+{
+"anio": 2000,
+"valor": 1353610,
+"crecimiento_pct": 1.28
+},
+{
+"anio": 2005,
+"valor": 1367692,
+"crecimiento_pct": 1.04
+},
+{
+"anio": 2010,
+"valor": 1490668,
+"crecimiento_pct": 8.99
+},
+{
+"anio": 2015,
+"valor": 1581575,
+"crecimiento_pct": 6.1
+},
+{
+"anio": 2020,
+"valor": 1622138,
+"crecimiento_pct": 2.56
+}
+],
+"genero": [
+{
+"anio": 1995,
+"hombres": 655540,
+"mujeres": 680956
+},
+{
+"anio": 2000,
+"hombres": 653583,
+"mujeres": 700027
+},
+{
+"anio": 2005,
+"hombres": 659333,
+"mujeres": 708359
+},
+{
+"anio": 2010,
+"hombres": 726897,
+"mujeres": 763771
+},
+{
+"anio": 2020,
+"hombres": 791058,
+"mujeres": 831080
+}
+],
+"edad": [
+{
+"anio": 1990,
+"0-19": 630701,
+"20-64": 578997,
+"65+ años": 63257,
+"No especificado": 0
+},
+{
+"anio": 1995,
+"0-19": 620597,
+"20-64": 640398,
+"65+ años": 73104,
+"No especificado": 0
+},
+{
+"anio": 2000,
+"0-19": 593023,
+"20-64": 668350,
+"65+ años": 83447,
+"No especificado": 0
+},
+{
+"anio": 2005,
+"0-19": 557965,
+"20-64": 702780,
+"65+ años": 95765,
+"No especificado": 0
+},
+{
+"anio": 2010,
+"0-19": 585769,
+"20-64": 780619,
+"65+ años": 110809,
+"No especificado": 0
+},
+{
+"anio": 2020,
+"0-19": 574546,
+"20-64": 903994,
+"65+ años": 141501,
+"No especificado": 0
+}
+]
+}

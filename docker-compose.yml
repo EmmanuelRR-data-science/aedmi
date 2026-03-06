@@ -9,6 +9,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./etl/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
+      - ./etl/seeds/actividad_hotelera_estatal.sql:/docker-entrypoint-initdb.d/02-actividad-hotelera-estatal.sql
     ports:
       - "${POSTGRES_PORT:-5433}:5432"
     healthcheck:
@@ -32,6 +33,9 @@ services:
       db:
         condition: service_healthy
     command: python -m etl.run
+    volumes:
+      - .:/app
+      - /app/.venv
     profiles:
       - tools
 
@@ -73,6 +77,8 @@ services:
       db:
         condition: service_healthy
     volumes:
+      - .:/app
+      - /app/.venv
       - ./assets:/app/assets:ro
 
 volumes:

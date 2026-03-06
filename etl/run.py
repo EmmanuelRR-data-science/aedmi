@@ -270,6 +270,18 @@ def run_etl():
         except Exception as e:
             print(f"  [WARN] Balanza visitantes: {e}")
 
+        # Balanza Comercial por Producto (Economía/DataMéxico - inegi_foreign_trade_product)
+        try:
+            from services.data_sources import fetch_balanza_comercial_producto_from_api
+            from services.db import save_balanza_comercial_producto_to_db
+
+            bcp = fetch_balanza_comercial_producto_from_api()
+            if bcp:
+                save_balanza_comercial_producto_to_db(bcp)
+                print(f"  Balanza comercial por producto: {len(bcp)} registros")
+        except Exception as e:
+            print(f"  [WARN] Balanza comercial por producto: {e}")
+
         # Anuncios de Inversión Combinados (DataMéxico)
         try:
             from services.data_sources import _fetch_and_process_anuncios_combinados, _load_anuncios_combinados_from_csv
@@ -307,6 +319,194 @@ def run_etl():
                 print(f"  Participación Mercado Aéreo: {len(pma.get('nacional', []))} nacional, {len(pma.get('internacional', []))} internacional")
         except Exception as e:
             print(f"  [WARN] Participación Mercado Aéreo: {e}")
+
+        # Producto Aeropuertos Nacional (Excel 2006-2025) → PostgreSQL
+        try:
+            import os
+            from services.data_sources import load_producto_aeropuertos_from_excel
+            from services.db import save_producto_aeropuertos_nacional_to_db
+
+            xlsx_path = os.getenv("PRODUCTO_AEROPUERTOS_XLSX", "").strip()
+            if not xlsx_path or not os.path.isfile(xlsx_path):
+                downloads = os.path.join(os.environ.get("USERPROFILE", ""), "Downloads", "producto-aeropuertos-2006-2025-nov-29122025.xlsx")
+                if os.path.isfile(downloads):
+                    xlsx_path = downloads
+            if xlsx_path and os.path.isfile(xlsx_path):
+                data = load_producto_aeropuertos_from_excel(xlsx_path)
+                if data:
+                    save_producto_aeropuertos_nacional_to_db(data)
+                    print(f"  Producto Aeropuertos Nacional: {len(data)} registros -> PostgreSQL")
+                else:
+                    print("  Producto Aeropuertos Nacional: 0 registros (revisar estructura del Excel)")
+            else:
+                print("  Producto Aeropuertos Nacional: archivo no encontrado. Defina PRODUCTO_AEROPUERTOS_XLSX o coloque el .xlsx en Downloads.")
+        except Exception as e:
+            print(f"  [WARN] Producto Aeropuertos Nacional: {e}")
+
+        # Proyecciones CONAPO: descargar CSV si no existe y cargar por estado
+        try:
+            from services.data_sources import _download_conapo_proyecciones_csv, get_proyecciones_conapo, STATE_ID_TO_NAME
+            from services.db import save_proyecciones_conapo_to_db
+
+            csv_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "process", "proyecciones_conapo.csv")
+            if not os.path.isfile(csv_path) or os.path.getsize(csv_path) < 500:
+                if _download_conapo_proyecciones_csv():
+                    print("  Proyecciones CONAPO: CSV descargado")
+            proyecciones_ok = 0
+            for _sid, nombre in STATE_ID_TO_NAME.items():
+                try:
+                    data = get_proyecciones_conapo(nombre)
+                    if data and len(data) > 0:
+                        codigo = str(_sid).zfill(2)
+                        if save_proyecciones_conapo_to_db(codigo, data):
+                            proyecciones_ok += 1
+                except Exception:
+                    pass
+            if proyecciones_ok:
+                print(f"  Proyecciones CONAPO: {proyecciones_ok} estados -> PostgreSQL")
+        except Exception as e:
+            print(f"  [WARN] Proyecciones CONAPO: {e}")
+
+        # ITAEE estatal (INEGI BIE con token en .env)
+        try:
+            from services.data_sources import get_itaee_estatal, STATE_ID_TO_NAME
+            from services.db import save_itaee_estatal_to_db
+
+            itaee_ok = 0
+            for _sid, nombre in STATE_ID_TO_NAME.items():
+                try:
+                    data = get_itaee_estatal(nombre)
+                    if data:
+                        codigo = str(_sid).zfill(2)
+                        if save_itaee_estatal_to_db(codigo, data):
+                            itaee_ok += 1
+                except Exception:
+                    pass
+            if itaee_ok:
+                print(f"  ITAEE estatal: {itaee_ok} estados -> PostgreSQL")
+        except Exception as e:
+            print(f"  [WARN] ITAEE estatal: {e}")
+
+        # Exportaciones por Estado (DataMéxico API, sin token)
+        try:
+            from services.data_sources import _get_exportaciones_por_estado_from_api
+            from services.db import save_exportaciones_estatal_to_db
+
+            api_data = _get_exportaciones_por_estado_from_api()
+            if api_data:
+                if save_exportaciones_estatal_to_db(api_data):
+                    print(f"  Exportaciones estatal: {len(api_data)} registros -> PostgreSQL")
+        except Exception as e:
+            print(f"  [WARN] Exportaciones estatal: {e}")
+
+        # Aeropuertos por Estado (DGAC Excel desde CUADRO_DGAC_URL)
+        try:
+            from services.data_sources import _fetch_aeropuertos_estatal_from_dgac
+            from services.db import save_aeropuertos_estatal_to_db
+
+            por_estado = _fetch_aeropuertos_estatal_from_dgac()
+            if por_estado:
+                if save_aeropuertos_estatal_to_db(por_estado):
+                    print(f"  Aeropuertos estatal: {len(por_estado)} registros -> PostgreSQL")
+        except Exception as e:
+            print(f"  [WARN] Aeropuertos estatal: {e}")
+
+        # Actividad Hotelera estatal (CETM): archivo local CETM_LOCAL_XLSX o CETM_EXCEL_URL
+        try:
+            from services.data_sources import load_cetm_actividad_hotelera_todos_estados
+            from services.db import save_actividad_hotelera_estatal_to_db
+
+            all_data = load_cetm_actividad_hotelera_todos_estados()
+            hotelera_ok = 0
+            for codigo, data_by_year in (all_data or {}).items():
+                for anio, data in (data_by_year or {}).items():
+                    try:
+                        if save_actividad_hotelera_estatal_to_db(codigo, data, anio=int(anio)):
+                            hotelera_ok += 1
+                    except Exception:
+                        pass
+            if hotelera_ok:
+                print(f"  Actividad Hotelera estatal (CETM): {hotelera_ok} estados/años -> PostgreSQL")
+        except Exception as e:
+            print(f"  [WARN] Actividad Hotelera estatal: {e}")
+
+        # Actividad Hotelera nacional (DataTur) - Base70centros.csv (agregado anual)
+        try:
+            import requests
+            import csv
+            import io
+
+            def _safe_float(v):
+                if v is None or v == "":
+                    return 0.0
+                try:
+                    s = str(v).strip().replace(",", "").replace(" ", "")
+                    return float(s) if s else 0.0
+                except (TypeError, ValueError):
+                    return 0.0
+
+            url = "https://repodatos.atdt.gob.mx/s_turismo/ocupacion_hotelera/Base70centros.csv"
+            resp = requests.get(url, timeout=30)
+            resp.raise_for_status()
+
+            text = resp.content.decode("utf-8", errors="replace")
+            reader = csv.DictReader(io.StringIO(text), delimiter="\t")
+
+            by_year = {}
+            by_year_cat = {}
+            for row in reader:
+                try:
+                    anio = int(row.get("anio") or 0)
+                except Exception:
+                    continue
+                if not anio:
+                    continue
+                disp = _safe_float(row.get("cuartos_disponibles"))
+                occ_nr = _safe_float(row.get("cuartos_ocupados_no_residentes"))
+                occ_r = _safe_float(row.get("cuartos_ocupados_residentes"))
+                occ = occ_nr + occ_r
+                if anio not in by_year:
+                    by_year[anio] = {"disp": 0.0, "occ": 0.0}
+                by_year[anio]["disp"] += disp
+                by_year[anio]["occ"] += occ
+                cat = (row.get("categoria") or "Sin categoría").strip() or "Sin categoría"
+                key_cat = (anio, cat)
+                if key_cat not in by_year_cat:
+                    by_year_cat[key_cat] = {"disp": 0.0, "occ": 0.0}
+                by_year_cat[key_cat]["disp"] += disp
+                by_year_cat[key_cat]["occ"] += occ
+
+            if by_year:
+                cur.execute("DELETE FROM actividad_hotelera_nacional")
+                for anio in sorted(by_year.keys()):
+                    disp = by_year[anio]["disp"]
+                    occ = by_year[anio]["occ"]
+                    pct = (occ / disp * 100.0) if disp else 0.0
+                    cur.execute(
+                        """
+                        INSERT INTO actividad_hotelera_nacional (anio, cuartos_disponibles_pd, cuartos_ocupados_pd, porc_ocupacion, updated_at)
+                        VALUES (%s, %s, %s, %s, CURRENT_TIMESTAMP)
+                        """,
+                        (anio, disp, occ, pct),
+                    )
+                cur.execute("DELETE FROM actividad_hotelera_nacional_por_categoria")
+                for (anio, cat) in sorted(by_year_cat.keys()):
+                    d = by_year_cat[(anio, cat)]
+                    disp, occ = d["disp"], d["occ"]
+                    pct = (occ / disp * 100.0) if disp else 0.0
+                    cur.execute(
+                        """
+                        INSERT INTO actividad_hotelera_nacional_por_categoria (anio, categoria, cuartos_disponibles_pd, cuartos_ocupados_pd, porc_ocupacion)
+                        VALUES (%s, %s, %s, %s, %s)
+                        """,
+                        (anio, cat, disp, occ, pct),
+                    )
+                conn.commit()
+                print(f"  Actividad Hotelera nacional (DataTur): {len(by_year)} años, {len(by_year_cat)} año/categoría -> PostgreSQL")
+        except Exception as e:
+            conn.rollback()
+            cur = conn.cursor()
+            print(f"  [WARN] Actividad Hotelera nacional (DataTur): {e}")
 
         # IED por País de Origen (Secretaría de Economía)
         try:
@@ -374,6 +574,146 @@ def run_etl():
             conn.rollback()
             cur = conn.cursor()
             print(f"  [WARN] Proyección PIB: {e}")
+
+        # ── Cargar datos locales (CSV/JSON) para tablas estatales ──
+        import csv as _csv
+        import json as _json
+        _PROCESS_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "process")
+        _ESTADO_NAMES = [
+            "Aguascalientes","Baja California","Baja California Sur","Campeche",
+            "Coahuila de Zaragoza","Colima","Chiapas","Chihuahua",
+            "Ciudad de México","Durango","Guanajuato","Guerrero",
+            "Hidalgo","Jalisco","México","Michoacán de Ocampo",
+            "Morelos","Nayarit","Nuevo León","Oaxaca",
+            "Puebla","Querétaro","Quintana Roo","San Luis Potosí",
+            "Sinaloa","Sonora","Tabasco","Tamaulipas",
+            "Tlaxcala","Veracruz de Ignacio de la Llave","Yucatán","Zacatecas",
+        ]
+        # estado_info_general
+        try:
+            cur = conn.cursor()
+            for _nom in _ESTADO_NAMES:
+                cur.execute("INSERT INTO estado_info_general (estado,poblacion,extension_km2) VALUES (%s,0,0) ON CONFLICT DO NOTHING", (_nom,))
+            conn.commit()
+        except Exception:
+            conn.rollback()
+        # pib_estatal
+        _path = os.path.join(_PROCESS_DIR, "pib_estatal_consolidado.csv")
+        if os.path.exists(_path):
+            try:
+                cur = conn.cursor()
+                cur.execute("SELECT COUNT(*) FROM pib_estatal")
+                if cur.fetchone()[0] == 0:
+                    with open(_path, "r", encoding="utf-8") as _f:
+                        _reader = _csv.DictReader(_f)
+                        _n = 0
+                        for _row in _reader:
+                            try:
+                                cur.execute("INSERT INTO pib_estatal (estado,anio,pib_actual,pib_anterior,variacion_pct) VALUES (%s,%s,%s,%s,%s) ON CONFLICT DO NOTHING",
+                                    (_row["Estado"], int(_row["Anio"]), float(_row["PIB_Actual"]), float(_row["PIB_Anterior"]), float(_row["Variacion_Pct"])))
+                                _n += 1
+                            except Exception:
+                                conn.rollback()
+                    conn.commit()
+                    if _n: print(f"  PIB estatal: {_n} registros cargados")
+            except Exception as _e:
+                print(f"  [WARN] PIB estatal: {_e}")
+                conn.rollback()
+        # pib_nacional
+        _path = os.path.join(_PROCESS_DIR, "pib_nacional.csv")
+        if os.path.exists(_path):
+            try:
+                cur = conn.cursor()
+                cur.execute("SELECT COUNT(*) FROM pib_nacional")
+                if cur.fetchone()[0] == 0:
+                    with open(_path, "r", encoding="utf-8") as _f:
+                        _reader = _csv.DictReader(_f)
+                        _n = 0
+                        for _row in _reader:
+                            cur.execute("INSERT INTO pib_nacional (fecha,anio,trimestre,pib_total_millones,pib_per_capita) VALUES (%s,%s,%s,%s,%s)",
+                                (_row["fecha"], int(_row["anio"]), int(_row["trimestre"]), float(_row["pib_total_millones"]), float(_row["pib_per_capita"])))
+                            _n += 1
+                    conn.commit()
+                    if _n: print(f"  PIB nacional: {_n} registros cargados")
+            except Exception as _e:
+                print(f"  [WARN] PIB nacional: {_e}")
+                conn.rollback()
+        # pea_inegi
+        _path = os.path.join(_PROCESS_DIR, "pea_inegi.csv")
+        if os.path.exists(_path):
+            try:
+                cur = conn.cursor()
+                cur.execute("SELECT COUNT(*) FROM pea_inegi")
+                if cur.fetchone()[0] == 0:
+                    with open(_path, "r", encoding="utf-8") as _f:
+                        _reader = _csv.DictReader(_f)
+                        _n = 0
+                        for _row in _reader:
+                            cur.execute("INSERT INTO pea_inegi (anio,trimestre,valor) VALUES (%s,%s,%s)",
+                                (int(_row["anio"]), int(_row["trimestre"]), int(float(_row["valor"]))))
+                            _n += 1
+                    conn.commit()
+                    if _n: print(f"  PEA INEGI: {_n} registros cargados")
+            except Exception as _e:
+                print(f"  [WARN] PEA INEGI: {_e}")
+                conn.rollback()
+        # estructura_poblacional_inegi
+        _path = os.path.join(_PROCESS_DIR, "estructura_poblacional_inegi.csv")
+        if os.path.exists(_path):
+            try:
+                cur = conn.cursor()
+                cur.execute("SELECT COUNT(*) FROM estructura_poblacional_inegi")
+                if cur.fetchone()[0] == 0:
+                    with open(_path, "r", encoding="utf-8") as _f:
+                        _reader = _csv.DictReader(_f)
+                        _n = 0
+                        for _row in _reader:
+                            cur.execute("INSERT INTO estructura_poblacional_inegi (year,pob_0_14,pob_15_64,pob_65_plus) VALUES (%s,%s,%s,%s)",
+                                (int(float(_row["year"])), int(float(_row["pob_0_14"])), int(float(_row["pob_15_64"])), int(float(_row["pob_65_plus"]))))
+                            _n += 1
+                    conn.commit()
+                    if _n: print(f"  Estructura poblacional: {_n} registros cargados")
+            except Exception as _e:
+                print(f"  [WARN] Estructura poblacional: {_e}")
+                conn.rollback()
+        # Demografía estatal (32 JSONs)
+        try:
+            cur = conn.cursor()
+            cur.execute("SELECT COUNT(*) FROM demografia_estatal_crecimiento")
+            if cur.fetchone()[0] == 0:
+                _dtotal = 0
+                for _i in range(1, 33):
+                    _cod = str(_i).zfill(2)
+                    _path = os.path.join(_PROCESS_DIR, f"demografia_estatal_{_cod}.json")
+                    if not os.path.exists(_path): continue
+                    with open(_path, "r", encoding="utf-8") as _f:
+                        _data = _json.load(_f)
+                    for _row in _data.get("crecimiento", []):
+                        try:
+                            cur.execute("INSERT INTO demografia_estatal_crecimiento (estado_codigo,anio,valor,crecimiento_pct) VALUES (%s,%s,%s,%s) ON CONFLICT DO UPDATE SET valor=EXCLUDED.valor, crecimiento_pct=EXCLUDED.crecimiento_pct",
+                                (_cod, _row["anio"], _row["valor"], _row.get("crecimiento_pct")))
+                            _dtotal += 1
+                        except Exception:
+                            conn.rollback()
+                    for _row in _data.get("genero", []):
+                        try:
+                            cur.execute("INSERT INTO demografia_estatal_genero (estado_codigo,anio,hombres,mujeres) VALUES (%s,%s,%s,%s) ON CONFLICT DO NOTHING",
+                                (_cod, _row["anio"], _row["hombres"], _row["mujeres"]))
+                            _dtotal += 1
+                        except Exception:
+                            conn.rollback()
+                    for _row in _data.get("edad", []):
+                        try:
+                            cur.execute("INSERT INTO demografia_estatal_edad (estado_codigo,anio,grupo_edad,valor) VALUES (%s,%s,%s,%s) ON CONFLICT DO NOTHING",
+                                (_cod, _row.get("anio",2020), _row.get("grupo",_row.get("grupo_edad","")), _row.get("valor",0)))
+                            _dtotal += 1
+                        except Exception:
+                            conn.rollback()
+                conn.commit()
+                if _dtotal: print(f"  Demografía estatal: {_dtotal} registros cargados")
+        except Exception as _e:
+            print(f"  [WARN] Demografía estatal: {_e}")
+            conn.rollback()
 
         cur.execute(
             """
