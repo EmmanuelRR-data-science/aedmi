@@ -28,6 +28,8 @@ exclude = [
     ".venv",
     "__pycache__",
     "venv",
+    "scripts/",
+    "data/",
 ]
 
 [tool.ruff.lint]
