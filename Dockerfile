@@ -22,4 +22,4 @@ ENV FLASK_APP=app.py
 ENV PATH="/app/.venv/bin:$PATH"
 EXPOSE 5000
 
-CMD ["sh", "-c", "python -m etl.run & exec python app.py"]
+CMD ["python", "app.py"]
