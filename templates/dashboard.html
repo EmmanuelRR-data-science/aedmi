@@ -264,6 +264,11 @@
                     <div class="ia-response indicador-ia-response" id="indicador-ia-response" hidden>
                         <h4 class="ia-response-title">Análisis con IA</h4>
                         <div class="ia-response-content" id="indicador-ia-response-content"></div>
+                        <div class="user-analysis-section" style="margin-top: 1.5rem; border-top: 1px solid var(--border-color); padding-top: 1rem;">
+                            <h4 class="ia-response-title">Análisis Revisado (Usuario)</h4>
+                            <textarea id="indicador-user-analysis" class="form-control" rows="5" placeholder="Escribe tu análisis revisado aquí..." style="width: 100%; border-radius: 8px; padding: 10px; background: var(--bg-body); color: var(--text-primary); border: 1px solid var(--border-color); margin-bottom: 10px;"></textarea>
+                            <button type="button" class="btn" id="btn-save-user-analysis" style="background: #0576F3; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer;">Guardar Análisis Revisado</button>
+                        </div>
                     </div>
                     <div class="indicador-table-section" id="indicador-table-section" hidden>
                         <div class="kpis-table-header">
@@ -353,27 +358,14 @@
                 <div class="ia-response indicador-ia-response" id="indicador-ia-response-estatal" hidden>
                     <h4 class="ia-response-title">Análisis con IA</h4>
                     <div class="ia-response-content" id="indicador-ia-response-content-estatal"></div>
+                    <div class="user-analysis-section" style="margin-top: 1.5rem; border-top: 1px solid var(--border-color); padding-top: 1rem;">
+                        <h4 class="ia-response-title">Análisis Revisado (Usuario)</h4>
+                        <textarea id="indicador-user-analysis-estatal" class="form-control" rows="5" placeholder="Escribe tu análisis revisado aquí..." style="width: 100%; border-radius: 8px; padding: 10px; background: var(--bg-body); color: var(--text-primary); border: 1px solid var(--border-color); margin-bottom: 10px;"></textarea>
+                        <button type="button" class="btn" id="btn-save-user-analysis-estatal" style="background: #0576F3; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer;">Guardar Análisis Revisado</button>
+                    </div>
                 </div>
 
-                <div class="kpis-table-section kpis-table-section-estatal" id="kpis-table-section-estatal" hidden>
-                    <div class="kpis-table-header">
-                        <h4>Datos del indicador</h4>
-                        <button type="button" class="btn btn-download" id="btn-download-csv-estatal">📥 Descargar
-                            CSV</button>
-                    </div>
-                    <div class="kpis-table-wrapper">
-                        <table class="kpis-table" id="kpis-table-estatal">
-                            <thead>
-                                <tr id="kpis-table-estatal-thead">
-                                    <th>Año</th>
-                                    <th>Dato</th>
-                                    <th>Valor</th>
-                                </tr>
-                            </thead>
-                            <tbody id="kpis-table-estatal-body"></tbody>
-                        </table>
-                    </div>
-                </div>
+                       </div>
                 <div class="estatal-demografia-wrapper" id="estatal-demografia-wrapper" hidden>
                     <div class="indicador-chart-tabs" id="estatal-demografia-tabs">
                         <button type="button" class="btn btn-tab active" id="demografia-tab-crecimiento"
@@ -396,6 +388,11 @@
                     <div class="ia-response indicador-ia-response" id="estatal-demografia-ia-response" hidden>
                         <h4 class="ia-response-title">Análisis con IA</h4>
                         <div class="ia-response-content" id="estatal-demografia-ia-content"></div>
+                        <div class="user-analysis-section" style="margin-top: 1.5rem; border-top: 1px solid var(--border-color); padding-top: 1rem;">
+                            <h4 class="ia-response-title">Análisis Revisado (Usuario)</h4>
+                            <textarea id="estatal-demografia-user-analysis" class="form-control" rows="5" placeholder="Escribe tu análisis revisado aquí..." style="width: 100%; border-radius: 8px; padding: 10px; background: var(--bg-body); color: var(--text-primary); border: 1px solid var(--border-color); margin-bottom: 10px;"></textarea>
+                            <button type="button" class="btn" id="btn-save-user-analysis-demografia" style="background: #0576F3; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer;">Guardar Análisis Revisado</button>
+                        </div>
                     </div>
                 </div>
                 <div class="indicador-chart-placeholder" id="indicador-chart-placeholder-estatal">
@@ -403,7 +400,25 @@
                         indicador para ver la gráfica.</p>
                 </div>
             </div>
-    </div>
+    <div class="kpis-table-section kpis-table-section-estatal" id="kpis-table-section-estatal" hidden>
+                    <div class="kpis-table-header">
+                        <h4>Datos del indicador</h4>
+                        <button type="button" class="btn btn-download" id="btn-download-csv-estatal">📥 Descargar
+                            CSV</button>
+                    </div>
+                    <div class="kpis-table-wrapper">
+                        <table class="kpis-table" id="kpis-table-estatal">
+                            <thead>
+                                <tr id="kpis-table-estatal-thead">
+                                    <th>Año</th>
+                                    <th>Dato</th>
+                                    <th>Valor</th>
+                                </tr>
+                            </thead>
+                            <tbody id="kpis-table-estatal-body"></tbody>
+                        </table>
+                    </div>
+         </div>
     </section>
     <section class="tab-panel" id="panel-ciudades" role="tabpanel">
         <div class="indicadores-section indicadores-section-municipal">
@@ -425,9 +440,17 @@
                     <label for="indicador-ciudad" class="indicadores-label">Indicador:</label>
                     <select id="indicador-ciudad" class="indicadores-select" aria-label="Indicador ciudad">
                         <option value="">— Seleccionar indicador —</option>
-                        <option value="distribucion-poblacion">Distribución de la población</option>
-                        <option value="crecimiento-historico">Crecimiento poblacional anual</option>
                     </select>
+                </div>
+                <div class="indicadores-municipal-col" id="ciudad-year-filter-container" style="display:none; gap:10px; align-items:center;">
+                    <div style="display:flex; flex-direction:column; gap:4px;">
+                        <label for="ciudad-year-desde" class="indicadores-label">Desde:</label>
+                        <select id="ciudad-year-desde" class="indicadores-select" style="min-width:90px;"></select>
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:4px;">
+                        <label for="ciudad-year-hasta" class="indicadores-label">Hasta:</label>
+                        <select id="ciudad-year-hasta" class="indicadores-select" style="min-width:90px;"></select>
+                    </div>
                 </div>
             </div>
         </div>
@@ -449,8 +472,8 @@
             hidden>
             <div class="indicador-chart-wrapper" id="indicador-chart-wrapper-ciudad">
                 <div id="indicador-chart-plot-ciudad" class="indicador-chart-plot"></div>
-                <div class="indicador-chart-source" id="indicador-chart-source-ciudad">Fuente: INEGI</div>
             </div>
+            <div class="indicador-chart-source-static" id="indicador-chart-source-ciudad">Fuente: INEGI</div>
             <div class="indicador-chart-actions" id="indicador-chart-actions-ciudad" hidden>
                 <button type="button" class="btn btn-download-png" id="btn-download-chart-png-ciudad">📥 Descargar
                     PNG</button>
@@ -460,6 +483,11 @@
             <div class="ia-response indicador-ia-response" id="indicador-ia-response-ciudad" hidden>
                 <h4 class="ia-response-title">Análisis con IA</h4>
                 <div class="ia-response-content" id="indicador-ia-response-content-ciudad"></div>
+                <div class="user-analysis-section" style="margin-top: 1.5rem; border-top: 1px solid var(--border-color); padding-top: 1rem;">
+                    <h4 class="ia-response-title">Análisis Revisado (Usuario)</h4>
+                    <textarea id="indicador-user-analysis-ciudad" class="form-control" rows="5" placeholder="Escribe tu análisis revisado aquí..." style="width: 100%; border-radius: 8px; padding: 10px; background: var(--bg-body); color: var(--text-primary); border: 1px solid var(--border-color); margin-bottom: 10px;"></textarea>
+                    <button type="button" class="btn" id="btn-save-user-analysis-ciudad" style="background: #0576F3; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer;">Guardar Análisis Revisado</button>
+                </div>
             </div>
             <div class="indicador-chart-placeholder" id="indicador-chart-placeholder-ciudad">
                 <p class="indicador-chart-message" id="indicador-chart-message-ciudad">Seleccione una ciudad y un
@@ -546,6 +574,11 @@
             <div class="ia-response indicador-ia-response" id="indicador-ia-response-municipal" hidden>
                 <h4 class="ia-response-title">Análisis con IA</h4>
                 <div class="ia-response-content" id="indicador-ia-response-content-municipal"></div>
+                <div class="user-analysis-section" style="margin-top: 1.5rem; border-top: 1px solid var(--border-color); padding-top: 1rem;">
+                    <h4 class="ia-response-title">Análisis Revisado (Usuario)</h4>
+                    <textarea id="indicador-user-analysis-muni" class="form-control" rows="5" placeholder="Escribe tu análisis revisado aquí..." style="width: 100%; border-radius: 8px; padding: 10px; background: var(--bg-body); color: var(--text-primary); border: 1px solid var(--border-color); margin-bottom: 10px;"></textarea>
+                    <button type="button" class="btn" id="btn-save-user-analysis-muni" style="background: #0576F3; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer;">Guardar Análisis Revisado</button>
+                </div>
             </div>
             <div class="indicador-chart-placeholder" id="indicador-chart-placeholder-municipal">
                 <p class="indicador-chart-message" id="indicador-chart-message-municipal">Seleccione un estado, un
@@ -622,9 +655,18 @@
             <div class="indicador-chart-wrapper" id="indicador-chart-wrapper-localidad">
                 <div id="indicador-chart-plot-localidad" class="indicador-chart-plot"></div>
             </div>
-            <div class="indicador-chart-actions" id="indicador-chart-actions-localidad" style="display: none;">
-                <button class="btn-download-png" id="btn-descargar-png-localidad" onclick="descargarLocalidadPNG()">📸
-                    Exportar PNG (720p)</button>
+            <div class="indicador-chart-actions" id="indicador-chart-actions-localidad" style="display: none; margin-bottom: 1.5rem;">
+                <button class="btn-download-png" id="btn-descargar-png-localidad" onclick="descargarLocalidadPNG()" style="background: var(--bg-card); color: var(--text-primary); border: 1px solid var(--border-color); padding: 8px 16px; border-radius: 6px; cursor: pointer;">📸 Exportar PNG (720p)</button>
+                <button type="button" class="btn btn-ia" id="btn-analizar-ia-localidad" style="background: #0576F3; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; margin-left:10px;">🤖 Analizar con IA</button>
+            </div>
+            <div class="ia-response indicador-ia-response" id="indicador-ia-response-localidad" hidden>
+                <h4 class="ia-response-title">Análisis con IA</h4>
+                <div class="ia-response-content" id="indicador-ia-response-content-localidad"></div>
+                <div class="user-analysis-section" style="margin-top: 1.5rem; border-top: 1px solid var(--border-color); padding-top: 1rem;">
+                    <h4 class="ia-response-title">Análisis Revisado (Usuario)</h4>
+                    <textarea id="indicador-user-analysis-localidad" class="form-control" rows="5" placeholder="Escribe tu análisis revisado aquí..." style="width: 100%; border-radius: 8px; padding: 10px; background: var(--bg-body); color: var(--text-primary); border: 1px solid var(--border-color); margin-bottom: 10px;"></textarea>
+                    <button type="button" class="btn" id="btn-save-user-analysis-localidad" style="background: #0576F3; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer;">Guardar Análisis Revisado</button>
+                </div>
             </div>
             <div class="indicador-chart-placeholder" id="indicador-chart-placeholder-localidad">
                 <p class="indicador-chart-message" id="indicador-chart-message-localidad">Seleccione estado,
@@ -1277,7 +1319,7 @@
                     indicadorEstatalTipo = 'anuncios-inversion';
                     var actionsEstatal = document.getElementById('indicador-chart-actions-estatal');
                     if (actionsEstatal) actionsEstatal.hidden = false;
-                    renderAnunciosInversionEstatal(data, estado);
+                    renderAnunciosInversionEstatal(data, estado); loadSavedIaAnalisis(estado, document.getElementById('indicador-estatal').value, 'indicador-ia-response-estatal', 'indicador-ia-response-content-estatal');
                 })
                 .catch(function (err) {
                     msg.textContent = 'Error: ' + err.message;
@@ -1396,7 +1438,7 @@
                     indicadorEstatalData = data;
                     indicadorEstatalTipo = 'proyecciones-conapo';
                     document.getElementById('indicador-chart-source-estatal').textContent = 'Fuente: Proyecciones de la Población de México y de las Entidades Federativas, CONAPO (Datos Abiertos)';
-                    renderProyeccionesConapo(data, estado);
+                    renderProyeccionesConapo(data, estado); loadSavedIaAnalisis(estado, document.getElementById('indicador-estatal').value, 'indicador-ia-response-estatal', 'indicador-ia-response-content-estatal');
                     fillProyeccionesConapoTable(data);
                 })
                 .catch(function (err) {
@@ -1431,7 +1473,7 @@
                     indicadorEstatalData = data;
                     indicadorEstatalTipo = 'itaee';
                     document.getElementById('indicador-chart-source-estatal').textContent = 'Fuente: INEGI';
-                    renderItaeeEstatal(data, estado);
+                    renderItaeeEstatal(data, estado); loadSavedIaAnalisis(estado, document.getElementById('indicador-estatal').value, 'indicador-ia-response-estatal', 'indicador-ia-response-content-estatal');
                     fillItaeeEstatalTable(data);
                 })
                 .catch(function (err) {
@@ -1499,7 +1541,7 @@
                     indicadorEstatalData = data;
                     indicadorEstatalTipo = 'actividad-hotelera';
                     document.getElementById('indicador-chart-source-estatal').textContent = 'Fuente: Datatur - Secretaría de Turismo (SECTUR)';
-                    renderActividadHoteleraEstatal(data, estado);
+                    renderActividadHoteleraEstatal(data, estado); loadSavedIaAnalisis(estado, document.getElementById('indicador-estatal').value, 'indicador-ia-response-estatal', 'indicador-ia-response-content-estatal');
                     fillActividadHoteleraTable(data);
                     if (yearFilter && yearSelect && years.length > 0) {
                         yearFilter.hidden = false;
@@ -1569,7 +1611,7 @@
                     var actionsEstatal2 = document.getElementById('indicador-chart-actions-estatal');
                     if (actionsEstatal2) actionsEstatal2.hidden = false;
                     document.getElementById('indicador-chart-source-estatal').textContent = 'Fuente: Datatur - Secretaría de Turismo (SECTUR)';
-                    renderLlegadaTuristasEstatal(data, estado);
+                    renderLlegadaTuristasEstatal(data, estado); loadSavedIaAnalisis(estado, document.getElementById('indicador-estatal').value, 'indicador-ia-response-estatal', 'indicador-ia-response-content-estatal');
                     fillLlegadaTuristasTable(data);
                 })
                 .catch(function (err) {
@@ -1616,7 +1658,7 @@
                     indicadorEstatalData = data;
                     indicadorEstatalTipo = 'exportaciones-estado';
                     document.getElementById('indicador-chart-source-estatal').textContent = 'Fuente: INEGI - DataMéxico (Secretaría de Economía)';
-                    renderExportacionesEstatal(data, estado);
+                    renderExportacionesEstatal(data, estado); loadSavedIaAnalisis(estado, document.getElementById('indicador-estatal').value, 'indicador-ia-response-estatal', 'indicador-ia-response-content-estatal');
                 })
                 .catch(function (err) {
                     msg.textContent = 'Error: ' + err.message;
@@ -1661,7 +1703,7 @@
                     indicadorEstatalData = data;
                     indicadorEstatalTipo = 'aeropuertos';
                     document.getElementById('indicador-chart-source-estatal').textContent = 'Fuente: Dirección General de Aeronáutica Civil (DGAC)';
-                    renderAeropuertosEstatal(data, estado);
+                    renderAeropuertosEstatal(data, estado); loadSavedIaAnalisis(estado, document.getElementById('indicador-estatal').value, 'indicador-ia-response-estatal', 'indicador-ia-response-content-estatal');
                 })
                 .catch(function (err) {
                     msg.textContent = 'Error: ' + err.message;
@@ -1757,6 +1799,7 @@
 
                     renderDistribucionPoblacionMunicipal(data, municipio, estado);
                     fillDistribucionPoblacionTable(data);
+                    loadSavedIaAnalisis(estado + '-' + municipio, ind, 'indicador-ia-response-municipal', 'indicador-ia-response-content-municipal');
                 })
                 .catch(function (err) {
                     msg.textContent = 'Error: ' + err.message;
@@ -1783,6 +1826,7 @@
                     document.getElementById('indicador-chart-source-municipal').textContent = 'Fuente: CONAPO - Proyecciones de Población';
                     renderProyeccionPoblacionalMunicipal(data, municipio, estado);
                     fillProyeccionPoblacionalTable(data);
+                    loadSavedIaAnalisis(estado + '-' + municipio, ind, 'indicador-ia-response-municipal', 'indicador-ia-response-content-municipal');
                 })
                 .catch(function (err) {
                     msg.textContent = 'Error: ' + err.message;
@@ -1900,13 +1944,156 @@
     var btnCsvMuni = document.getElementById('btn-download-csv-municipal');
     if (btnCsvMuni) btnCsvMuni.addEventListener('click', downloadMunicipalCsv);
 
+    var btnIaMuni = document.getElementById('btn-analizar-ia-chart-municipal');
+    if (btnIaMuni) btnIaMuni.addEventListener('click', async function () {
+        var btn = this;
+        var content = document.getElementById('indicador-ia-response-content-municipal');
+        var container = document.getElementById('indicador-ia-response-municipal');
+        btn.disabled = true;
+        btn.textContent = '⏳ Analizando...';
+        container.hidden = false;
+        content.textContent = 'Obteniendo análisis...';
+        try {
+            var estado = document.getElementById('estado-municipal').value;
+            // Get municipio from either input or hidden select
+            var mInput = document.getElementById('municipio-municipal-input');
+            var mSelect = document.getElementById('municipio-municipal');
+            var currentMuni = (mInput && mInput.value) || (mSelect && mSelect.value) || '';
+            var currentMuniInd = document.getElementById('indicador-municipal').value;
+            
+            var resp = await fetch('/api/analizar-ia-indicador', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    indicator: 'Municipio - ' + (document.getElementById('indicador-municipal').selectedOptions[0] ? document.getElementById('indicador-municipal').selectedOptions[0].text : 'Indicador'),
+                    indicator_key: currentMuniInd,
+                    slug: estado + '-' + currentMuni,
+                    data: (typeof indicadorMunicipalData !== 'undefined') ? indicadorMunicipalData : []
+                })
+            });
+            var data = await resp.json();
+            if (!resp.ok) { content.textContent = 'Error: ' + (data.error || resp.statusText); return; }
+            content.innerHTML = '';
+            var p = document.createElement('div');
+            p.className = 'ia-response-text';
+            p.innerHTML = (data.analisis || '').replace(/\n/g, '<br>');
+            content.appendChild(p);
+        } catch (err) { content.textContent = 'Error: ' + err.message; }
+        finally { btn.disabled = false; btn.textContent = '🤖 Analizar con IA'; }
+    });
+    // --- Analizar con IA (Localidades) ---
+    var btnIaLocal = document.getElementById('btn-analizar-ia-localidad');
+    if (btnIaLocal) btnIaLocal.addEventListener('click', async function () {
+        var btn = this;
+        var contentBox = document.getElementById('indicador-ia-response-content-localidad');
+        var container = document.getElementById('indicador-ia-response-localidad');
+        var estado = document.getElementById('estado-localidad') ? document.getElementById('estado-localidad').value : '';
+        var municipio = document.getElementById('municipio-localidad') ? document.getElementById('municipio-localidad').value : '';
+        var localidad = document.getElementById('localidad-input') ? document.getElementById('localidad-input').value.trim() : '';
+        var ind = document.getElementById('indicador-localidad') ? document.getElementById('indicador-localidad').value : '';
+        
+        btn.disabled = true;
+        btn.textContent = '⏳ Analizando...';
+        container.hidden = false;
+        contentBox.textContent = 'Obteniendo análisis...';
+        
+        try {
+            var resp = await fetch('/api/analizar-ia-indicador', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    indicator: 'Localidad - ' + (document.getElementById('indicador-localidad').selectedOptions[0] ? document.getElementById('indicador-localidad').selectedOptions[0].text : 'Indicador'),
+                    indicator_key: ind,
+                    slug: estado + '-' + municipio + '-' + localidad,
+                    data: (typeof indicadorLocalidadData !== 'undefined') ? indicadorLocalidadData : []
+                })
+            });
+            var data = await resp.json();
+            if (!resp.ok) { contentBox.textContent = 'Error: ' + (data.error || resp.statusText); return; }
+            contentBox.innerHTML = '';
+            var p = document.createElement('div');
+            p.className = 'ia-response-text';
+            p.innerHTML = (data.analisis || '').replace(/\n/g, '<br>');
+            contentBox.appendChild(p);
+        } catch (err) { contentBox.textContent = 'Error: ' + err.message; }
+        finally { btn.disabled = false; btn.textContent = '🤖 Analizar con IA'; }
+    });
+
+
     // ——— Sección Ciudades (menú fijo: Mérida, Querétaro, CDMX, etc.) ———
     var indicadorCiudadData = [];
     var indicadorCiudadTipo = '';
 
+    const INDICADORES_MERIDA = [
+        {val: 'poblacion-total', text: 'Población total'},
+        {val: 'crecimiento-historico', text: 'Crecimiento poblacional anual'},
+        {val: 'distribucion-sexo', text: 'Distribución por sexo (Histórico)'},
+        {val: 'distribucion-edad', text: 'Distribución por edad (2020)'},
+        {val: 'poblacion-ocupada-turismo', text: 'Población Ocupada en Restaurantes y Hoteles'},
+        {val: 'ocupacion-hotelera', text: 'Ocupación Hotelera promedio'},
+        {val: 'llegada-visitantes', text: 'Llegada de Visitantes con Pernocta'},
+        {val: 'gasto-promedio', text: 'Gasto Promedio Diario del Visitante'},
+        {val: 'derrama-economica', text: 'Derrama Económica Estimada'},
+        {val: 'ingreso-hotelero', text: 'Ingreso Hotelero'},
+        {val: 'establecimientos-turismo', text: 'Establecimientos de Servicios Turísticos'},
+        {val: 'ventas-internacionales', text: 'Ventas Internacionales (Exp/Imp)'},
+        {val: 'conectividad-aerea', text: 'Conectividad aérea'},
+        {val: 'oferta-servicios-turisticos', text: 'Oferta de servicios turísticos'},
+        {val: 'vuelos-llegada-t1', text: 'Vuelos de llegada (Nacionales T1)'},
+        {val: 'vuelos-llegada-t2', text: 'Vuelos de llegada (Nacionales T2)'}
+    ];
+
+    const INDICADORES_MONTERREY = [
+        {val: 'poblacion-total', text: 'Población Total'},
+        {val: 'ocupacion-hotelera', text: 'Ocupación hotelera'}
+    ];
+
+    const INDICADORES_GENERAL = [
+        {val: 'poblacion-total', text: 'Población total'},
+        {val: 'crecimiento-historico', text: 'Crecimiento poblacional anual'},
+        {val: 'distribucion-sexo', text: 'Distribución por sexo (Histórico)'},
+        {val: 'distribucion-edad', text: 'Distribución por edad (2020)'},
+        {val: 'comercio-internacional', text: 'Comercio Internacional (IED)'},
+        {val: 'exportaciones-importaciones', text: 'Exportaciones e importaciones'},
+        {val: 'llegada-pasajeros', text: 'Llegadas de pasajeros'},
+        {val: 'visitantes-nacionales-extranjeros', text: 'Visitantes nacionales y extranjeros'},
+        {val: 'ocupacion-hotelera', text: 'Ocupación hotelera'}
+    ];
+
+    function updateIndicadoresSelect() {
+        var slug = document.getElementById('ciudad-select').value;
+        var sel = document.getElementById('indicador-ciudad');
+        if (!sel) return;
+        var currentVal = sel.value;
+        sel.innerHTML = '<option value="">— Seleccionar indicador —</option>';
+        if (!slug) return;
+        var list = INDICADORES_GENERAL;
+        if (slug === 'merida') list = INDICADORES_MERIDA;
+        else if (slug === 'monterrey') list = INDICADORES_MONTERREY;
+        list.forEach(function(opt) {
+            var o = document.createElement('option');
+            o.value = opt.val;
+            o.textContent = opt.text;
+            sel.appendChild(o);
+        });
+        // Intentar restaurar valor si existe en la nueva lista
+        if (currentVal) {
+            for (var i=0; i<sel.options.length; i++) {
+                if (sel.options[i].value === currentVal) {
+                    sel.value = currentVal;
+                    break;
+                }
+            }
+        }
+    }
+
     function loadIndicadorCiudad() {
         var slug = document.getElementById('ciudad-select').value;
         var ind = document.getElementById('indicador-ciudad').value;
+        
+        // Reset filters container
+        var filterContainer = document.getElementById('ciudad-year-filter-container');
+        if (filterContainer) filterContainer.style.display = 'none';
         var container = document.getElementById('indicador-chart-container-ciudad');
         var placeholder = document.getElementById('indicador-chart-placeholder-ciudad');
         var wrapper = document.getElementById('indicador-chart-wrapper-ciudad');
@@ -1930,7 +2117,194 @@
         tableSection.hidden = true;
         msg.textContent = 'Cargando ' + ind + ' para ' + ciudadNombre + '...';
 
-        if (ind === 'distribucion-poblacion') {
+        
+        
+        
+        
+        
+        
+        if (ind === 'pib-per-capita-ciudad') {
+            fetch(`/api/ciudades/${slug}/pib-per-capita`)
+                .then(r => r.json())
+                .then(data => {
+                    if (typeof renderPibPerCapitaCiudad === 'function') {
+                        indicadorCiudadData = data;
+                        indicadorCiudadTipo = ind;
+                        renderPibPerCapitaCiudad(data, ciudadNombre);
+                    }
+                })
+                .catch(err => console.error("Error loading PIB Per Capita:", err));
+            return;
+        }
+
+        if (ind === 'pib-estatal-ciudad') {
+            fetch(`/api/ciudades/${slug}/pib-estatal`)
+                .then(r => r.json())
+                .then(data => {
+                    if (placeholder) placeholder.hidden = true;
+                    if (wrapper) wrapper.hidden = false;
+                    if (typeof renderPibEstatalCiudad === 'function') {
+                        indicadorCiudadData = data;
+                        indicadorCiudadTipo = ind;
+                        renderPibEstatalCiudad(data, ciudadNombre);
+                    }
+                });
+            return;
+        }
+
+        if (ind === 'composicion-sectorial') {
+            fetch(`/api/ciudades/${slug}/composicion-sectorial`)
+                .then(r => r.json())
+                .then(data => {
+                    if (placeholder) placeholder.hidden = true;
+                    if (wrapper) wrapper.hidden = false;
+                    if (typeof renderComposicionSectorialCiudad === 'function') {
+                        indicadorCiudadData = data;
+                        indicadorCiudadTipo = ind;
+                        renderComposicionSectorialCiudad(data, ciudadNombre);
+                    }
+                });
+            return;
+        }
+
+        if (ind === 'tasa-desocupacion') {
+            fetch(`/api/ciudades/${slug}/tasa-desocupacion`)
+                .then(r => r.json())
+                .then(data => {
+                    if (placeholder) placeholder.hidden = true;
+                    if (wrapper) wrapper.hidden = false;
+                    if (typeof renderTasaDesocupacionCiudad === 'function') {
+                        renderTasaDesocupacionCiudad(data, ciudadNombre);
+                    }
+                });
+            return;
+        }
+
+        if (ind === 'tasa-participacion-laboral') {
+            fetch(`/api/ciudades/${slug}/tasa-participacion`)
+                .then(r => r.json())
+                .then(data => {
+                    if (placeholder) placeholder.hidden = true;
+                    if (wrapper) wrapper.hidden = false;
+                    if (typeof renderTasaParticipacionLaboralCiudad === 'function') {
+                        renderTasaParticipacionLaboralCiudad(data, ciudadNombre);
+                    }
+                });
+            return;
+        }
+
+        if (ind === 'poblacion-economica-activa') {
+            fetch('/api/ciudades/' + encodeURIComponent(slug) + '/pea')
+                .then(r => r.json())
+                .then(data => {
+                    if (!data || data.length === 0) {
+                        msg.textContent = 'No hay datos de PEA para ' + ciudadNombre;
+                        return;
+                    }
+                    placeholder.hidden = true;
+                    wrapper.hidden = false;
+                    renderPoblacionEconomicamenteActivaCiudad(data, ciudadNombre);
+                    fillCiudadTablePEA(data);
+                    indicadorChartData = data;
+                    actionsCiudad.hidden = false;
+                }).catch(e => {
+                    msg.textContent = 'Error al cargar PEA';
+                    console.error(e);
+                });
+            return;
+        }
+
+        
+        
+        
+        
+        
+        
+        if (ind === 'pib-per-capita-ciudad') {
+            fetch(`/api/ciudades/${slug}/pib-per-capita`)
+                .then(r => r.json())
+                .then(data => {
+                    if (typeof renderPibPerCapitaCiudad === 'function') {
+                        indicadorCiudadData = data;
+                        indicadorCiudadTipo = ind;
+                        renderPibPerCapitaCiudad(data, ciudadNombre);
+                    }
+                })
+                .catch(err => console.error("Error loading PIB Per Capita:", err));
+            return;
+        }
+
+        if (ind === 'pib-estatal-ciudad') {
+            fetch(`/api/ciudades/${slug}/pib-estatal`)
+                .then(r => r.json())
+                .then(data => {
+                    if (placeholder) placeholder.hidden = true;
+                    if (wrapper) wrapper.hidden = false;
+                    if (typeof renderPibEstatalCiudad === 'function') {
+                        indicadorCiudadData = data;
+                        indicadorCiudadTipo = ind;
+                        renderPibEstatalCiudad(data, ciudadNombre);
+                    }
+                });
+            return;
+        }
+
+        if (ind === 'composicion-sectorial') {
+            fetch(`/api/ciudades/${slug}/composicion-sectorial`)
+                .then(r => r.json())
+                .then(data => {
+                    if (placeholder) placeholder.hidden = true;
+                    if (wrapper) wrapper.hidden = false;
+                    if (typeof renderComposicionSectorialCiudad === 'function') {
+                        indicadorCiudadData = data;
+                        indicadorCiudadTipo = ind;
+                        renderComposicionSectorialCiudad(data, ciudadNombre);
+                    }
+                });
+            return;
+        }
+
+        if (ind === 'tasa-desocupacion') {
+            fetch(`/api/ciudades/${slug}/tasa-desocupacion`)
+                .then(r => r.json())
+                .then(data => {
+                    if (placeholder) placeholder.hidden = true;
+                    if (wrapper) wrapper.hidden = false;
+                    if (typeof renderTasaDesocupacionCiudad === 'function') {
+                        renderTasaDesocupacionCiudad(data, ciudadNombre);
+                    }
+                });
+            return;
+        }
+
+        if (ind === 'tasa-participacion-laboral') {
+            fetch(`/api/ciudades/${slug}/tasa-participacion`)
+                .then(r => r.json())
+                .then(data => {
+                    if (placeholder) placeholder.hidden = true;
+                    if (wrapper) wrapper.hidden = false;
+                    if (typeof renderTasaParticipacionLaboralCiudad === 'function') {
+                        renderTasaParticipacionLaboralCiudad(data, ciudadNombre);
+                    }
+                });
+            return;
+        }
+
+        if (ind === 'poblacion-economica-activa') {
+            fetch(`/api/ciudades/${slug}/pea`)
+                .then(r => r.json())
+                .then(data => {
+                    placeholder.hidden = true;
+                    wrapper.hidden = false;
+                    renderPoblacionEconomicamenteActivaCiudad(data, ciudadNombre);
+                    fillCiudadTablePEA(data);
+                    indicadorChartData = data;
+                    if (actionsCiudad) actionsCiudad.hidden = false;
+                });
+            return;
+        }
+
+        if (ind === 'distribucion-edad') {
             fetch('/api/ciudades/' + encodeURIComponent(slug) + '/distribucion-poblacion')
                 .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, data: d }; }); })
                 .then(function (result) {
@@ -1944,22 +2318,137 @@
                     tableSection.hidden = false;
                     if (actionsCiudad) actionsCiudad.hidden = false;
                     indicadorCiudadData = data;
-                    indicadorCiudadTipo = 'distribucion-poblacion';
+                    indicadorCiudadTipo = 'distribucion-edad';
                     document.getElementById('indicador-chart-source-ciudad').textContent = 'Fuente: INEGI - Censo 2020';
                     if (resumenKpis) {
                         resumenKpis.hidden = false;
-                        var pobtot = data.POBTOT || 0;
-                        var pobfem = data.POBFEM || 0;
-                        var pobmas = data.POBMAS || 0;
+                        var pobtot = data.POBTOT || data.pobtot || 0;
+                        var pobfem = data.POBFEM || data.pobfem || 0;
+                        var pobmas = data.POBMAS || data.pobmas || 0;
                         document.getElementById('ciudad-kpi-poblacion-total').textContent = pobtot.toLocaleString('es-MX');
                         document.getElementById('ciudad-kpi-mujeres').textContent = pobfem.toLocaleString('es-MX');
                         document.getElementById('ciudad-kpi-hombres').textContent = pobmas.toLocaleString('es-MX');
                     }
-                    renderDistribucionPoblacionCiudad(data, ciudadNombre);
-                    fillCiudadTableDistribucion(data);
+                    updateCiudadYearFilterOptions(data, "distribucion-edad");
+                    
                 })
                 .catch(function (err) { msg.textContent = 'Error: ' + err.message; });
-        } else if (ind === 'crecimiento-historico') {
+        } else if (ind === 'distribucion-sexo') {
+            fetch('/api/ciudades/' + encodeURIComponent(slug) + '/sexo-historico')
+                .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, data: d }; }); })
+                .then(function (result) {
+                    if (!result.ok) {
+                        msg.textContent = result.data.error || 'Error al cargar';
+                        return;
+                    }
+                    var data = result.data || [];
+                    placeholder.hidden = true;
+                    wrapper.hidden = false;
+                    tableSection.hidden = false;
+                    if (actionsCiudad) actionsCiudad.hidden = false;
+                    indicadorCiudadData = data;
+                    indicadorCiudadTipo = 'distribucion-sexo';
+                    document.getElementById('indicador-chart-source-ciudad').textContent = 'Fuente: CONAPO - Proyecciones de la Población de los Municipios de México';
+                    if (resumenKpis && data.length > 0) {
+                        var ultimo = data[data.length - 1];
+                        resumenKpis.hidden = false;
+                        var tot = (Number(ultimo.hombres || 0) + Number(ultimo.mujeres || 0));
+                        document.getElementById('ciudad-kpi-poblacion-total').textContent = tot.toLocaleString('es-MX');
+                        document.getElementById('ciudad-kpi-mujeres').textContent = (ultimo.mujeres || 0).toLocaleString('es-MX');
+                        document.getElementById('ciudad-kpi-hombres').textContent = (ultimo.hombres || 0).toLocaleString('es-MX');
+                    }
+                    updateCiudadYearFilterOptions(data, "distribucion-sexo");
+                    
+                })
+                .catch(function (err) { msg.textContent = 'Error: ' + err.message; });
+        } else if (ind === 'poblacion-ocupada-turismo') {
+            fetch('/api/ciudades/' + encodeURIComponent(slug) + '/poblacion-ocupada-turismo')
+                .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, data: d }; }); })
+                .then(function (result) {
+                    if (!result.ok) {
+                        msg.textContent = result.data.error || 'Error al cargar';
+                        return;
+                    }
+                    var data = result.data || [];
+                    placeholder.hidden = true;
+                    wrapper.hidden = false;
+                    tableSection.hidden = false;
+                    if (actionsCiudad) actionsCiudad.hidden = false;
+                    indicadorCiudadData = data;
+                    indicadorCiudadTipo = 'poblacion-ocupada-turismo';
+                    document.getElementById('indicador-chart-source-ciudad').textContent = 'Fuente: Observatorio Turístico de Yucatán (Webscraping)';
+                    if (resumenKpis && data.length > 0) {
+                        var ultimo = data[data.length - 1];
+                        resumenKpis.hidden = false;
+                        document.getElementById('ciudad-kpi-poblacion-total').textContent = (ultimo.valor || 0).toLocaleString('es-MX');
+                        document.getElementById('ciudad-kpi-mujeres').textContent = '-';
+                        document.getElementById('ciudad-kpi-hombres').textContent = '-';
+                    }
+                    updateCiudadYearFilterOptions(data, "poblacion-ocupada-turismo");
+                    
+                })
+                .catch(function (err) { msg.textContent = 'Error: ' + err.message; });
+        } else if (['ocupacion-hotelera', 'llegada-visitantes', 'gasto-promedio', 'derrama-economica', 'ingreso-hotelero', 'establecimientos-turismo'].indexOf(ind) !== -1) {
+            var endpoint = '/api/ciudades/' + encodeURIComponent(slug) + '/' + ind;
+            fetch(endpoint)
+                .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, data: d }; }); })
+                .then(function (result) {
+                    if (!result.ok) {
+                        msg.textContent = result.data.error || 'Error al cargar';
+                        return;
+                    }
+                    var response = result.data || [];
+
+                    placeholder.hidden = true;
+                    wrapper.hidden = false;
+                    tableSection.hidden = false;
+                    if (actionsCiudad) actionsCiudad.hidden = false;
+
+                    var sourceLbl = 'Fuente: Observatorio Turístico de Yucatán';
+                    if (slug === 'monterrey') {
+                        sourceLbl = 'Fuente: Secretaría de Turismo con datos de DATATUR (Indicadores PED Nuevo León)';
+                    }
+                    document.getElementById('indicador-chart-source-ciudad').textContent = sourceLbl;
+
+                    // Si recibimos datos de tipo estatal (como para Monterrey)
+                    if (response.type === 'estatal') {
+                        var data = response.data;
+                        indicadorCiudadData = data;
+                        indicadorCiudadTipo = 'actividad-hotelera-estatal-ciudad'; 
+                        
+                        if (resumenKpis && data.porc_ocupacion && data.porc_ocupacion.length > 0) {
+                            resumenKpis.hidden = false;
+                            var lastIdx = data.porc_ocupacion.length - 1;
+                            var valStr = (data.porc_ocupacion[lastIdx] || 0).toFixed(1) + '%';
+                            document.getElementById('ciudad-kpi-poblacion-total').textContent = valStr;
+                            document.getElementById('ciudad-kpi-mujeres').textContent = '-';
+                            document.getElementById('ciudad-kpi-hombres').textContent = '-';
+                        }
+                        
+                        // Reutilizamos la función de renderizado estatal
+                        updateCiudadYearFilterOptions(data, "actividad-hotelera-estatal-ciudad");
+                        
+                    } else {
+                        var data = response;
+                        indicadorCiudadData = data;
+                        indicadorCiudadTipo = ind;
+
+                        if (resumenKpis && data.length > 0) {
+                            var ultimo = data[data.length - 1];
+                            resumenKpis.hidden = false;
+                            var valStr = (ultimo.valor || 0).toLocaleString('es-MX');
+                            if (ind === 'ocupacion-hotelera') valStr += '%';
+                            document.getElementById('ciudad-kpi-poblacion-total').textContent = valStr;
+                            document.getElementById('ciudad-kpi-mujeres').textContent = '-';
+                            document.getElementById('ciudad-kpi-hombres').textContent = '-';
+                        }
+
+                        updateCiudadYearFilterOptions(data, ind);
+                        
+                    }
+                })
+                .catch(function (err) { msg.textContent = 'Error: ' + err.message; });
+        } else if (ind === 'poblacion-total' || ind === 'crecimiento-historico') {
             fetch('/api/ciudades/' + encodeURIComponent(slug) + '/crecimiento-historico')
                 .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, data: d }; }); })
                 .then(function (result) {
@@ -1973,7 +2462,7 @@
                     tableSection.hidden = false;
                     if (actionsCiudad) actionsCiudad.hidden = false;
                     indicadorCiudadData = data;
-                    indicadorCiudadTipo = 'crecimiento-historico';
+                    indicadorCiudadTipo = ind;
                     document.getElementById('indicador-chart-source-ciudad').textContent = 'Fuente: Censos de Población y Vivienda (2005, 2010, 2020), INEGI';
                     if (resumenKpis && data.length > 0) {
                         var ultimo = data[data.length - 1];
@@ -1982,8 +2471,121 @@
                         document.getElementById('ciudad-kpi-mujeres').textContent = (ultimo.mujeres || 0).toLocaleString('es-MX');
                         document.getElementById('ciudad-kpi-hombres').textContent = (ultimo.hombres || 0).toLocaleString('es-MX');
                     }
-                    renderCrecimientoHistoricoCiudad(data, ciudadNombre);
-                    fillCiudadTableCrecimiento(data);
+                    if (ind === 'poblacion-total') {
+                        updateCiudadYearFilterOptions(data, "poblacion-total");
+                    } else {
+                        updateCiudadYearFilterOptions(data, "crecimiento-historico");
+                    }
+                    
+                })
+                .catch(function (err) { msg.textContent = 'Error: ' + err.message; });
+        } else if (ind === 'comercio-internacional') {
+            fetch('/api/ciudades/' + encodeURIComponent(slug) + '/comercio-internacional')
+                .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, data: d }; }); })
+                .then(function (result) {
+                    if (!result.ok) { msg.textContent = result.data.error || 'Error al cargar'; return; }
+                    var data = result.data || [];
+                    placeholder.hidden = true; wrapper.hidden = false; tableSection.hidden = false;
+                    if (actionsCiudad) actionsCiudad.hidden = false;
+                    indicadorCiudadData = data;
+                    indicadorCiudadTipo = 'comercio-internacional';
+                    document.getElementById('indicador-chart-source-ciudad').textContent = 'Fuente: Datos Abiertos (Secretaría de Economía) - IED';
+                    if (resumenKpis) resumenKpis.hidden = true;
+                    updateCiudadYearFilterOptions(data, "comercio-internacional");
+                    
+                })
+                .catch(function (err) { msg.textContent = 'Error: ' + err.message; });
+        } else if (ind === 'ventas-internacionales' || ind === 'exportaciones-importaciones') {
+            fetch('/api/ciudades/' + encodeURIComponent(slug) + '/ventas-internacionales')
+                .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, data: d }; }); })
+                .then(function (result) {
+                    if (!result.ok) { msg.textContent = result.data.error || 'Error al cargar'; return; }
+                    var data = result.data || [];
+                    placeholder.hidden = true; wrapper.hidden = false; tableSection.hidden = false;
+                    if (actionsCiudad) actionsCiudad.hidden = false;
+                    indicadorCiudadData = data;
+                    indicadorCiudadTipo = ind;
+                    document.getElementById('indicador-chart-source-ciudad').textContent = 'Fuente: Banco de México (Banxico) a través de Data México';
+                    if (resumenKpis) resumenKpis.hidden = true;
+                    updateCiudadYearFilterOptions(data, ind);
+                })
+                .catch(function (err) { msg.textContent = 'Error: ' + err.message; });
+        } else if (ind === 'visitantes-nacionales-extranjeros') {
+            fetch('/api/ciudades/' + encodeURIComponent(slug) + '/visitantes-nac-ext')
+                .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, data: d }; }); })
+                .then(function (result) {
+                    if (!result.ok) { msg.textContent = result.data.error || 'Error al cargar'; return; }
+                    var data = result.data || [];
+                    placeholder.hidden = true; wrapper.hidden = false; tableSection.hidden = false;
+                    if (actionsCiudad) actionsCiudad.hidden = false;
+                    indicadorCiudadData = data;
+                    indicadorCiudadTipo = 'visitantes-nacionales-extranjeros';
+                    document.getElementById('indicador-chart-source-ciudad').textContent = 'Fuente: SECTUR - Información Turística por Entidad Federativa';
+                    if (resumenKpis) resumenKpis.hidden = true;
+                    updateCiudadYearFilterOptions(data, "visitantes-nacionales-extranjeros");
+                    
+                })
+                .catch(function (err) { msg.textContent = 'Error: ' + err.message; });
+        } else if (ind === 'llegada-pasajeros') {
+            fetch('/api/ciudades/' + encodeURIComponent(slug) + '/llegada-pasajeros')
+                .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, data: d }; }); })
+                .then(function (result) {
+                    if (!result.ok) { msg.textContent = result.data.error || 'Error al cargar'; return; }
+                    var data = result.data || [];
+                    placeholder.hidden = true; wrapper.hidden = false; tableSection.hidden = false;
+                    if (actionsCiudad) actionsCiudad.hidden = false;
+                    indicadorCiudadData = data;
+                    indicadorCiudadTipo = 'llegada-pasajeros';
+                    document.getElementById('indicador-chart-source-ciudad').textContent = 'Fuente: Grupo Aeropuertario Centro-Norte OMA';
+                    if (resumenKpis) resumenKpis.hidden = true;
+                    updateCiudadYearFilterOptions(data, "llegada-pasajeros");
+                    
+                })
+                .catch(function (err) { msg.textContent = 'Error: ' + err.message; });
+        } else if (ind === 'conectividad-aerea') {
+            fetch('/api/ciudades/' + encodeURIComponent(slug) + '/conectividad-aerea')
+                .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, data: d }; }); })
+                .then(function (result) {
+                    if (!result.ok) { msg.textContent = result.data.error || 'Error al cargar'; return; }
+                    var data = result.data || [];
+                    placeholder.hidden = true; wrapper.hidden = false; tableSection.hidden = false;
+                    if (actionsCiudad) actionsCiudad.hidden = false;
+                    indicadorCiudadData = data;
+                    indicadorCiudadTipo = 'conectividad-aerea';
+                    document.getElementById('indicador-chart-source-ciudad').textContent = 'Fuente: Agencia Federal de Aviación Civil (AFAC)';
+                    if (resumenKpis) resumenKpis.hidden = true;
+                    updateCiudadYearFilterOptions(data, "conectividad-aerea");
+                })
+                .catch(function (err) { msg.textContent = 'Error: ' + err.message; });
+        } else if (ind === 'oferta-servicios-turisticos') {
+            fetch('/api/ciudades/' + encodeURIComponent(slug) + '/oferta-servicios-turisticos')
+                .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, data: d }; }); })
+                .then(function (result) {
+                    if (!result.ok) { msg.textContent = result.data.error || 'Error al cargar'; return; }
+                    var data = result.data || [];
+                    placeholder.hidden = true; wrapper.hidden = false; tableSection.hidden = false;
+                    if (actionsCiudad) actionsCiudad.hidden = false;
+                    indicadorCiudadData = data;
+                    indicadorCiudadTipo = 'oferta-servicios-turisticos';
+                    document.getElementById('indicador-chart-source-ciudad').textContent = 'Fuente: Datos Abiertos (Gobierno de México) - TURISSSTE';
+                    if (resumenKpis) resumenKpis.hidden = true;
+                    updateCiudadYearFilterOptions(data, "oferta-servicios-turisticos");
+                })
+                .catch(function (err) { msg.textContent = 'Error: ' + err.message; });
+        } else if (ind === 'vuelos-llegada-t1' || ind === 'vuelos-llegada-t2') {
+            var isT1 = ind === 'vuelos-llegada-t1';
+            fetch('/api/ciudades/' + encodeURIComponent(slug) + '/vuelos-llegada')
+                .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, data: d }; }); })
+                .then(function (result) {
+                    if (!result.ok) { msg.textContent = result.data.error || 'Error al cargar'; return; }
+                    var data = result.data || [];
+                    placeholder.hidden = true; wrapper.hidden = false; tableSection.hidden = false;
+                    if (actionsCiudad) actionsCiudad.hidden = false;
+                    indicadorCiudadData = data;
+                    indicadorCiudadTipo = ind;
+                    document.getElementById('indicador-chart-source-ciudad').textContent = 'Fuente: Datos Abiertos (Gobierno de México) - AICM';
+                    if (resumenKpis) resumenKpis.hidden = true;
+                    updateCiudadYearFilterOptions(data, ind);
                 })
                 .catch(function (err) { msg.textContent = 'Error: ' + err.message; });
         } else {
@@ -1991,86 +2593,1372 @@
         }
     }
 
-    function renderDistribucionPoblacionCiudad(data, ciudadNombre) {
+
+    function renderActividadHoteleraEstatalCiudad(data, ciudadNombre) {
+        var container = document.getElementById('indicador-chart-plot-ciudad');
+        if (!container) return;
+        if (!data) {
+            container.innerHTML = '<p style="text-align:center;padding:40px;color:#666;">No hay datos de actividad hotelera disponibles.</p>';
+            return;
+        }
+        var meses = data.meses || ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+        var disp = (data.disponibles || []).map(function (x) { return Number(x) || 0; });
+        var ocup = (data.ocupados || []).map(function (x) { return Number(x) || 0; });
+        var porc = (data.porc_ocupacion || []).map(function (x) { return Number(x) || 0; });
+
+        if (typeof Plotly === 'undefined') return;
+        var cfg = typeof getChartConfig === 'function' ? getChartConfig() : { palette: ['#0576F3', '#36F48C', '#F47806', '#F3F40B', '#F479F4'], fontSize: 14, titleSize: 16, fontFamily: 'Aptos Light, sans-serif' };
+        var palette = cfg.palette || ['#0576F3', '#36F48C', '#F47806'];
+        var fontSize = cfg.fontSize || 14;
+        var titleSize = cfg.titleSize || 16;
+        var fontFamily = cfg.fontFamily || 'Aptos Light, sans-serif';
+
+        var layout = {
+            title: { text: '<b>Ocupación Hotelera: ' + ciudadNombre + ' (Datos Estatales 2024)</b>', font: { family: fontFamily, size: titleSize }, x: 0.5, xanchor: 'center' },
+            font: { family: fontFamily, size: fontSize, color: '#2e2e2e' },
+            xaxis: { type: 'category', title: 'Mes', tickfont: { size: fontSize }, categoryorder: 'array', categoryarray: meses },
+            yaxis: { title: 'Cuartos', side: 'left', tickfont: { size: fontSize }, gridcolor: 'rgba(0,0,0,0.08)' },
+            yaxis2: { title: '% Ocupación', side: 'right', overlaying: 'y', range: [0, 100], gridcolor: null, tickfont: { size: fontSize } },
+            plot_bgcolor: 'white',
+            paper_bgcolor: 'transparent',
+            barmode: 'group',
+            margin: { l: 90, r: 80, t: 70, b: 120 },
+            height: 560,
+            legend: { orientation: 'h', y: -0.2, x: 0.5, xanchor: 'center', font: { size: fontSize } },
+            autosize: true
+        };
+        var plotlyConfig = { responsive: true, displayModeBar: true, locale: 'es', toImageButtonOptions: { format: 'png', filename: 'ocupacion_hotelera_' + ciudadNombre, height: 720, width: 1280, scale: 2 } };
+        
+        Plotly.newPlot(container, [
+            { type: 'bar', x: meses, y: disp, name: 'Disponibles', marker: { color: palette[0] }, hovertemplate: '<b>Disponibles</b>: %{y:,.0f}<extra></extra>' },
+            { type: 'bar', x: meses, y: ocup, name: 'Ocupados', marker: { color: palette[1] }, hovertemplate: '<b>Ocupados</b>: %{y:,.0f}<extra></extra>' },
+            { type: 'scatter', x: meses, y: porc, name: '% Ocupación', yaxis: 'y2', mode: 'lines+markers', line: { color: palette[2], width: 3 }, marker: { color: palette[2], size: 8 }, hovertemplate: '<b>Ocupación</b>: %{y:.1f}%<extra></extra>' }
+        ], layout, plotlyConfig);
+    }
+
+    function fillActividadHoteleraTableCiudad(data) {
+        var theadTr = document.getElementById('kpis-table-ciudad-thead');
+        var tbody = document.getElementById('kpis-table-ciudad-body');
+        if (!data || !theadTr || !tbody) return;
+        var meses = data.meses || ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+        var disp = data.disponibles || [];
+        var ocup = data.ocupados || [];
+        var porc = data.porc_ocupacion || [];
+        
+        theadTr.innerHTML = '<th>Mes</th><th>Disponibles</th><th>Ocupados</th><th>% Ocupación</th>';
+        tbody.innerHTML = '';
+        for (var i = 0; i < meses.length; i++) {
+            var tr = document.createElement('tr');
+            tr.innerHTML = '<td>' + meses[i] + '</td>' +
+                           '<td>' + (Number(disp[i]) || 0).toLocaleString('es-MX') + '</td>' +
+                           '<td>' + (Number(ocup[i]) || 0).toLocaleString('es-MX') + '</td>' +
+                           '<td>' + (Number(porc[i]) || 0).toFixed(1) + '%</td>';
+            tbody.appendChild(tr);
+        }
+    }
+
+
+    function updateCiudadYearFilterOptions(data, indType) {
+        var container = document.getElementById('ciudad-year-filter-container');
+        var desdeSel = document.getElementById('ciudad-year-desde');
+        var hastaSel = document.getElementById('ciudad-year-hasta');
+        if (!container || !desdeSel || !hastaSel) return;
+
+        // Extract available years
+        var years = [];
+        if (indType === 'actividad-hotelera-estatal-ciudad' && data && data.meses) {
+            years = [2024]; 
+        } else if (Array.isArray(data)) {
+            data.forEach(function (r) {
+                var y = r.anio || r.year;
+                if (!y && r.periodo) {
+                    var match = String(r.periodo).match(/\b(19|20)\d{2}\b/);
+                    if (match) y = parseInt(match[0]);
+                }
+                if (y && years.indexOf(y) === -1) years.push(parseInt(y));
+            });
+        }
+
+        years.sort(function (a, b) { return a - b; });
+
+        if (years.length <= 1) {
+            container.style.display = 'none';
+            // Even if not displayed, trigger render so it draws default
+            desdeSel.innerHTML = '<option value="' + (years[0] || '') + '">' + (years[0] || '') + '</option>';
+            hastaSel.innerHTML = '<option value="' + (years[0] || '') + '">' + (years[0] || '') + '</option>';
+            return triggerCiudadRender();
+        }
+
+        container.style.display = 'flex';
+        desdeSel.innerHTML = '';
+        hastaSel.innerHTML = '';
+
+        years.forEach(function (y) {
+            var o1 = document.createElement('option'); o1.value = y; o1.textContent = y; desdeSel.appendChild(o1);
+            var o2 = document.createElement('option'); o2.value = y; o2.textContent = y; hastaSel.appendChild(o2);
+        });
+
+        desdeSel.value = years[0];
+        hastaSel.value = years[years.length - 1];
+
+        if (!desdeSel.dataset.listener) {
+             desdeSel.addEventListener('change', triggerCiudadRender);
+             desdeSel.dataset.listener = '1';
+        }
+        if (!hastaSel.dataset.listener) {
+             hastaSel.addEventListener('change', triggerCiudadRender);
+             hastaSel.dataset.listener = '1';
+        }
+
+        triggerCiudadRender(); // Render immediately after populating
+    }
+
+    function triggerCiudadRender() {
+        var desdeEl = document.getElementById('ciudad-year-desde');
+        var hastaEl = document.getElementById('ciudad-year-hasta');
+        var desdeStr = desdeEl ? desdeEl.value : '';
+        var hastaStr = hastaEl ? hastaEl.value : '';
+        var desde = desdeStr ? parseInt(desdeStr) : 1900;
+        var hasta = hastaStr ? parseInt(hastaStr) : 3000;
+        if (isNaN(desde)) desde = 1900;
+        if (isNaN(hasta)) hasta = 3000;
+        var ciudadNombre = document.getElementById('ciudad-select').selectedOptions[0] ? document.getElementById('ciudad-select').selectedOptions[0].value : 'Ciudad';
+
+        if (!indicadorCiudadData) return;
+
+        var data = indicadorCiudadData;
+        
+        // Custom filter for array data types
+        if (indicadorCiudadTipo !== 'actividad-hotelera-estatal-ciudad' && Array.isArray(indicadorCiudadData)) {
+            data = indicadorCiudadData.filter(function (r) {
+                var y = r.anio || r.year;
+                if (!y && r.periodo) {
+                     var match = String(r.periodo).match(/\b(19|20)\d{2}\b/);
+                     if (match) y = parseInt(match[0]);
+                }
+                if (!y) return true; 
+                return y >= desde && y <= hasta;
+            });
+        }
+
+        var currentSlug = document.getElementById('ciudad-select').value;
+        loadSavedIaAnalisis(currentSlug, indicadorCiudadTipo, 'indicador-ia-response-ciudad', 'indicador-ia-response-content-ciudad');
+
+        switch (indicadorCiudadTipo) {
+            case 'distribucion-edad':
+                renderDistribucionEdadCiudad(data, ciudadNombre); fillCiudadTableEdad(data); break;
+            case 'distribucion-sexo':
+                renderDistribucionSexoCiudad(data, ciudadNombre); fillCiudadTableSexo(data); break;
+            case 'poblacion-total':
+                renderPoblacionTotalCiudad(data, ciudadNombre); fillCiudadTableCrecimiento(data); break;
+            case 'poblacion-ocupada-turismo':
+                renderPoblacionOcupadaTurismoCiudad(data, ciudadNombre); fillCiudadTablePOT(data); break;
+            case 'actividad-hotelera-estatal-ciudad':
+                renderActividadHoteleraEstatalCiudad(data, ciudadNombre); fillActividadHoteleraTableCiudad(data); break;
+            case 'ocupacion-hotelera':
+            case 'llegada-visitantes':
+            case 'gasto-promedio':
+            case 'derrama-economica':
+            case 'ingreso-hotelero':
+            case 'establecimientos-turismo':
+                renderTurismoGenericoCiudad(data, ciudadNombre, indicadorCiudadTipo); fillCiudadTableTurismo(data, indicadorCiudadTipo); break;
+            case 'crecimiento-historico':
+                renderCrecimientoHistoricoCiudad(data, ciudadNombre); fillCiudadTableCrecimiento(data); break;
+            case 'comercio-internacional':
+                renderComercioInternacionalCiudad(data, ciudadNombre); fillCiudadTableComercioInternacional(data); break;
+            case 'ventas-internacionales':
+            case 'exportaciones-importaciones':
+                renderVentasInternacionalesCiudad(data, ciudadNombre); break;
+            case 'visitantes-nacionales-extranjeros':
+                renderVisitantesNacExtCiudad(data, ciudadNombre); fillCiudadTableVisitantesNacExt(data); break;
+            case 'llegada-pasajeros':
+                renderLlegadaPasajerosCiudad(data, ciudadNombre); fillCiudadTableLlegadaPasajeros(data); break;
+            case 'conectividad-aerea':
+                renderConectividadAereaCiudad(data, ciudadNombre); break;
+            case 'oferta-servicios-turisticos':
+                renderOfertaServiciosTuristicosCiudad(data, ciudadNombre); break;
+            case 'vuelos-llegada-t1':
+                renderVuelosLlegadaCiudad(data, ciudadNombre, 'T1'); break;
+            case 'vuelos-llegada-t2':
+                renderVuelosLlegadaCiudad(data, ciudadNombre, 'T2'); break;
+        }
+    }
+
+
+    function loadSavedIaAnalisis(slug, indicator, boxId, contentId) {
+        var box = document.getElementById(boxId);
+        var content = document.getElementById(contentId);
+        if (!box || !content || !slug || !indicator) return;
+        
+        // No mostrar spinner, solo cargar si existe
+        fetch('/api/get-ia-analisis?slug=' + encodeURIComponent(slug) + '&indicator=' + encodeURIComponent(indicator))
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            var hasIa = data && data.analisis;
+            var hasUser = data && data.analisis_usuario;
+            
+            // Reset box content and state for new indicator
+            content.innerHTML = ''; 
+            if (slug && indicator) {
+                box.hidden = false;
+            }
+            
+            if (hasIa) {
+                var p = document.createElement('div');
+                p.className = 'ia-response-text';
+                p.innerHTML = data.analisis.replace(/\n/g, '<br>');
+                content.appendChild(p);
+            }
+            
+            // Populate user analysis textarea
+            var userTextarea = box.querySelector('textarea');
+            if (userTextarea) {
+                userTextarea.value = hasUser ? data.analisis_usuario : '';
+            }
+        }).catch(function(err) { console.warn('Error cargando Análisis IA:', err); });
+    }
+
+    
+    
+    
+    
+    
+    function renderPibEstatalCiudad(data, ciudadNombre) {
+        indicadorChartData = data;
+        const container = document.getElementById('indicador-chart-plot-ciudad');
+        if (!container) return;
+        container.innerHTML = '<div id="ciudad-pib-estatal-chart" style="width:100%; height:0; padding-bottom:56.25%; position:relative;"></div>';
+        
+        const x = data.map(d => d.periodo);
+        const y = data.map(d => d.valor);
+        
+        const trace = {
+            x: x,
+            y: y,
+            type: 'bar',
+            name: 'PIB Estatal Total',
+            marker: { color: '#0576F3' },
+            hovertemplate: '<b>Año: %{x}</b><br>PIB: $%{y:,.0f} MDP<extra></extra>'
+        };
+
+        const layout = {
+            title: {
+                text: `PIB Estatal Total (Precios 2018): ${ciudadNombre}`,
+                font: { family: 'Aptos Light', size: 24 },
+                x: 0.5,
+                xanchor: 'center'
+            },
+            font: { family: 'Aptos Light', size: 14 },
+            xaxis: { title: 'Año', tickfont: { size: 12 }, type: 'category' },
+            yaxis: { title: 'Millones de Pesos (MXN)', tickformat: ',.0f', gridcolor: '#eee' },
+            plot_bgcolor: 'white',
+            paper_bgcolor: 'white',
+            margin: { t: 80, b: 100, l: 80, r: 40 },
+            showlegend: false,
+            annotations: [{
+                text: "Fuente: INEGI - Producto Interno Bruto por Entidad Federativa (Precios Constantes 2018)",
+                xref: "paper", yref: "paper",
+                x: 0, y: -0.25,
+                showarrow: false,
+                font: { size: 10, color: "gray" }
+            }]
+        };
+
+        const config = {
+            responsive: true,
+            displaylogo: false,
+            toImageButtonOptions: {
+                format: 'png',
+                filename: `PIB_Estatal_${ciudadNombre}`,
+                height: 720,
+                width: 1280,
+                scale: 1
+            }
+        };
+
+        Plotly.newPlot('ciudad-pib-estatal-chart', [trace], layout, config);
+        
+        document.getElementById('indicador-chart-placeholder-ciudad').hidden = true;
+        document.getElementById('indicador-chart-container-ciudad').hidden = false;
+        var actionsCiudad = document.getElementById('indicador-chart-actions-ciudad');
+        if (actionsCiudad) actionsCiudad.hidden = false;
+        
+        fillCiudadTablePibEstatal(data);
+    }
+
+    function fillCiudadTablePibEstatal(data) {
+        var thead = document.getElementById('kpis-table-ciudad-thead');
+        var tbody = document.getElementById('kpis-table-ciudad-body');
+        if (!thead || !tbody) return;
+        thead.innerHTML = '<th>Año</th><th>PIB Estatal Total (MDP)</th>';
+        tbody.innerHTML = '';
+        data.forEach(function(d) {
+            var row = document.createElement('tr');
+            row.innerHTML = `<td>${d.periodo}</td><td>$${Number(d.valor).toLocaleString('es-MX', {minimumFractionDigits:0, maximumFractionDigits:0})}</td>`;
+            tbody.appendChild(row);
+        });
+        var tableSection = document.getElementById('kpis-table-section-ciudad');
+        if (tableSection) tableSection.hidden = false;
+    }
+
+    function renderComposicionSectorialCiudad(data, ciudadNombre) {
+        indicadorChartData = data;
+        const container = document.getElementById('indicador-chart-plot-ciudad');
+        if (!container) return;
+        container.innerHTML = '<div id="ciudad-composicion-chart" style="width:100%; height:0; padding-bottom:56.25%; position:relative;"></div>';
+        
+        const x = data.map(d => d.periodo);
+        
+        const trace1 = {
+            x: x, y: data.map(d => d.primario),
+            type: 'bar', name: 'Sector Primario',
+            marker: { color: '#F3F40B' },
+            hovertemplate: '<b>%{x}</b><br>Primario: %{y:.1f}%<extra></extra>'
+        };
+        const trace2 = {
+            x: x, y: data.map(d => d.secundario),
+            type: 'bar', name: 'Sector Secundario',
+            marker: { color: '#F479F4' },
+            hovertemplate: '<b>%{x}</b><br>Secundario: %{y:.1f}%<extra></extra>'
+        };
+        const trace3 = {
+            x: x, y: data.map(d => d.terciario),
+            type: 'bar', name: 'Sector Terciario',
+            marker: { color: '#0576F3' },
+            hovertemplate: '<b>%{x}</b><br>Terciario: %{y:.1f}%<extra></extra>'
+        };
+        const trace4 = {
+            x: x, y: data.map(d => d.no_especificado),
+            type: 'bar', name: 'No Especificado',
+            marker: { color: '#DDDDDD' },
+            hovertemplate: '<b>%{x}</b><br>No Esp: %{y:.1f}%<extra></extra>'
+        };
+
+        const traceData = [trace1, trace2, trace3, trace4];
+
+        const layout = {
+            title: {
+                text: `Composición Sectorial del Empleo: ${ciudadNombre}`,
+                font: { family: 'Aptos Light', size: 24 },
+                x: 0.5,
+                xanchor: 'center'
+            },
+            barmode: 'stack',
+            font: { family: 'Aptos Light', size: 14 },
+            xaxis: { title: 'Periodo', tickfont: { size: 12 } },
+            yaxis: { title: 'Porcentaje (%)', tickformat: '.1f', gridcolor: '#eee', range: [0, 100] },
+            plot_bgcolor: 'white',
+            paper_bgcolor: 'white',
+            margin: { t: 80, b: 100, l: 80, r: 40 },
+            showlegend: true,
+            legend: {
+                orientation: 'h',
+                x: 0.5,
+                xanchor: 'center',
+                y: -0.2
+            },
+            annotations: [{
+                text: "Fuente: INEGI - Encuesta Nacional de Ocupación y Empleo (ENOE)",
+                xref: "paper", yref: "paper",
+                x: 0, y: -0.25,
+                showarrow: false,
+                font: { size: 10, color: "gray" }
+            }]
+        };
+
+        const config = {
+            responsive: true,
+            displaylogo: false,
+            toImageButtonOptions: {
+                format: 'png',
+                filename: `ComposicionSectorial_${ciudadNombre}`,
+                height: 720,
+                width: 1280,
+                scale: 1
+            }
+        };
+
+        Plotly.newPlot('ciudad-composicion-chart', traceData, layout, config);
+        
+        document.getElementById('indicador-chart-placeholder-ciudad').hidden = true;
+        document.getElementById('indicador-chart-container-ciudad').hidden = false;
+        var actionsCiudad = document.getElementById('indicador-chart-actions-ciudad');
+        if (actionsCiudad) actionsCiudad.hidden = false;
+        
+        fillCiudadTableComposicion(data);
+    }
+
+    function fillCiudadTableComposicion(data) {
+        var thead = document.getElementById('kpis-table-ciudad-thead');
+        var tbody = document.getElementById('kpis-table-ciudad-body');
+        if (!thead || !tbody) return;
+        thead.innerHTML = '<th>Periodo</th><th>Sector Primario (%)</th><th>Sector Secundario (%)</th><th>Sector Terciario (%)</th><th>No Especificado (%)</th>';
+        tbody.innerHTML = '';
+        data.forEach(function(d) {
+            var row = document.createElement('tr');
+            row.innerHTML = `<td>${d.periodo}</td><td>${d.primario.toFixed(1)}%</td><td>${d.secundario.toFixed(1)}%</td><td>${d.terciario.toFixed(1)}%</td><td>${d.no_especificado.toFixed(1)}%</td>`;
+            tbody.appendChild(row);
+        });
+        var tableSection = document.getElementById('kpis-table-section-ciudad');
+        if (tableSection) tableSection.hidden = false;
+    }
+
+    function renderTasaDesocupacionCiudad(data, ciudadNombre) {
+        indicadorChartData = data;
+        const container = document.getElementById('indicador-chart-plot-ciudad');
+        if (!container) return;
+        container.innerHTML = '<div id="ciudad-desocupacion-chart" style="width:100%; height:0; padding-bottom:56.25%; position:relative;"></div>';
+        
+        const x = data.map(d => d.periodo);
+        const y = data.map(d => d.valor);
+        
+        const trace = {
+            x: x,
+            y: y,
+            type: 'scatter',
+            mode: 'lines+markers',
+            name: 'Tasa de Desocupación',
+            line: { shape: 'spline', color: '#36F48C', width: 3 },
+            marker: { size: 8, color: '#36F48C' },
+            hovertemplate: '<b>%{x}</b><br>Tasa: %{y:.1f}%<extra></extra>'
+        };
+
+        const layout = {
+            title: {
+                text: `Tasa de Desocupación: ${ciudadNombre}`,
+                font: { family: 'Aptos Light', size: 24 },
+                x: 0.5,
+                xanchor: 'center'
+            },
+            font: { family: 'Aptos Light', size: 14 },
+            xaxis: { title: 'Periodo', tickfont: { size: 12 } },
+            yaxis: { title: 'Tasa (%)', tickformat: '.1f', gridcolor: '#eee', rangemode: 'tozero' },
+            plot_bgcolor: 'white',
+            paper_bgcolor: 'white',
+            margin: { t: 80, b: 100, l: 80, r: 40 },
+            showlegend: true,
+            legend: {
+                orientation: 'h',
+                x: 0.5,
+                xanchor: 'center',
+                y: -0.2
+            },
+            annotations: [{
+                text: "Fuente: INEGI - Encuesta Nacional de Ocupación y Empleo (ENOE)",
+                xref: "paper", yref: "paper",
+                x: 0, y: -0.25,
+                showarrow: false,
+                font: { size: 10, color: "gray" }
+            }]
+        };
+
+        const config = {
+            responsive: true,
+            displaylogo: false,
+            toImageButtonOptions: {
+                format: 'png',
+                filename: `TasaDesocupacion_${ciudadNombre}`,
+                height: 720,
+                width: 1280,
+                scale: 1
+            }
+        };
+
+        Plotly.newPlot('ciudad-desocupacion-chart', [trace], layout, config);
+        
+        document.getElementById('indicador-chart-placeholder-ciudad').hidden = true;
+        document.getElementById('indicador-chart-container-ciudad').hidden = false;
+        var actionsCiudad = document.getElementById('indicador-chart-actions-ciudad');
+        if (actionsCiudad) actionsCiudad.hidden = false;
+        
+        fillCiudadTableDesocupacion(data);
+    }
+
+    function fillCiudadTableDesocupacion(data) {
+        var thead = document.getElementById('kpis-table-ciudad-thead');
+        var tbody = document.getElementById('kpis-table-ciudad-body');
+        if (!thead || !tbody) return;
+        thead.innerHTML = '<th>Periodo</th><th>Tasa de Desocupación (%)</th>';
+        tbody.innerHTML = '';
+        data.forEach(function(d) {
+            var row = document.createElement('tr');
+            row.innerHTML = '<td>' + d.periodo + '</td><td>' + Number(d.valor).toFixed(1) + '%</td>';
+            tbody.appendChild(row);
+        });
+        var tableSection = document.getElementById('kpis-table-section-ciudad');
+        if (tableSection) tableSection.hidden = false;
+    }
+
+    function renderTasaParticipacionLaboralCiudad(data, ciudadNombre) {
+        indicadorChartData = data;
+        const container = document.getElementById('indicador-chart-plot-ciudad');
+        if (!container) return;
+        container.innerHTML = '<div id="ciudad-tasa-chart" style="width:100%; height:0; padding-bottom:56.25%; position:relative;"></div>';
+        
+        const x = data.map(d => d.periodo);
+        const y = data.map(d => d.valor);
+        
+        const trace = {
+            x: x,
+            y: y,
+            type: 'scatter',
+            mode: 'lines+markers',
+            name: 'Tasa de Participación',
+            line: { shape: 'spline', color: '#F47806', width: 3 },
+            marker: { size: 8, color: '#F47806' },
+            hovertemplate: '<b>%{x}</b><br>Tasa: %{y:.1f}%<extra></extra>'
+        };
+
+        const layout = {
+            title: {
+                text: `Tasa de Participación Laboral: ${ciudadNombre}`,
+                font: { family: 'Aptos Light', size: 24 },
+                x: 0.5,
+                xanchor: 'center'
+            },
+            font: { family: 'Aptos Light', size: 14 },
+            xaxis: { title: 'Periodo', tickfont: { size: 12 } },
+            yaxis: { title: 'Tasa (%)', tickformat: '.1f', gridcolor: '#eee', rangemode: 'tozero' },
+            plot_bgcolor: 'white',
+            paper_bgcolor: 'white',
+            margin: { t: 80, b: 100, l: 80, r: 40 },
+            showlegend: true,
+            legend: {
+                orientation: 'h',
+                x: 0.5,
+                xanchor: 'center',
+                y: -0.2
+            },
+            annotations: [{
+                text: "Fuente: INEGI - Encuesta Nacional de Ocupación y Empleo (ENOE)",
+                xref: "paper", yref: "paper",
+                x: 0, y: -0.25,
+                showarrow: false,
+                font: { size: 10, color: "gray" }
+            }]
+        };
+
+        const config = {
+            responsive: true,
+            displaylogo: false,
+            toImageButtonOptions: {
+                format: 'png',
+                filename: `TasaParticipacion_${ciudadNombre}`,
+                height: 720,
+                width: 1280,
+                scale: 1
+            }
+        };
+
+        Plotly.newPlot('ciudad-tasa-chart', [trace], layout, config);
+        
+        document.getElementById('indicador-chart-placeholder-ciudad').hidden = true;
+        document.getElementById('indicador-chart-container-ciudad').hidden = false;
+        var actionsCiudad = document.getElementById('indicador-chart-actions-ciudad');
+        if (actionsCiudad) actionsCiudad.hidden = false;
+        
+        fillCiudadTableTasa(data);
+    }
+
+    function fillCiudadTableTasa(data) {
+        var thead = document.getElementById('kpis-table-ciudad-thead');
+        var tbody = document.getElementById('kpis-table-ciudad-body');
+        if (!thead || !tbody) return;
+        thead.innerHTML = '<th>Periodo</th><th>Tasa de Participación (%)</th>';
+        tbody.innerHTML = '';
+        data.forEach(function(d) {
+            var row = document.createElement('tr');
+            row.innerHTML = '<td>' + d.periodo + '</td><td>' + Number(d.valor).toFixed(1) + '%</td>';
+            tbody.appendChild(row);
+        });
+        var tableSection = document.getElementById('kpis-table-section-ciudad');
+        if (tableSection) tableSection.hidden = false;
+    }
+
+    function renderPoblacionEconomicamenteActivaCiudad(data, ciudadNombre) {
+        indicadorChartData = data;
+        const container = document.getElementById('indicador-chart-plot-ciudad');
+        if (!container) { console.error('PEA container not found'); return; }
+        container.innerHTML = '<div id="ciudad-pea-chart" style="width:100%; height:0; padding-bottom:56.25%; position:relative;"></div>';
+        
+        const x = data.map(d => d.periodo);
+        const y = data.map(d => d.valor);
+        
+        const trace = {
+            x: x,
+            y: y,
+            type: 'bar',
+            name: 'PEA',
+            marker: { color: '#0576F3' },
+            hovertemplate: '<b>%{x}</b><br>PEA: %{y:,.0f} personas<extra></extra>'
+        };
+
+        const layout = {
+            title: {
+                text: `Población Económicamente Activa: ${ciudadNombre}`,
+                font: { family: 'Aptos Light', size: 24 },
+                x: 0.5,
+                xanchor: 'center'
+            },
+            font: { family: 'Aptos Light', size: 14 },
+            xaxis: { title: 'Periodo', tickfont: { size: 12 } },
+            yaxis: { title: 'Personas', tickformat: ',.0f', gridcolor: '#eee' },
+            plot_bgcolor: 'white',
+            paper_bgcolor: 'white',
+            margin: { t: 80, b: 100, l: 80, r: 40 },
+            showlegend: true,
+            legend: {
+                orientation: 'h',
+                x: 0.5,
+                xanchor: 'center',
+                y: -0.2
+            },
+            annotations: [{
+                text: "Fuente: INEGI - Encuesta Nacional de Ocupación y Empleo (ENOE)",
+                xref: "paper", yref: "paper",
+                x: 0, y: -0.25,
+                showarrow: false,
+                font: { size: 10, color: "gray" }
+            }]
+        };
+
+        const config = {
+            responsive: true,
+            displaylogo: false,
+            toImageButtonOptions: {
+                format: 'png',
+                filename: `PEA_${ciudadNombre}`,
+                height: 720,
+                width: 1280,
+                scale: 1
+            }
+        };
+
+        Plotly.newPlot('ciudad-pea-chart', [trace], layout, config);
+        
+        // Show UI elements
+        document.getElementById('indicador-chart-placeholder-ciudad').hidden = true;
+        document.getElementById('indicador-chart-container-ciudad').hidden = false;
+        document.getElementById('indicador-chart-actions-ciudad').hidden = false;
+        
+        fillCiudadTablePEA(data);
+    }
+
+function renderDistribucionEdadCiudad(data, ciudadNombre) {
+        if (!data || typeof Plotly === 'undefined') return;
+        var container = document.getElementById('indicador-chart-plot-ciudad');
+        if (!container) return;
+        Plotly.purge(container);
+        var cfg = typeof getChartConfig === 'function' ? getChartConfig() : { palette: ['#0576F3', '#36F48C', '#F47806'], fontSize: 14, titleSize: 16, fontFamily: 'Aptos Light, sans-serif' };
+        var palette = cfg.palette || ['#0576F3', '#36F48C', '#F47806', '#F3F40B', '#F479F4'];
+        var gruposEdad = ['0-4', '5-9', '10-14', '15-19', '20-24', '25-29', '30-34', '35-39', '40-44', '45-49', '50-54', '55-59', '60-64', '65-69', '70-74', '75-79', '80-84', '85+'];
+        var clavesF = ['P_0A4_F', 'P_5A9_F', 'P_10A14_F', 'P_15A19_F', 'P_20A24_F', 'P_25A29_F', 'P_30A34_F', 'P_35A39_F', 'P_40A44_F', 'P_45A49_F', 'P_50A54_F', 'P_55A59_F', 'P_60A64_F', 'P_65A69_F', 'P_70A74_F', 'P_75A79_F', 'P_80A84_F', ['P_85A999_F', 'P_85YMAS_F']];
+        var clavesM = ['P_0A4_M', 'P_5A9_M', 'P_10A14_M', 'P_15A19_M', 'P_20A24_M', 'P_25A29_M', 'P_30A34_M', 'P_35A39_M', 'P_40A44_M', 'P_45A49_M', 'P_50A54_M', 'P_55A59_M', 'P_60A64_M', 'P_65A69_M', 'P_70A74_M', 'P_75A79_M', 'P_80A84_M', ['P_85A999_M', 'P_85YMAS_M']];
+        var mujeres = [], hombres = [];
+        for (var i = 0; i < gruposEdad.length; i++) {
+            var valF = 0, valM = 0;
+            if (Array.isArray(clavesF[i])) {
+                clavesF[i].forEach(function (k) { if (data[k]) valF = data[k]; });
+            } else {
+                valF = data[clavesF[i]] || 0;
+            }
+            if (Array.isArray(clavesM[i])) {
+                clavesM[i].forEach(function (k) { if (data[k]) valM = data[k]; });
+            } else {
+                valM = data[clavesM[i]] || 0;
+            }
+            mujeres.push(valF);
+            hombres.push(-valM);
+        }
+        var maxVal = Math.max(Math.max(...mujeres), Math.max(...hombres.map(function (v) { return Math.abs(v); })));
+        var step = Math.max(Math.round(maxVal / 5), 1);
+        var tickvals = []; 
+        for (var v = - (Math.ceil(maxVal / step) * step); v <= maxVal; v += step) { tickvals.push(v); }
+        var ticktext = tickvals.map(function (v) { return Math.abs(v).toLocaleString('es-MX'); });
+        
+        var layout = {
+            title: { text: '<b>Distribución por edad (2020) - ' + ciudadNombre + '</b>', font: { family: cfg.fontFamily, size: cfg.titleSize }, x: 0.5, xanchor: 'center' },
+            font: { family: cfg.fontFamily, size: cfg.fontSize, color: '#2e2e2e' },
+            xaxis: { title: 'Población', tickvals: tickvals, ticktext: ticktext, zeroline: true, zerolinewidth: 2, zerolinecolor: '#555', gridcolor: 'rgba(0,0,0,0.05)' },
+            yaxis: { type: 'category', title: 'Grupos de Edad', categoryarray: gruposEdad, side: 'left' },
+            barmode: 'overlay', bargap: 0.1, plot_bgcolor: 'white', paper_bgcolor: 'transparent',
+            margin: { l: 120, r: 80, t: 90, b: 120 },
+            legend: { orientation: 'h', y: -0.2, x: 0.5, xanchor: 'center' },
+            annotations: [{ text: 'Fuente: INEGI (Censo de Población y Vivienda 2020)', xref: 'paper', yref: 'paper', x: 0, y: -0.25, showarrow: false, font: { size: 12, color: 'gray' } }],
+            autosize: true
+        };
+        Plotly.newPlot(container, [
+            { type: 'bar', y: gruposEdad, x: hombres, name: 'Hombres', orientation: 'h', marker: { color: palette[0] }, hovertemplate: 'Hombres (%{y}): %{x:,.0f}<extra></extra>'.replace('%{y}', '%{y}').replace('%{x}', '%{customdata}'), customdata: hombres.map(function (v) { return Math.abs(v); }) },
+            { type: 'bar', y: gruposEdad, x: mujeres, name: 'Mujeres', orientation: 'h', marker: { color: palette[1] }, hovertemplate: 'Mujeres (%{y}): %{x:,.0f}<extra></extra>' }
+        ], layout, { responsive: true, displayModeBar: true, locale: 'es', toImageButtonOptions: { format: 'png', filename: 'PiramideEdad_' + ciudadNombre, height: 720, width: 1280, scale: 2 } });
+    }
+
+    function renderDistribucionSexoCiudad(data, ciudadNombre) {
+        if (!data || typeof Plotly === 'undefined') return;
+        var container = document.getElementById('indicador-chart-plot-ciudad');
+        if (!container) return;
+        Plotly.purge(container);
+        var cfg = typeof getChartConfig === 'function' ? getChartConfig() : { palette: ['#0576F3', '#36F48C', '#F47806'], fontSize: 14, titleSize: 16, fontFamily: 'Aptos Light, sans-serif' };
+        var palette = cfg.palette || ['#0576F3', '#36F48C', '#F47806', '#F3F40B', '#F479F4'];
+
+        var anos = data.map(function (r) { return r.anio; });
+        var hombres = data.map(function (r) { return r.hombres; });
+        var mujeres = data.map(function (r) { return r.mujeres; });
+
+        var layout = {
+            title: { text: '<b>Distribución por sexo (Proyecciones) - ' + ciudadNombre + '</b>', font: { family: cfg.fontFamily, size: cfg.titleSize }, x: 0.5, xanchor: 'center' },
+            font: { family: cfg.fontFamily, size: cfg.fontSize },
+            xaxis: { title: 'Año', gridcolor: 'rgba(0,0,0,0.05)' },
+            yaxis: { title: 'Población estimada', tickformat: ',d', gridcolor: 'rgba(0,0,0,0.08)' },
+            plot_bgcolor: 'white', paper_bgcolor: 'transparent',
+            margin: { l: 80, r: 80, t: 90, b: 120 }, showlegend: true,
+            legend: { orientation: 'h', y: -0.2, x: 0.5, xanchor: 'center' },
+            annotations: [{ text: 'Fuente: CONAPO - Proyecciones de la Población de los Municipios de México', xref: 'paper', yref: 'paper', x: 0, y: -0.25, showarrow: false, font: { size: 12, color: 'gray' } }],
+            autosize: true
+        };
+        Plotly.newPlot(container, [
+            { type: 'scatter', x: anos, y: hombres, name: 'Hombres', mode: 'lines+markers', line: { color: palette[0], width: 3, shape: 'spline' }, marker: { size: 7 }, hovertemplate: 'Hombres (%{x}): %{y:,.0f}<extra></extra>' },
+            { type: 'scatter', x: anos, y: mujeres, name: 'Mujeres', mode: 'lines+markers', line: { color: palette[1], width: 3, shape: 'spline' }, marker: { size: 7 }, hovertemplate: 'Mujeres (%{x}): %{y:,.0f}<extra></extra>' }
+        ], layout, { responsive: true, displayModeBar: true, locale: 'es', toImageButtonOptions: { format: 'png', filename: 'DistribucionSexo_' + ciudadNombre, height: 720, width: 1280, scale: 2 } });
+    }
+
+    function renderPoblacionOcupadaTurismoCiudad(data, ciudadNombre) {
+        if (!data || !Array.isArray(data) || data.length === 0 || typeof Plotly === 'undefined') return;
+        var container = document.getElementById('indicador-chart-plot-ciudad');
+        if (!container) return;
+        Plotly.purge(container);
+
+        var cfg = typeof getChartConfig === 'function' ? getChartConfig() : { palette: ['#0576F3', '#36F48C', '#F47806', '#F3F40B', '#F479F4'], fontSize: 14, titleSize: 16, fontFamily: 'Aptos Light, sans-serif' };
+        var palette = cfg.palette && cfg.palette.length >= 5 ? cfg.palette : ['#0576F3', '#36F48C', '#F47806', '#F3F40B', '#F479F4'];
+
+        var periodos = data.map(function (r) { return r.periodo; });
+        var valores = data.map(function (r) { return r.valor; });
+
+        var layout = {
+            title: { text: '<b>Población Ocupada en Restaurantes y Hoteles - ' + ciudadNombre + '</b>', font: { family: cfg.fontFamily, size: cfg.titleSize }, x: 0.5, xanchor: 'center' },
+            font: { family: cfg.fontFamily, size: cfg.fontSize },
+            xaxis: { title: 'Trimestre', tickangle: -45, automargin: true },
+            yaxis: { title: 'Personas', tickformat: ',.0f' },
+            plot_bgcolor: 'white', paper_bgcolor: 'transparent',
+            margin: { l: 80, r: 80, t: 80, b: 200 },
+            autosize: true
+        };
+        Plotly.newPlot(container, [
+            {
+                type: 'scatter', x: periodos, y: valores, name: 'Población Ocupada', mode: 'lines+markers',
+                fill: 'tozeroy',
+                fillcolor: 'rgba(5, 118, 243, 0.2)',
+                line: { color: palette[0], width: 3 },
+                marker: { size: 8 }
+            }
+        ], layout, { responsive: true, displayModeBar: true, locale: 'es' });
+    }
+
+    function renderTurismoGenericoCiudad(data, ciudadNombre, indKey) {
+        if (!data || typeof Plotly === 'undefined') return;
+        var container = document.getElementById('indicador-chart-plot-ciudad');
+        if (!container) return;
+        var fallbackPalette = ['#0576F3', '#36F48C', '#F47806', '#F3F40B', '#F479F4'];
+        var cfg = typeof getChartConfig === 'function' ? getChartConfig() : { palette: fallbackPalette, fontSize: 14, titleSize: 16, fontFamily: 'Aptos Light, sans-serif' };
+        var palette = cfg.palette && cfg.palette.length >= 5 ? cfg.palette : fallbackPalette;
+
+        var periodos = data.map(function (r) { return r.periodo; });
+        var valores = data.map(function (r) { return r.valor; });
+
+        var labels = {
+            'ocupacion-hotelera': { title: 'Ocupación Hotelera promedio', y: 'Porcentaje (%)', fmt: '.1f' },
+            'llegada-visitantes': { title: 'Llegada de Visitantes con Pernocta', y: 'Personas', fmt: ',d' },
+            'gasto-promedio': { title: 'Gasto Promedio Diario del Visitante', y: 'Pesos ($)', fmt: '$,.2f' },
+            'derrama-economica': { title: 'Derrama Económica Estimada', y: 'Pesos ($)', fmt: '$,.0f' },
+            'ingreso-hotelero': { title: 'Ingreso Hotelero / Impuesto Hospedaje', y: 'Pesos ($)', fmt: '$,.0f' },
+            'establecimientos-turismo': { title: 'Establecimientos de Servicios Turísticos', y: 'Cantidad', fmt: ',d' }
+        };
+        var currentLabel = labels[indKey] || { title: 'Indicador de Turismo', y: 'Valor', fmt: ',d' };
+
+        var layout = {
+            title: { text: '<b>' + (currentLabel.title) + ' - ' + ciudadNombre + '</b>', font: { family: cfg.fontFamily, size: cfg.titleSize }, x: 0.5, xanchor: 'center' },
+            font: { family: cfg.fontFamily, size: cfg.fontSize },
+            xaxis: { title: 'Periodo', tickangle: -45, automargin: true },
+            yaxis: { title: currentLabel.y, tickformat: currentLabel.fmt },
+            plot_bgcolor: 'white', paper_bgcolor: 'transparent',
+            margin: { l: 80, r: 80, t: 80, b: 200 },
+            autosize: true
+        };
+
+        Plotly.newPlot(container, [
+            {
+                type: 'scatter', x: periodos, y: valores, name: currentLabel.title, mode: 'lines+markers',
+                fill: 'tozeroy',
+                fillcolor: 'rgba(5, 118, 243, 0.2)',
+                line: { color: palette[0], width: 3 },
+                marker: { size: 6 }
+            }
+        ], layout, { responsive: true, displayModeBar: true, locale: 'es' });
+    }
+
+    function renderVentasInternacionalesCiudad(data, ciudadNombre) {
+        if (!data || typeof Plotly === 'undefined') return;
+        var container = document.getElementById('indicador-chart-plot-ciudad');
+        if (!container) return;
+        var cfg = typeof getChartConfig === 'function' ? getChartConfig() : { palette: ['#0576F3', '#36F48C', '#F47806', '#F3F40B', '#F479F4'], fontSize: 14, titleSize: 16, fontFamily: 'Aptos Light, sans-serif' };
+        var palette = cfg.palette && cfg.palette.length >= 5 ? cfg.palette : ['#0576F3', '#36F48C', '#F47806', '#F3F40B', '#F479F4'];
+
+        var periodosSet = new Set();
+        var dataPorPeriodo = {};
+
+        data.forEach(function (r) {
+            periodosSet.add(r.periodo);
+            if (!dataPorPeriodo[r.periodo]) dataPorPeriodo[r.periodo] = { exp: 0, imp: 0 };
+            if (r.flujo === 'Exportaciones') dataPorPeriodo[r.periodo].exp = r.valor_usd;
+            else dataPorPeriodo[r.periodo].imp = r.valor_usd;
+        });
+
+        var periodos = Array.from(periodosSet);
+        var exportaciones = periodos.map(function (p) { return dataPorPeriodo[p].exp; });
+        var importaciones = periodos.map(function (p) { return dataPorPeriodo[p].imp; });
+
+        var layout = {
+            title: { text: '<b>Ventas Internacionales - ' + ciudadNombre + '</b>', font: { family: cfg.fontFamily, size: cfg.titleSize }, x: 0.5, xanchor: 'center' },
+            font: { family: cfg.fontFamily, size: cfg.fontSize },
+            xaxis: { title: 'Mes', tickangle: -45, automargin: true },
+            yaxis: { title: 'Dólares (US$)', tickformat: '$,.0f' },
+            plot_bgcolor: 'white', paper_bgcolor: 'transparent',
+            margin: { l: 80, r: 80, t: 80, b: 200 },
+            autosize: true
+        };
+        Plotly.newPlot(container, [
+            { type: 'scatter', x: periodos, y: exportaciones, name: 'Exportaciones', mode: 'lines', line: { color: palette[2], width: 3 } },
+            { type: 'scatter', x: periodos, y: importaciones, name: 'Importaciones', mode: 'lines', line: { color: palette[0], width: 3 } }
+        ], layout, { responsive: true, displayModeBar: true, locale: 'es' });
+
+        var thead = document.getElementById('kpis-table-ciudad-thead');
+        var tbody = document.getElementById('kpis-table-ciudad-body');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+        if (thead) thead.innerHTML = '<th>Año</th><th>Mes</th><th>Periodo</th><th>Flujo</th><th>Valor (US$)</th>';
+        data.forEach(function (r) {
+            var tr = document.createElement('tr');
+            tr.innerHTML = '<td>' + r.anio + '</td><td>' + r.mes + '</td><td>' + r.periodo + '</td><td>' + r.flujo + '</td><td>$' + Number(r.valor_usd || 0).toLocaleString('es-MX') + '</td>';
+            tbody.appendChild(tr);
+        });
+    }
+
+    function renderConectividadAereaCiudad(data, ciudadNombre) {
+        if (!data || !data.reverse || typeof Plotly === 'undefined') return;
+        var container = document.getElementById('indicador-chart-plot-ciudad');
+        if (!container) return;
+        var cfg = typeof getChartConfig === 'function' ? getChartConfig() : { palette: ['#0576F3', '#36F48C', '#F47806', '#F3F40B', '#F479F4'], fontSize: 14, titleSize: 16, fontFamily: 'Aptos Light, sans-serif' };
+        var palette = cfg.palette && cfg.palette.length >= 5 ? cfg.palette : ['#0576F3', '#36F48C', '#F47806', '#F3F40B', '#F479F4'];
+
+        var aeropuertosDict = {};
+        data.forEach(function (r) {
+            if (!aeropuertosDict[r.aeropuerto]) aeropuertosDict[r.aeropuerto] = { x: [], y: [] };
+            aeropuertosDict[r.aeropuerto].x.push(r.anio);
+            aeropuertosDict[r.aeropuerto].y.push(r.operaciones);
+        });
+
+        var traces = [];
+        var colorIndex = 0;
+        Object.keys(aeropuertosDict).forEach(function (aero) {
+            traces.push({
+                x: aeropuertosDict[aero].x,
+                y: aeropuertosDict[aero].y,
+                name: aero,
+                type: 'scatter',
+                mode: 'lines+markers',
+                line: { color: palette[colorIndex % palette.length], width: 3 },
+                marker: { size: 6 }
+            });
+            colorIndex++;
+        });
+
+        var layout = {
+            title: { text: '<b>Evolución de Operaciones Aeroportuarias - ' + ciudadNombre + '</b>', font: { family: cfg.fontFamily, size: cfg.titleSize }, x: 0.5, xanchor: 'center' },
+            font: { family: cfg.fontFamily, size: cfg.fontSize },
+            xaxis: { title: 'Año', dtick: 1 },
+            yaxis: { title: 'Total de Operaciones', tickformat: ',.0f' },
+            legend: { orientation: 'h', y: -0.2, x: 0.5, xanchor: 'center' },
+            plot_bgcolor: 'white', paper_bgcolor: 'transparent',
+            margin: { l: 80, r: 80, t: 80, b: 120 },
+        };
+        Plotly.newPlot(container, traces, layout, { responsive: true, displayModeBar: true, locale: 'es' });
+        
+        var thead = document.getElementById('kpis-table-ciudad-thead');
+        var tbody = document.getElementById('kpis-table-ciudad-body');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+        if (thead) thead.innerHTML = '<th>Año</th><th>Aeropuerto</th><th>Operaciones</th>';
+        data.forEach(function (r) {
+            var tr = document.createElement('tr');
+            tr.innerHTML = '<td>' + r.anio + '</td><td>' + r.aeropuerto + '</td><td>' + Number(r.operaciones || 0).toLocaleString('es-MX') + '</td>';
+            tbody.appendChild(tr);
+        });
+    }
+
+    function renderOfertaServiciosTuristicosCiudad(data, ciudadNombre) {
+        if (!data || !Array.isArray(data) || data.length === 0 || typeof Plotly === 'undefined') return;
+        var container = document.getElementById('indicador-chart-plot-ciudad');
+        if (!container) return;
+        Plotly.purge(container);
+
+        var cfg = typeof getChartConfig === 'function' ? getChartConfig() : { palette: ['#0576F3', '#36F48C', '#F47806', '#F3F40B', '#F479F4'], fontSize: 14, titleSize: 16, fontFamily: 'Aptos Light, sans-serif' };
+        var palette = cfg.palette && cfg.palette.length >= 5 ? cfg.palette : ['#0576F3', '#36F48C', '#F47806', '#F3F40B', '#F479F4'];
+        var anios = data.map(function(d) { return String(d.anio); });
+        var traces = [
+            { type: 'bar', x: anios, y: data.map(function(d) { return d.ventas_hospedaje; }), name: 'Hospedaje', marker: { color: palette[0] } },
+            { type: 'bar', x: anios, y: data.map(function(d) { return d.ventas_aereos; }), name: 'Aéreos', marker: { color: palette[1] } },
+            { type: 'bar', x: anios, y: data.map(function(d) { return d.ventas_terrestre; }), name: 'Terrestre', marker: { color: palette[2] } },
+            { type: 'bar', x: anios, y: data.map(function(d) { return d.ventas_paquetes; }), name: 'Paquetes', marker: { color: palette[3] } },
+            { type: 'bar', x: anios, y: data.map(function(d) { return d.ventas_turismo_negocios; }), name: 'Negocios', marker: { color: palette[4] } }
+        ];
+
+        var layout = {
+            title: { text: '<b>Oferta de Servicios Turísticos (Miles de Pesos) - ' + ciudadNombre + '</b>', font: { family: cfg.fontFamily, size: cfg.titleSize }, x: 0.5, xanchor: 'center' },
+            font: { family: cfg.fontFamily, size: cfg.fontSize },
+            xaxis: { title: 'Año', type: 'category' },
+            yaxis: { title: 'Miles de Pesos ($)', tickformat: '$,.0f' },
+            barmode: 'stack',
+            plot_bgcolor: 'white', paper_bgcolor: 'transparent',
+            margin: { l: 80, r: 80, t: 80, b: 120 },
+            autosize: true,
+            legend: { orientation: 'h', y: -0.2, x: 0.5, xanchor: 'center' }
+        };
+        Plotly.newPlot(container, traces, layout, { responsive: true, displayModeBar: true, locale: 'es' });
+
+        var thead = document.getElementById('kpis-table-ciudad-thead');
+        var tbody = document.getElementById('kpis-table-ciudad-body');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+        if (thead) thead.innerHTML = '<th>Año</th><th>Hospedaje ($)</th><th>Aéreos ($)</th><th>Terrestre ($)</th><th>Paquetes ($)</th><th>Negocios ($)</th>';
+        
+        data.forEach(function (r) {
+            var tr = document.createElement('tr');
+            tr.innerHTML = '<td>' + r.anio + '</td>' +
+                '<td>$' + Number(r.ventas_hospedaje || 0).toLocaleString('es-MX') + '</td>' +
+                '<td>$' + Number(r.ventas_aereos || 0).toLocaleString('es-MX') + '</td>' +
+                '<td>$' + Number(r.ventas_terrestre || 0).toLocaleString('es-MX') + '</td>' +
+                '<td>$' + Number(r.ventas_paquetes || 0).toLocaleString('es-MX') + '</td>' +
+                '<td>$' + Number(r.ventas_turismo_negocios || 0).toLocaleString('es-MX') + '</td>';
+            tbody.appendChild(tr);
+        });
+    }
+
+    function renderVuelosLlegadaCiudad(data, ciudadNombre, terminal) {
         if (!data || typeof Plotly === 'undefined') return;
         var container = document.getElementById('indicador-chart-plot-ciudad');
         if (!container) return;
         var cfg = typeof getChartConfig === 'function' ? getChartConfig() : { palette: ['#0576F3', '#36F48C', '#F47806'], fontSize: 14, titleSize: 16, fontFamily: 'Aptos Light, sans-serif' };
-        var palette = cfg.palette || ['#0576F3', '#36F48C', '#F47806'];
-        var gruposEdad = ['0-4', '5-9', '10-14', '15-19', '20-24', '25-29', '30-34', '35-39', '40-44', '45-49', '50-54', '55-59', '60-64', '65-69', '70-74', '75-79', '80-84', '85+'];
-        var clavesF = ['P_0A4_F', 'P_5A9_F', 'P_10A14_F', 'P_15A19_F', 'P_20A24_F', 'P_25A29_F', 'P_30A34_F', 'P_35A39_F', 'P_40A44_F', 'P_45A49_F', 'P_50A54_F', 'P_55A59_F', 'P_60A64_F', 'P_65A69_F', 'P_70A74_F', 'P_75A79_F', 'P_80A84_F', 'P_85A999_F'];
-        var clavesM = ['P_0A4_M', 'P_5A9_M', 'P_10A14_M', 'P_15A19_M', 'P_20A24_M', 'P_25A29_M', 'P_30A34_M', 'P_35A39_M', 'P_40A44_M', 'P_45A49_M', 'P_50A54_M', 'P_55A59_M', 'P_60A64_M', 'P_65A69_M', 'P_70A74_M', 'P_75A79_M', 'P_80A84_M', 'P_85A999_M'];
-        var mujeres = [], hombres = [];
-        for (var i = 0; i < gruposEdad.length; i++) {
-            mujeres.push(data[clavesF[i]] || 0);
-            hombres.push(-(data[clavesM[i]] || 0));
-        }
-        var maxVal = Math.max(Math.max(...mujeres), Math.max(...hombres.map(function (v) { return Math.abs(v); })));
-        var step = Math.max(Math.round(maxVal / 6), 1);
-        var tickvals = [], ticktext = [];
-        for (var i = 0; i <= maxVal + step; i += step) { tickvals.push(-i); if (i > 0) tickvals.push(i); }
-        ticktext = tickvals.map(function (v) { return Math.abs(v).toLocaleString('es-MX'); });
+        
+        var anios = data.map(function(d) { return d.anio; });
+        var vals = data.map(function(d) { return terminal === 'T1' ? d.llegadas_t1 : d.llegadas_t2; });
+
+        var traces = [
+            { type: 'scatter', mode: 'lines+markers', line: { color: terminal === 'T1' ? cfg.palette[0] : cfg.palette[1], width: 3 }, marker: {size: 8}, x: anios, y: vals, name: 'Llegadas ' + terminal }
+        ];
+
         var layout = {
-            title: { text: '<b>Pirámide poblacional - ' + ciudadNombre + '</b>', font: { family: cfg.fontFamily, size: cfg.titleSize }, x: 0.5, xanchor: 'center' },
-            font: { family: cfg.fontFamily, size: cfg.fontSize, color: '#2e2e2e' },
-            xaxis: { title: 'Población', tickvals: tickvals, ticktext: ticktext, zeroline: true, zerolinewidth: 2, zerolinecolor: '#555' },
-            yaxis: { type: 'category', title: 'Grupos de Edad', categoryarray: gruposEdad },
-            barmode: 'overlay', bargap: 0.1, plot_bgcolor: 'white', paper_bgcolor: 'transparent',
-            margin: { l: 100, r: 100, t: 70, b: 200 }, height: 600,
-            legend: { orientation: 'h', y: -0.2, x: 0.5, xanchor: 'center' },
-            annotations: [{ text: 'Fuente: INEGI (Censo de Población y Vivienda 2020)', xref: 'paper', yref: 'paper', x: 0, y: -0.65, showarrow: false, font: { size: 12, color: 'gray' } }],
+            title: { text: '<b>Vuelos de Llegada Nacionales (' + terminal + ') - ' + ciudadNombre + '</b>', font: { family: cfg.fontFamily, size: cfg.titleSize }, x: 0.5, xanchor: 'center' },
+            font: { family: cfg.fontFamily, size: cfg.fontSize },
+            xaxis: { title: 'Año', dtick: 1 },
+            yaxis: { title: 'Pasajeros', tickformat: ',.0f' },
+            plot_bgcolor: 'white', paper_bgcolor: 'transparent',
+            margin: { l: 80, r: 80, t: 80, b: 80 },
             autosize: true
         };
-        Plotly.newPlot(container, [
-            { type: 'bar', y: gruposEdad, x: hombres, name: 'Hombres', orientation: 'h', marker: { color: palette[0] }, customdata: hombres.map(function (v) { return Math.abs(v); }), text: hombres.map(function (v) { return Math.abs(v).toLocaleString('es-MX'); }), textposition: 'outside' },
-            { type: 'bar', y: gruposEdad, x: mujeres, name: 'Mujeres', orientation: 'h', marker: { color: palette[1] }, text: mujeres.map(function (v) { return v.toLocaleString('es-MX'); }), textposition: 'outside' }
-        ], layout, { responsive: true, displayModeBar: true, locale: 'es' });
+        Plotly.newPlot(container, traces, layout, { responsive: true, displayModeBar: true, locale: 'es' });
+        
+        var thead = document.getElementById('kpis-table-ciudad-thead');
+        var tbody = document.getElementById('kpis-table-ciudad-body');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+        if (thead) thead.innerHTML = '<th>Año</th><th>Llegadas Nacionales (' + terminal + ')</th>';
+        data.forEach(function (r) {
+            var tr = document.createElement('tr');
+            var v = terminal === 'T1' ? r.llegadas_t1 : r.llegadas_t2;
+            tr.innerHTML = '<td>' + r.anio + '</td><td>' + Number(v || 0).toLocaleString('es-MX') + '</td>';
+            tbody.appendChild(tr);
+        });
     }
 
-    function renderCrecimientoHistoricoCiudad(data, ciudadNombre) {
-        if (typeof Plotly === 'undefined') return;
+
+    function renderPoblacionTotalCiudad(data, ciudadNombre) {
+        if (!data || typeof Plotly === 'undefined') return;
         var container = document.getElementById('indicador-chart-plot-ciudad');
         if (!container) return;
+        Plotly.purge(container);
+        
+        var cfg = typeof getChartConfig === 'function' ? getChartConfig() : { palette: ['#0576F3', '#36F48C', '#F47806'], fontSize: 14, titleSize: 16, fontFamily: 'Aptos Light, sans-serif' };
+        var palette = cfg.palette || ['#0576F3', '#36F48C', '#F47806', '#F3F40B', '#F479F4'];
+        var anos = (data || []).map(function (r) { return String(r.anio || 0); });
+        var total = (data || []).map(function (r) { return Number(r.poblacion || 0); });
+        
+        var layout = {
+            title: { text: '<b>Población Total - ' + ciudadNombre + '</b>', font: { family: cfg.fontFamily, size: cfg.titleSize }, x: 0.5, xanchor: 'center' },
+            font: { family: cfg.fontFamily, size: cfg.fontSize },
+            xaxis: { title: 'Año', type: 'category', gridcolor: 'rgba(0,0,0,0.05)' },
+            yaxis: { title: 'Habitantes', tickformat: ',d', gridcolor: 'rgba(0,0,0,0.08)', zeroline: false },
+            plot_bgcolor: 'white', paper_bgcolor: 'transparent',
+            margin: { l: 80, r: 80, t: 90, b: 120 }, showlegend: false,
+            annotations: [
+                { text: 'Fuente: Censos de Población y Vivienda (2005, 2010, 2020), INEGI.', x: 0, y: -0.22, xref: 'paper', yref: 'paper', showarrow: false, font: { size: 12, color: 'gray' }, xanchor: 'left', yanchor: 'top' }
+            ],
+            autosize: true
+        };
+        var trace = {
+            type: 'bar', x: anos, y: total, name: 'Población Total',
+            marker: {
+                color: palette[0],
+                line: { color: palette[0], width: 1.5 }
+            },
+            text: total.map(function (v) { return v.toLocaleString('es-MX'); }),
+            textposition: 'auto',
+            hoverinfo: 'x+y',
+            hovertemplate: '<b>Año %{x}</b><br>Población: %{y:,.0f}<extra></extra>'
+        };
+        Plotly.newPlot(container, [trace], layout, { responsive: true, displayModeBar: true, locale: 'es', toImageButtonOptions: { format: 'png', filename: 'Poblacion_' + ciudadNombre, height: 720, width: 1280, scale: 2 } });
+    }
+
+function renderCrecimientoHistoricoCiudad(data, ciudadNombre) {
+        if (!data || typeof Plotly === 'undefined') return;
+        var container = document.getElementById('indicador-chart-plot-ciudad');
+        if (!container) return;
+        Plotly.purge(container);
+        
         var cfg = typeof getChartConfig === 'function' ? getChartConfig() : { palette: ['#0576F3', '#36F48C', '#F47806'], fontSize: 14, titleSize: 16, fontFamily: 'Aptos Light, sans-serif' };
         var palette = cfg.palette || ['#0576F3', '#36F48C', '#F47806'];
         var anos = (data || []).map(function (r) { return String(r.anio || 0); });
         var total = (data || []).map(function (r) { return Number(r.poblacion || 0); });
         var hombres = (data || []).map(function (r) { return Number(r.hombres || 0); });
         var mujeres = (data || []).map(function (r) { return Number(r.mujeres || 0); });
-        if (anos.length === 0) { anos = ['2005', '2010', '2020']; total = [0, 0, 0]; hombres = [0, 0, 0]; mujeres = [0, 0, 0]; }
+        
         var layout = {
-            title: { text: '<b>Crecimiento poblacional anual - ' + ciudadNombre + '</b>', font: { family: cfg.fontFamily, size: cfg.titleSize }, x: 0.5, xanchor: 'center' },
+            title: { text: '<b>Crecimiento Poblacional Anual - ' + ciudadNombre + '</b>', font: { family: cfg.fontFamily, size: cfg.titleSize }, x: 0.5, xanchor: 'center' },
             font: { family: cfg.fontFamily, size: cfg.fontSize },
-            xaxis: { domain: [0, 0.45], type: 'category', title: 'Año' },
+            xaxis: { title: 'Año', type: 'category' },
             yaxis: { title: 'Población', tickformat: ',d', gridcolor: 'rgba(0,0,0,0.08)' },
-            xaxis2: { domain: [0.55, 1], type: 'category', title: 'Año' },
-            yaxis2: { anchor: 'x2', title: 'Población', tickformat: ',d', gridcolor: 'rgba(0,0,0,0.08)' },
             barmode: 'group', plot_bgcolor: 'white', paper_bgcolor: 'transparent',
-            margin: { l: 70, r: 70, t: 90, b: 140 }, height: 460, showlegend: true,
-            legend: { orientation: 'h', y: -0.18, x: 0.5, xanchor: 'center' },
+            margin: { l: 80, r: 80, t: 90, b: 120 }, height: 460, showlegend: true,
+            legend: { orientation: 'h', y: -0.2, x: 0.5, xanchor: 'center' },
             annotations: [
-                { text: 'Crecimiento Total', x: 0.225, xref: 'paper', y: 1.02, yref: 'paper', showarrow: false, font: { size: 14 }, xanchor: 'center' },
-                { text: 'Población por género', x: 0.775, xref: 'paper', y: 1.02, yref: 'paper', showarrow: false, font: { size: 14 }, xanchor: 'center' },
-                { text: 'Fuente: Censos de Población y Vivienda (2005, 2010, 2020), INEGI.', x: 0, y: -0.35, xref: 'paper', yref: 'paper', showarrow: false, font: { size: 12, color: 'gray' }, xanchor: 'left', yanchor: 'top' }
+                { text: 'Fuente: Censos de Población y Vivienda (2005, 2010, 2020), INEGI.', x: 0, y: -0.25, xref: 'paper', yref: 'paper', showarrow: false, font: { size: 12, color: 'gray' }, xanchor: 'left', yanchor: 'top' }
             ],
             autosize: true
         };
         Plotly.newPlot(container, [
-            { type: 'bar', x: anos, y: total, name: 'Total', marker: { color: palette[0] }, text: total.map(function (v) { return v.toLocaleString('es-MX'); }), textposition: 'inside', xaxis: 'x', yaxis: 'y' },
-            { type: 'bar', x: anos, y: hombres, name: 'Hombres', marker: { color: palette[1] }, text: hombres.map(function (v) { return v.toLocaleString('es-MX'); }), textposition: 'inside', xaxis: 'x2', yaxis: 'y2' },
-            { type: 'bar', x: anos, y: mujeres, name: 'Mujeres', marker: { color: palette[2] }, text: mujeres.map(function (v) { return v.toLocaleString('es-MX'); }), textposition: 'inside', xaxis: 'x2', yaxis: 'y2' }
+            { type: 'bar', x: anos, y: total, name: 'Total', marker: { color: palette[0] }, text: total.map(function (v) { return v.toLocaleString('es-MX'); }), textposition: 'auto' },
+            { type: 'bar', x: anos, y: hombres, name: 'Hombres', marker: { color: palette[1] }, text: hombres.map(function (v) { return v.toLocaleString('es-MX'); }), textposition: 'auto' },
+            { type: 'bar', x: anos, y: mujeres, name: 'Mujeres', marker: { color: palette[2] }, text: mujeres.map(function (v) { return v.toLocaleString('es-MX'); }), textposition: 'auto' }
         ], layout, { responsive: true, displayModeBar: true, locale: 'es' });
     }
 
-    function fillCiudadTableDistribucion(data) {
+    function fillCiudadTableEdad(data) {
         var tbody = document.getElementById('kpis-table-ciudad-body');
         var thead = document.getElementById('kpis-table-ciudad-thead');
         if (!tbody) return;
         tbody.innerHTML = '';
         if (thead) thead.innerHTML = '<th>Indicador</th><th>Valor</th>';
         if (!data) return;
-        var rows = [['Población Total', (data.POBTOT || 0).toLocaleString('es-MX')], ['Mujeres', (data.POBFEM || 0).toLocaleString('es-MX')], ['Hombres', (data.POBMAS || 0).toLocaleString('es-MX')]];
+        var rows = [['Población Total', (data.POBTOT || data.pobtot || 0).toLocaleString('es-MX')], ['Mujeres', (data.POBFEM || data.pobfem || 0).toLocaleString('es-MX')], ['Hombres', (data.POBMAS || data.pobmas || 0).toLocaleString('es-MX')]];
         rows.forEach(function (r) { var tr = document.createElement('tr'); tr.innerHTML = '<td>' + r[0] + '</td><td>' + r[1] + '</td>'; tbody.appendChild(tr); });
+    }
+
+    function fillCiudadTableSexo(data) {
+        var tbody = document.getElementById('kpis-table-ciudad-body');
+        var thead = document.getElementById('kpis-table-ciudad-thead');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+        if (thead) thead.innerHTML = '<th>Año</th><th>Hombres</th><th>Mujeres</th><th>Total</th>';
+        (data || []).forEach(function (r) {
+            var tr = document.createElement('tr');
+            var tot = Number(r.hombres || 0) + Number(r.mujeres || 0);
+            tr.innerHTML = '<td>' + (r.anio || '') + '</td><td>' + Number(r.hombres || 0).toLocaleString('es-MX') + '</td><td>' + Number(r.mujeres || 0).toLocaleString('es-MX') + '</td><td>' + tot.toLocaleString('es-MX') + '</td>';
+            tbody.appendChild(tr);
+        });
+    }
+
+    function fillCiudadTablePOT(data) {
+        var tbody = document.getElementById('kpis-table-ciudad-body');
+        var thead = document.getElementById('kpis-table-ciudad-thead');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+        if (thead) thead.innerHTML = '<th>Periodo</th><th>Población Ocupada</th>';
+        (data || []).forEach(function (r) {
+            var tr = document.createElement('tr');
+            tr.innerHTML = '<td>' + (r.periodo || '') + '</td><td>' + Number(r.valor || 0).toLocaleString('es-MX') + '</td>';
+            tbody.appendChild(tr);
+        });
+    }
+
+    function renderVisitantesNacExtCiudad(data, ciudadNombre) {
+        if (!data || !data.length || typeof Plotly === 'undefined') return;
+        var container = document.getElementById('indicador-chart-plot-ciudad');
+        if (!container) return;
+        Plotly.purge(container);
+
+        var cfg = typeof getChartConfig === 'function' ? getChartConfig() : { palette: ['#0576F3', '#36F48C', '#F47806', '#F3F40B', '#F479F4'], fontSize: 14, titleSize: 16, fontFamily: 'Aptos Light, sans-serif' };
+        var palette = cfg.palette || ['#0576F3', '#36F48C', '#F47806'];
+
+        var anos = data.map(function(d) { return String(d.anio); });
+
+        var traces = [
+            {
+                x: anos,
+                y: data.map(function(d) { return d.nacionales; }),
+                name: 'Nacionales (' + data[data.length-1].pct_nacionales + '%)',
+                type: 'bar',
+                marker: { color: palette[0] },
+                hovertemplate: '<b>%{x}</b><br>Nacionales: %{y:,.0f}<extra></extra>'
+            },
+            {
+                x: anos,
+                y: data.map(function(d) { return d.extranjeros; }),
+                name: 'Extranjeros (' + data[data.length-1].pct_extranjeros + '%)',
+                type: 'bar',
+                marker: { color: palette[1] },
+                hovertemplate: '<b>%{x}</b><br>Extranjeros: %{y:,.0f}<extra></extra>'
+            },
+            {
+                x: anos,
+                y: data.map(function(d) { return d.total; }),
+                name: 'Total',
+                type: 'scatter',
+                mode: 'lines+markers',
+                line: { color: palette[2], width: 3 },
+                marker: { size: 8 },
+                hovertemplate: '<b>%{x}</b><br>Total: %{y:,.0f}<extra></extra>'
+            }
+        ];
+
+        var layout = {
+            title: { text: '<b>Visitantes Nacionales y Extranjeros - ' + ciudadNombre + '</b>', font: { family: cfg.fontFamily, size: cfg.titleSize }, x: 0.5, xanchor: 'center' },
+            font: { family: cfg.fontFamily, size: cfg.fontSize },
+            xaxis: { title: 'A\u00f1o', type: 'category' },
+            yaxis: { title: 'N\u00famero de Visitantes', tickformat: ',.0f', gridcolor: 'rgba(0,0,0,0.08)' },
+            barmode: 'group', plot_bgcolor: 'white', paper_bgcolor: 'transparent',
+            margin: { l: 80, r: 40, t: 90, b: 120 }, showlegend: true,
+            legend: { orientation: 'h', y: -0.25, x: 0.5, xanchor: 'center' },
+            autosize: true
+        };
+
+        Plotly.newPlot(container, traces, layout, { responsive: true, displayModeBar: true, locale: 'es' });
+    }
+
+    function fillCiudadTableVisitantesNacExt(data) {
+        var tbody = document.getElementById('kpis-table-ciudad-body');
+        var thead = document.getElementById('kpis-table-ciudad-thead');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+        if (thead) thead.innerHTML = '<th>A\u00f1o</th><th>Nacionales</th><th>Extranjeros</th><th>Total</th><th>% Nac.</th><th>% Ext.</th>';
+        (data || []).forEach(function(r) {
+            var tr = document.createElement('tr');
+            tr.innerHTML = '<td>' + r.anio + '</td><td>' + Number(r.nacionales).toLocaleString('es-MX') + '</td><td>' + Number(r.extranjeros).toLocaleString('es-MX') + '</td><td>' + Number(r.total).toLocaleString('es-MX') + '</td><td>' + r.pct_nacionales + '%</td><td>' + r.pct_extranjeros + '%</td>';
+            tbody.appendChild(tr);
+        });
+    }
+
+    function renderLlegadaPasajerosCiudad(data, ciudadNombre) {
+        if (!data || !data.length || typeof Plotly === 'undefined') return;
+        var container = document.getElementById('indicador-chart-plot-ciudad');
+        if (!container) return;
+        Plotly.purge(container);
+
+        var cfg = typeof getChartConfig === 'function' ? getChartConfig() : { palette: ['#0576F3', '#36F48C', '#F47806', '#F3F40B', '#F479F4'], fontSize: 14, titleSize: 16, fontFamily: 'Aptos Light, sans-serif' };
+        var palette = cfg.palette || ['#0576F3', '#36F48C', '#F47806'];
+
+        var anos = data.map(function(d) { return String(d.anio); });
+
+        var traces = [
+            {
+                x: anos,
+                y: data.map(function(d) { return d.nacionales; }),
+                name: 'Nacionales',
+                type: 'bar',
+                marker: { color: palette[0] },
+                hovertemplate: '<b>%{x}</b><br>Nacionales: %{y:,.0f}<extra></extra>'
+            },
+            {
+                x: anos,
+                y: data.map(function(d) { return d.internacionales; }),
+                name: 'Internacionales',
+                type: 'bar',
+                marker: { color: palette[1] },
+                hovertemplate: '<b>%{x}</b><br>Internacionales: %{y:,.0f}<extra></extra>'
+            },
+            {
+                x: anos,
+                y: data.map(function(d) { return d.total; }),
+                name: 'Total',
+                type: 'scatter',
+                mode: 'lines+markers',
+                line: { color: palette[2], width: 3 },
+                marker: { size: 8 },
+                hovertemplate: '<b>%{x}</b><br>Total: %{y:,.0f}<extra></extra>'
+            }
+        ];
+
+        var layout = {
+            title: { text: '<b>Llegadas de Pasajeros al Aeropuerto - ' + ciudadNombre + '</b>', font: { family: cfg.fontFamily, size: cfg.titleSize }, x: 0.5, xanchor: 'center' },
+            font: { family: cfg.fontFamily, size: cfg.fontSize },
+            xaxis: { title: 'A\u00f1o', type: 'category' },
+            yaxis: { title: 'N\u00famero de Pasajeros', tickformat: ',.0f', gridcolor: 'rgba(0,0,0,0.08)' },
+            barmode: 'group', plot_bgcolor: 'white', paper_bgcolor: 'transparent',
+            margin: { l: 80, r: 40, t: 90, b: 120 }, showlegend: true,
+            legend: { orientation: 'h', y: -0.25, x: 0.5, xanchor: 'center' },
+            autosize: true
+        };
+
+        Plotly.newPlot(container, traces, layout, { responsive: true, displayModeBar: true, locale: 'es' });
+    }
+
+    function fillCiudadTableLlegadaPasajeros(data) {
+        var tbody = document.getElementById('kpis-table-ciudad-body');
+        var thead = document.getElementById('kpis-table-ciudad-thead');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+        if (thead) thead.innerHTML = '<th>A\u00f1o</th><th>Nacionales</th><th>Internacionales</th><th>Total</th>';
+        (data || []).forEach(function(r) {
+            var tr = document.createElement('tr');
+            tr.innerHTML = '<td>' + r.anio + '</td><td>' + Number(r.nacionales).toLocaleString('es-MX') + '</td><td>' + Number(r.internacionales).toLocaleString('es-MX') + '</td><td>' + Number(r.total).toLocaleString('es-MX') + '</td>';
+            tbody.appendChild(tr);
+        });
+    }
+
+    function renderComercioInternacionalCiudad(data, ciudadNombre) {
+        if (!data || typeof Plotly === 'undefined') return;
+        var container = document.getElementById('indicador-chart-plot-ciudad');
+        if (!container) return;
+        Plotly.purge(container);
+
+        var cfg = typeof getChartConfig === 'function' ? getChartConfig() : { palette: ['#0576F3', '#36F48C', '#F47806', '#F3F40B', '#F479F4', '#555555'], fontSize: 14, titleSize: 16, fontFamily: 'Aptos Light, sans-serif' };
+        var palette = cfg.palette || ['#0576F3', '#36F48C', '#F47806', '#F3F40B', '#F479F4', '#555555'];
+
+        var anos = data.map(function(d) { return String(d.anio); });
+        
+        // Extract all unique sectors across all years
+        var allSectors = new Set();
+        data.forEach(function(d) {
+            d.sectores.forEach(function(s) { allSectors.add(s.sector); });
+        });
+        allSectors = Array.from(allSectors);
+        
+        var traces = [];
+        var colorIdx = 0;
+        
+        allSectors.forEach(function(sector) {
+            var yVals = anos.map(function(anioStr) {
+                var d = data.find(function(x) { return String(x.anio) === anioStr; });
+                if (!d) return 0;
+                var secData = d.sectores.find(function(s) { return s.sector === sector; });
+                return secData ? secData.monto_mdd : 0;
+            });
+            
+            // Only add trace if it has some non-zero data
+            if (yVals.some(function(v) { return v > 0; })) {
+                var shortSector = sector.length > 45 ? sector.substring(0, 42) + '...' : sector;
+                traces.push({
+                    x: anos,
+                    y: yVals,
+                    name: shortSector,
+                    hovertemplate: '<b>%{x}</b><br>' + sector + '<br>Inversión: $%{y:,.1f} MDD<extra></extra>',
+                    type: 'bar',
+                    marker: { color: palette[colorIdx % palette.length] }
+                });
+                colorIdx++;
+            }
+        });
+        
+        // Add "Otros"
+        var otrosVals = anos.map(function(anioStr) {
+            var d = data.find(function(x) { return String(x.anio) === anioStr; });
+            return d && d.otros > 0 ? d.otros : 0;
+        });
+        if (otrosVals.some(function(v) { return v > 0; })) {
+            traces.push({
+                x: anos,
+                y: otrosVals,
+                name: 'Otros',
+                hovertemplate: '<b>%{x}</b><br>Otros sectores<br>Inversión: $%{y:,.1f} MDD<extra></extra>',
+                type: 'bar',
+                marker: { color: '#ccc' }
+            });
+        }
+
+        var layout = {
+            title: { text: '<b>Comercio Internacional (IED) - ' + ciudadNombre + '</b>', font: { family: cfg.fontFamily, size: cfg.titleSize }, x: 0.5, xanchor: 'center' },
+            font: { family: cfg.fontFamily, size: cfg.fontSize },
+            xaxis: { title: 'Año', type: 'category' },
+            yaxis: { title: 'Inversión (Millones de USD)', tickformat: ',.1f', gridcolor: 'rgba(0,0,0,0.08)' },
+            barmode: 'stack', plot_bgcolor: 'white', paper_bgcolor: 'transparent',
+            margin: { l: 80, r: 80, t: 90, b: 150 }, showlegend: true,
+            legend: { orientation: 'h', y: -0.25, x: 0.5, xanchor: 'center' },
+            autosize: true
+        };
+
+        Plotly.newPlot(container, traces, layout, { responsive: true, displayModeBar: true, locale: 'es' });
+    }
+
+    function fillCiudadTableComercioInternacional(data) {
+        var tbody = document.getElementById('kpis-table-ciudad-body');
+        var thead = document.getElementById('kpis-table-ciudad-thead');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+        if (thead) thead.innerHTML = '<th>Año</th><th>Sector</th><th>Inversión (MDD)</th>';
+        
+        (data || []).forEach(function(yearData) {
+            yearData.sectores.forEach(function(s) {
+                var tr = document.createElement('tr');
+                tr.innerHTML = '<td>' + yearData.anio + '</td><td>' + s.sector + '</td><td>$' + Number(s.monto_mdd).toLocaleString('es-MX', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + '</td>';
+                tbody.appendChild(tr);
+            });
+            if (yearData.otros > 0) {
+                var tr = document.createElement('tr');
+                tr.innerHTML = '<td>' + yearData.anio + '</td><td>Otros</td><td>$' + Number(yearData.otros).toLocaleString('es-MX', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + '</td>';
+                tbody.appendChild(tr);
+            }
+        });
+    }
+
+    function fillCiudadTableTurismo(data, indKey) {
+        var tbody = document.getElementById('kpis-table-ciudad-body');
+        var thead = document.getElementById('kpis-table-ciudad-thead');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+
+        var labels = {
+            'ocupacion-hotelera': 'Ocupación (%)',
+            'llegada-visitantes': 'Llegada (Pers.)',
+            'gasto-promedio': 'Gasto ($)',
+            'derrama-economica': 'Derrama ($)',
+            'ingreso-hotelero': 'Ingreso ($)',
+            'establecimientos-turismo': 'Cantidad'
+        };
+        var valLbl = labels[indKey] || 'Valor';
+
+        if (thead) thead.innerHTML = '<th>Periodo</th><th>' + valLbl + '</th>';
+
+        (data || []).forEach(function (r) {
+            var tr = document.createElement('tr');
+            var val = (r.valor || 0).toLocaleString('es-MX');
+            if (indKey === 'ocupacion-hotelera') val += '%';
+            tr.innerHTML = '<td>' + (r.periodo || '') + '</td><td>' + val + '</td>';
+            tbody.appendChild(tr);
+        });
+    }
+
+    
+    function fillCiudadTablePEA(data) {
+        var thead = document.getElementById('kpis-table-ciudad-thead');
+        var tbody = document.getElementById('kpis-table-ciudad-body');
+        if (!thead || !tbody) return;
+        thead.innerHTML = '<th>Periodo</th><th>PEA (Personas)</th>';
+        tbody.innerHTML = '';
+        data.forEach(function(d) {
+            var row = document.createElement('tr');
+            row.innerHTML = '<td>' + d.periodo + '</td><td>' + Number(d.valor).toLocaleString() + '</td>';
+            tbody.appendChild(row);
+        });
+        var tableSection = document.getElementById('kpis-table-section-ciudad');
+        if (tableSection) tableSection.hidden = false;
     }
 
     function fillCiudadTableCrecimiento(data) {
@@ -2086,7 +3974,10 @@
         });
     }
 
-    document.getElementById('ciudad-select').addEventListener('change', loadIndicadorCiudad);
+    document.getElementById('ciudad-select').addEventListener('change', function() {
+        updateIndicadoresSelect();
+        loadIndicadorCiudad();
+    });
     document.getElementById('indicador-ciudad').addEventListener('change', loadIndicadorCiudad);
 
     var btnPngCiudad = document.getElementById('btn-download-chart-png-ciudad');
@@ -2099,8 +3990,46 @@
         if (!indicadorCiudadData || !indicadorCiudadTipo) return;
         var ciudadNombre = document.getElementById('ciudad-select').selectedOptions[0] ? document.getElementById('ciudad-select').selectedOptions[0].text : 'Ciudad';
         var cols, rows;
-        if (indicadorCiudadTipo === 'distribucion-poblacion') {
-            rows = [['Indicador', 'Valor'], ['Población Total', (indicadorCiudadData.POBTOT || 0).toLocaleString('es-MX')], ['Mujeres', (indicadorCiudadData.POBFEM || 0).toLocaleString('es-MX')], ['Hombres', (indicadorCiudadData.POBMAS || 0).toLocaleString('es-MX')]];
+        if (indicadorCiudadTipo === 'distribucion-edad') {
+            rows = [['Indicador', 'Valor'], ['Población Total', (indicadorCiudadData.POBTOT || indicadorCiudadData.pobtot || 0).toLocaleString('es-MX')], ['Mujeres', (indicadorCiudadData.POBFEM || indicadorCiudadData.pobfem || 0).toLocaleString('es-MX')], ['Hombres', (indicadorCiudadData.POBMAS || indicadorCiudadData.pobmas || 0).toLocaleString('es-MX')]];
+        } else if (indicadorCiudadTipo === 'distribucion-sexo') {
+            rows = [['Año', 'Hombres', 'Mujeres', 'Total']];
+            (indicadorCiudadData || []).forEach(function (r) { rows.push([r.anio, r.hombres, r.mujeres, Number(r.hombres || 0) + Number(r.mujeres || 0)]); });
+        } else if (indicadorCiudadTipo === 'poblacion-ocupada-turismo') {
+            rows = [['Periodo', 'Población Ocupada']];
+            (indicadorCiudadData || []).forEach(function (r) { rows.push([r.periodo, r.valor]); });
+        } else if (['ocupacion-hotelera', 'llegada-visitantes', 'gasto-promedio', 'derrama-economica', 'ingreso-hotelero', 'establecimientos-turismo'].indexOf(indicadorCiudadTipo) !== -1) {
+            rows = [['Periodo', 'Valor']];
+            (indicadorCiudadData || []).forEach(function (r) { rows.push([r.periodo, r.valor]); });
+        } else if (indicadorCiudadTipo === 'visitantes-nacionales-extranjeros') {
+            rows = [['Año', 'Nacionales', 'Extranjeros', 'Total', '% Nacionales', '% Extranjeros']];
+            (indicadorCiudadData || []).forEach(function (r) { rows.push([r.anio, r.nacionales, r.extranjeros, r.total, r.pct_nacionales + '%', r.pct_extranjeros + '%']); });
+        } else if (indicadorCiudadTipo === 'llegada-pasajeros') {
+            rows = [['Año', 'Nacionales', 'Internacionales', 'Total']];
+            (indicadorCiudadData || []).forEach(function (r) { rows.push([r.anio, r.nacionales, r.internacionales, r.total]); });
+        } else if (indicadorCiudadTipo === 'ventas-internacionales' || indicadorCiudadTipo === 'exportaciones-importaciones') {
+            rows = [['Año', 'Mes', 'Periodo', 'Flujo', 'Valor (US$)']];
+            (indicadorCiudadData || []).forEach(function (r) { rows.push([r.anio, r.mes, r.periodo, r.flujo, r.valor_usd]); });
+        } else if (indicadorCiudadTipo === 'conectividad-aerea') {
+            rows = [['Año', 'Aeropuerto', 'Operaciones']];
+            (indicadorCiudadData || []).forEach(function (r) { rows.push([r.anio, r.aeropuerto, r.operaciones]); });
+        } else if (indicadorCiudadTipo === 'oferta-servicios-turisticos') {
+            rows = [['Año', 'Hospedaje ($)', 'Aéreos ($)', 'Terrestre ($)', 'Paquetes ($)', 'Negocios ($)']];
+            (indicadorCiudadData || []).forEach(function (r) { 
+                rows.push([r.anio, r.ventas_hospedaje, r.ventas_aereos, r.ventas_terrestre, r.ventas_paquetes, r.ventas_turismo_negocios]); 
+            });
+        } else if (indicadorCiudadTipo === 'vuelos-llegada-t1') {
+            rows = [['Año', 'Llegadas Nacionales T1']];
+            (indicadorCiudadData || []).forEach(function (r) { rows.push([r.anio, r.llegadas_t1]); });
+        } else if (indicadorCiudadTipo === 'vuelos-llegada-t2') {
+            rows = [['Año', 'Llegadas Nacionales T2']];
+            (indicadorCiudadData || []).forEach(function (r) { rows.push([r.anio, r.llegadas_t2]); });
+        } else if (indicadorCiudadTipo === 'comercio-internacional') {
+            rows = [['Año', 'Sector', 'Inversión (MDD)']];
+            (indicadorCiudadData || []).forEach(function(yearData) {
+                yearData.sectores.forEach(function(s) { rows.push([yearData.anio, s.sector, s.monto_mdd]); });
+                if (yearData.otros > 0) rows.push([yearData.anio, 'Otros', yearData.otros]);
+            });
         } else {
             rows = [['Año', 'Población Total', 'Hombres', 'Mujeres']];
             (indicadorCiudadData || []).forEach(function (r) { rows.push([r.anio, r.poblacion, r.hombres, r.mujeres]); });
@@ -2110,7 +4039,44 @@
         var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'Ciudad_' + ciudadNombre.replace(/\s+/g, '_') + '.csv'; a.click(); URL.revokeObjectURL(a.href);
     });
 
+    var btnIaCiudad = document.getElementById('btn-analizar-ia-chart-ciudad');
+    if (btnIaCiudad) btnIaCiudad.addEventListener('click', async function () {
+        var btn = this;
+        var content = document.getElementById('indicador-ia-response-content-ciudad');
+        var container = document.getElementById('indicador-ia-response-ciudad');
+        btn.disabled = true;
+        btn.textContent = '⏳ Analizando...';
+        container.hidden = false;
+        content.textContent = 'Obteniendo análisis...';
+        try {
+            var currentSlug = document.getElementById('ciudad-select').value;
+            var resp = await fetch('/api/analizar-ia-indicador', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    indicator: 'Ciudad - ' + (document.getElementById('indicador-ciudad').selectedOptions[0] ? document.getElementById('indicador-ciudad').selectedOptions[0].text : 'Indicador'),
+                    indicator_key: indicadorCiudadTipo,
+                    slug: currentSlug,
+                    data: indicadorCiudadData || []
+                })
+            });
+            var data = await resp.json();
+            if (!resp.ok) { content.textContent = 'Error: ' + (data.error || resp.statusText); return; }
+            content.innerHTML = '';
+            var p = document.createElement('div');
+            p.className = 'ia-response-text';
+            p.innerHTML = (data.analisis || '').replace(/\n/g, '<br>');
+            content.appendChild(p);
+        } catch (err) { content.textContent = 'Error: ' + err.message; }
+        finally { btn.disabled = false; btn.textContent = '🤖 Analizar con IA'; }
+    });
+
+    // Inicializar select de indicadores al cargar
+    updateIndicadoresSelect();
+
     // ——— Sección Localidades ———
+    var indicadorLocalidadData = [];
+    var indicadorLocalidadTipo = '';
     var estadosCargadosLocalidad = false;
     var localidadesDisponibles = [];
     var localidadesCargadas = false;
@@ -2283,6 +4249,11 @@
                         actions.hidden = false;
                     }
                     renderDistribucionPoblacionLocalidad(data, localidad, municipio, estado);
+                    indicadorLocalidadData = data;
+                    indicadorLocalidadTipo = ind;
+                    loadSavedIaAnalisis(estado + '-' + municipio + '-' + localidad, ind, 'indicador-ia-response-localidad', 'indicador-ia-response-content-localidad');
+        
+
                     fillLocalidadDistribucionTable(data);
                 })
                 .catch(function (err) {
@@ -2305,6 +4276,11 @@
                         actions.hidden = false;
                     }
                     renderCrecimientoHistoricoLocalidad(data, localidad, municipio, estado);
+                    indicadorLocalidadData = data;
+                    indicadorLocalidadTipo = ind;
+                    loadSavedIaAnalisis(estado + '-' + municipio + '-' + localidad, ind, 'indicador-ia-response-localidad', 'indicador-ia-response-content-localidad');
+        
+
                     fillLocalidadCrecimientoTable(data);
                 })
                 .catch(function (err) {
@@ -3103,6 +5079,10 @@
     function renderDemografiaEstatalTab(metric) {
         var data = window.demografiaEstatalData;
         var estado = window.demografiaEstatalEstado || '';
+        window.demografiaEstatalMetric = metric;
+        
+        console.log('[DEBUG-DEMO] Loading analysis for:', estado, 'demografia-' + metric);
+        loadSavedIaAnalisis(estado, 'demografia-' + metric, 'estatal-demografia-ia-response', 'estatal-demografia-ia-content');
         var container = document.getElementById('estatal-demografia-chart');
         if (!data || !container || typeof Plotly === 'undefined') return;
         var cfg = typeof getChartConfig === 'function' ? getChartConfig() : { palette: ['#0576F3', '#36F48C', '#F47806', '#F3F40B', '#F479F4'], fontSize: 14, titleSize: 16, fontFamily: 'Aptos Light, sans-serif' };
@@ -4495,6 +6475,7 @@
         var box = document.getElementById('estatal-demografia-ia-response');
         var estado = window.demografiaEstatalEstado || 'Estado';
         var metric = window.demografiaEstatalMetric || 'crecimiento';
+        console.log('[DEBUG-DEMO] Analyzing IA for:', estado, 'demografia-' + metric);
         var data = window.demografiaEstatalData;
         if (!data) return;
         var payload = metric === 'crecimiento' ? data.crecimiento : (metric === 'genero' ? data.genero : data.edad);
@@ -4513,6 +6494,8 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     indicator: 'Análisis Demográfico (INEGI) - ' + estado + ' - ' + (metric === 'crecimiento' ? 'Crecimiento histórico' : (metric === 'genero' ? 'Género' : 'Grupos de edad')),
+                    indicator_key: 'demografia-' + metric,
+                    slug: estado,
                     data: payload
                 })
             });
@@ -4568,7 +6551,7 @@
             return;
         }
         var data = indicadorEstatalData;
-        var hasData = data && (Array.isArray(data) ? data.length : (data.meses || data.disponibles || data.ocupados));
+        var hasData = data && (Array.isArray(data) ? data.length > 0 : Object.keys(data).length > 0);
         if (!hasData) {
             if (content) content.textContent = 'No hay datos para analizar.';
             if (box) box.hidden = false;
@@ -4579,12 +6562,26 @@
         if (box) box.hidden = false;
         if (content) content.textContent = 'Obteniendo análisis...';
         try {
-            var indName = ind === 'proyeccion-conapo' ? 'Proyecciones de Población (CONAPO)' : (ind === 'itaee' ? 'Actividad Económica (ITAEE)' : (ind === 'anuncios-inversion-datamexico' ? 'Anuncios de Inversión (DataMéxico)' : (ind === 'red-carretera-sct' ? 'Red Carretera (SCT)' : (ind === 'actividad-hotelera-datatur' ? 'Actividad Hotelera (DataTur)' : (ind === 'llegada-turistas' ? 'Llegada de Turistas (Histórico)' : (ind === 'exportaciones-estado' ? 'Exportaciones por Estado' : 'Indicador estatal'))))));
+            var mapping = {
+                'anuncios-inversion-datamexico': 'Anuncios de Inversión (DataMéxico)',
+                'pib-estatal': 'PIB Estatal (Mapas)',
+                'proyeccion-conapo': 'Proyecciones de Población (CONAPO)',
+                'itaee': 'Actividad Económica (ITAEE)',
+                'red-carretera-sct': 'Red Carretera (SCT)',
+                'actividad-hotelera-datatur': 'Actividad Hotelera (DataTur)',
+                'llegada-turistas': 'Llegada de Turistas (Histórico)',
+                'exportaciones-estado': 'Exportaciones por Estado',
+                'aeropuertos': 'Aeropuertos',
+                'demografia-inegi': 'Análisis Demográfico (INEGI)'
+            };
+            var indName = (mapping[ind] || 'Indicador estatal') + ' - ' + estado;
             var resp = await fetch('/api/analizar-ia-indicador', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     indicator: indName + ' - ' + estado,
+                    indicator_key: ind,
+                    slug: estado,
                     data: data
                 })
             });
@@ -4607,6 +6604,94 @@
             btn.textContent = '🤖 Analizar con IA';
         }
     });
+
+    // --- Guardar análisis de usuario (ESTATAL) ---
+    document.getElementById('btn-save-user-analysis-estatal').addEventListener('click', function() {
+        var btn = this;
+        var textarea = document.getElementById('indicador-user-analysis-estatal');
+        var text = textarea.value;
+        var estado = document.getElementById('estado-estatal').value || '';
+        var ind = document.getElementById('indicador-estatal').value || '';
+        saveUserAnalysisGeneric(btn, estado, ind, text);
+    });
+
+    // --- Guardar análisis de usuario (DEMOGRAFÍA ESTATAL) ---
+    document.getElementById('btn-save-user-analysis-demografia').addEventListener('click', function() {
+        var btn = this;
+        var textarea = document.getElementById('estatal-demografia-user-analysis');
+        var text = textarea.value;
+        var estado = window.demografiaEstatalEstado || '';
+        var metric = window.demografiaEstatalMetric || 'crecimiento';
+        saveUserAnalysisGeneric(btn, estado, 'demografia-' + metric, text);
+    });
+
+    // --- Guardar análisis de usuario (CIUDADES) ---
+    document.getElementById('btn-save-user-analysis-ciudad').addEventListener('click', function() {
+        var btn = this;
+        var textarea = document.getElementById('indicador-user-analysis-ciudad');
+        var text = textarea.value;
+        var ciudad = document.getElementById('ciudad-select').value || '';
+        var ind = (typeof indicadorCiudadTipo !== 'undefined') ? indicadorCiudadTipo : '';
+        saveUserAnalysisGeneric(btn, ciudad, ind, text);
+    });
+
+    // --- Guardar análisis de usuario (MUNICIPIOS) ---
+    document.getElementById('btn-save-user-analysis-muni').addEventListener('click', function() {
+        var btn = this;
+        var textarea = document.getElementById('indicador-user-analysis-muni');
+        var text = textarea.value;
+        var estado = document.getElementById('estado-municipal').value || '';
+        var municipio = document.getElementById('municipio-municipal-input') ? document.getElementById('municipio-municipal-input').value : '';
+        var ind = document.getElementById('indicador-municipal').value || '';
+        saveUserAnalysisGeneric(btn, estado + '-' + municipio, ind, text);
+    });
+
+    // --- Guardar análisis de usuario (LOCALIDADES) ---
+    document.getElementById('btn-save-user-analysis-localidad').addEventListener('click', function() {
+        var btn = this;
+        var textarea = document.getElementById('indicador-user-analysis-localidad');
+        var text = textarea.value;
+        var e = document.getElementById('estado-localidad');
+        var m = document.getElementById('municipio-localidad');
+        var l = document.getElementById('localidad-input');
+        var i = document.getElementById('indicador-localidad');
+        var estado = e ? e.value.trim() : '';
+        var municipio = m ? m.value.trim() : '';
+        var localidad = l ? l.value.trim() : '';
+        var ind = i ? i.value.trim() : '';
+        saveUserAnalysisGeneric(btn, estado + '-' + municipio + '-' + localidad, ind, text);
+    });
+
+    function saveUserAnalysisGeneric(btn, slug, indicator, text) {
+        if (!text || text.trim() === '') {
+            alert('Escribe un análisis antes de guardar.');
+            return;
+        }
+        btn.disabled = true;
+        btn.textContent = '⏳ Guardando...';
+        fetch('/api/save-user-analisis', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ slug: slug, indicator: indicator, analisis_usuario: text })
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            btn.disabled = false;
+            if (data.status === 'ok') {
+                btn.textContent = '✅ Guardado';
+                setTimeout(function() { btn.textContent = 'Guardar Análisis Revisado'; }, 2000);
+            } else {
+                btn.textContent = 'Guardar Análisis Revisado';
+                alert('Error al guardar: ' + (data.error || 'Desconocido'));
+            }
+        })
+        .catch(function(err) {
+            btn.disabled = false;
+            btn.textContent = 'Guardar Análisis Revisado';
+            alert('Error de conexión: ' + err.message);
+        });
+    }
+
 
     function renderPea(data) {
         const cfg = getChartConfig();
@@ -5448,7 +7533,82 @@
         } else if (ind === 'distribucion-poblacion-sexo') {
             cols = ['Año', 'Hombres', 'Mujeres'];
             rows = [cols, ...indicadorChartData.map((r) => [r.year, r.male, r.female])];
-        } else if (ind === 'poblacion-economica-activa') {
+        } else 
+        
+        
+        
+        
+        if (ind === 'pib-per-capita-ciudad') {
+            fetch(`/api/ciudades/${slug}/pib-per-capita`)
+                .then(r => r.json())
+                .then(data => {
+                    if (typeof renderPibPerCapitaCiudad === 'function') {
+                        indicadorCiudadData = data;
+                        indicadorCiudadTipo = ind;
+                        renderPibPerCapitaCiudad(data, ciudadNombre);
+                    }
+                })
+                .catch(err => console.error("Error loading PIB Per Capita:", err));
+            return;
+        }
+
+        if (ind === 'pib-estatal-ciudad') {
+            fetch(`/api/ciudades/${slug}/pib-estatal`)
+                .then(r => r.json())
+                .then(data => {
+                    if (placeholder) placeholder.hidden = true;
+                    if (wrapper) wrapper.hidden = false;
+                    if (typeof renderPibEstatalCiudad === 'function') {
+                        indicadorCiudadData = data;
+                        indicadorCiudadTipo = ind;
+                        renderPibEstatalCiudad(data, ciudadNombre);
+                    }
+                });
+            return;
+        }
+
+        if (ind === 'composicion-sectorial') {
+            fetch(`/api/ciudades/${slug}/composicion-sectorial`)
+                .then(r => r.json())
+                .then(data => {
+                    if (placeholder) placeholder.hidden = true;
+                    if (wrapper) wrapper.hidden = false;
+                    if (typeof renderComposicionSectorialCiudad === 'function') {
+                        indicadorCiudadData = data;
+                        indicadorCiudadTipo = ind;
+                        renderComposicionSectorialCiudad(data, ciudadNombre);
+                    }
+                });
+            return;
+        }
+
+        if (ind === 'tasa-desocupacion') {
+            fetch(`/api/ciudades/${slug}/tasa-desocupacion`)
+                .then(r => r.json())
+                .then(data => {
+                    if (placeholder) placeholder.hidden = true;
+                    if (wrapper) wrapper.hidden = false;
+                    if (typeof renderTasaDesocupacionCiudad === 'function') {
+                        renderTasaDesocupacionCiudad(data, ciudadNombre);
+                    }
+                });
+            return;
+        }
+
+        if (ind === 'tasa-participacion-laboral') {
+            fetch(`/api/ciudades/${slug}/tasa-participacion`)
+                .then(r => r.json())
+                .then(data => {
+                    if (placeholder) placeholder.hidden = true;
+                    if (wrapper) wrapper.hidden = false;
+                    if (typeof renderTasaParticipacionLaboralCiudad === 'function') {
+                        renderTasaParticipacionLaboralCiudad(data, ciudadNombre);
+                    }
+                });
+            return;
+        }
+
+        if (ind === 'poblacion-economica-activa') {
             cols = ['Periodo', 'PEA'];
             rows = [cols, ...indicadorChartData.map((r) => [r.fecha_fmt, r.valor])];
         } else if (ind === 'poblacion-sector-actividad') {
@@ -5558,12 +7718,16 @@
         indicadorIaResponse.hidden = false;
         content.textContent = 'Obteniendo análisis...';
         try {
+            const meta = window.indicadorChartMeta || indicadorChartMeta || {};
+            const data_payload = window.indicadorChartData || indicadorChartData || [];
             const resp = await fetch('/api/analizar-ia-indicador', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    indicator: indicadorChartMeta.indicator || 'Indicador',
-                    data: indicadorChartData
+                    indicator: meta.indicator || meta.title || 'Indicador',
+                    indicator_key: meta.indicator || meta.exportName || 'indicador',
+                    slug: 'nacional',
+                    data: data_payload
                 })
             });
             const data = await resp.json();
@@ -5582,6 +7746,52 @@
             btn.disabled = false;
             btn.textContent = '🤖 Analizar con IA';
         }
+    });
+
+    // Guardar análisis de usuario (Nacional)
+    document.getElementById('btn-save-user-analysis').addEventListener('click', function() {
+        var btn = this;
+        var textarea = document.getElementById('indicador-user-analysis');
+        var text = textarea.value;
+        // Always read from window.indicadorChartMeta (synced by all loaders)
+        var meta = window.indicadorChartMeta || {};
+        var indicator = meta.indicator || meta.title || meta.exportName || 'indicador';
+        
+        console.log('Guardando análisis usuario para:', 'nacional', indicator);
+        
+        if (!text || text.trim() === '') {
+            alert('Escribe un análisis antes de guardar.');
+            return;
+        }
+        
+        btn.disabled = true;
+        btn.textContent = '⏳ Guardando...';
+        
+        fetch('/api/save-user-analisis', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                slug: 'nacional',
+                indicator: indicator,
+                analisis_usuario: text
+            })
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            btn.disabled = false;
+            btn.textContent = 'Guardar Análisis Revisado';
+            if (data.status === 'ok') {
+                btn.textContent = '✅ Guardado';
+                setTimeout(function() { btn.textContent = 'Guardar Análisis Revisado'; }, 2000);
+            } else {
+                alert('Error al guardar: ' + (data.error || 'Desconocido'));
+            }
+        })
+        .catch(function(err) {
+            btn.disabled = false;
+            btn.textContent = 'Guardar Análisis Revisado';
+            alert('Error de conexión: ' + err.message);
+        });
     });
 
     async function loadCrecimientoPoblacional() {
@@ -5604,7 +7814,8 @@
             indicadorTableSection.hidden = false;
             indicadorChartData = data;
             indicadorChartMeta = { indicator: 'Crecimiento poblacional nacional', source: 'Fuente: INEGI', exportName: 'crecimiento_poblacional_nacional' };
-            document.querySelector('.indicador-chart-source').textContent = indicadorChartMeta.source;
+            window.indicadorChartMeta = indicadorChartMeta;
+            document.querySelector('.indicador-chart-source').textContent = indicadorChartMeta.source; loadSavedIaAnalisis('nacional', indicadorChartMeta.indicator, 'indicador-ia-response', 'indicador-ia-response-content');
             renderCrecimientoPoblacional(data);
             const tableData = data.map((r) => ({ 'Año': r.year, 'Población': r.value.toLocaleString('es-MX') }));
             fillIndicadorTable(tableData, ['Año', 'Población']);
@@ -5641,7 +7852,8 @@
             document.getElementById('pib-tab-total').classList.add('active');
             document.getElementById('pib-tab-percapita').classList.remove('active');
             indicadorChartMeta = { indicator: 'PIB Nacional (Total y Per Cápita)', source: 'Fuente: Banco Mundial / Open Exchange Rates', exportName: 'pib_nacional_total' };
-            document.querySelector('.indicador-chart-source').textContent = indicadorChartMeta.source;
+            window.indicadorChartMeta = indicadorChartMeta;
+            document.querySelector('.indicador-chart-source').textContent = indicadorChartMeta.source; loadSavedIaAnalisis('nacional', indicadorChartMeta.indicator, 'indicador-ia-response', 'indicador-ia-response-content');
             renderPibNacional(data, pibNacionalMetric);
             const tableData = data.map((r) => ({
                 'Año': r.anio,
@@ -5678,7 +7890,8 @@
             indicadorTableSection.hidden = false;
             indicadorChartData = data;
             indicadorChartMeta = { indicator: 'Población por sector de actividad económica', source: 'Fuente: INEGI', exportName: 'pob_sector_actividad' };
-            document.querySelector('.indicador-chart-source').textContent = indicadorChartMeta.source;
+            window.indicadorChartMeta = indicadorChartMeta;
+            document.querySelector('.indicador-chart-source').textContent = indicadorChartMeta.source; loadSavedIaAnalisis('nacional', indicadorChartMeta.indicator, 'indicador-ia-response', 'indicador-ia-response-content');
             renderPobSectorActividad(data);
             const tableData = data.map((r) => ({
                 'Sector': r.sector,
@@ -5714,7 +7927,8 @@
             indicadorTableSection.hidden = false;
             indicadorChartData = data;
             indicadorChartMeta = { indicator: 'Población Económicamente Activa (PEA)', source: 'Fuente: INEGI', exportName: 'pea_inegi' };
-            document.querySelector('.indicador-chart-source').textContent = indicadorChartMeta.source;
+            window.indicadorChartMeta = indicadorChartMeta;
+            document.querySelector('.indicador-chart-source').textContent = indicadorChartMeta.source; loadSavedIaAnalisis('nacional', indicadorChartMeta.indicator, 'indicador-ia-response', 'indicador-ia-response-content');
             renderPea(data);
             const tableData = data.map((r) => ({
                 'Periodo': r.fecha_fmt,
@@ -5749,7 +7963,8 @@
             indicadorTableSection.hidden = false;
             indicadorChartData = data;
             indicadorChartMeta = { indicator: 'Distribución de la población por sexo', source: 'Fuente: INEGI', exportName: 'distribucion_sexo' };
-            document.querySelector('.indicador-chart-source').textContent = indicadorChartMeta.source;
+            window.indicadorChartMeta = indicadorChartMeta;
+            document.querySelector('.indicador-chart-source').textContent = indicadorChartMeta.source; loadSavedIaAnalisis('nacional', indicadorChartMeta.indicator, 'indicador-ia-response', 'indicador-ia-response-content');
             renderDistribucionPoblacionSexo(data);
             const tableData = data.map((r) => ({
                 'Año': r.year,
@@ -5787,7 +8002,8 @@
             document.getElementById('tc-tab-diario').classList.add('active');
             document.getElementById('tc-tab-mensual').classList.remove('active');
             indicadorChartMeta = { indicator: 'Tipo de cambio (MXN/USD)', source: 'Fuente: Banxico (SIE SF43718)', exportName: 'tipo_cambio_diario' };
-            document.querySelector('.indicador-chart-source').textContent = indicadorChartMeta.source;
+            window.indicadorChartMeta = indicadorChartMeta;
+            document.querySelector('.indicador-chart-source').textContent = indicadorChartMeta.source; loadSavedIaAnalisis('nacional', indicadorChartMeta.indicator, 'indicador-ia-response', 'indicador-ia-response-content');
             chartPlaceholder.hidden = true;
             chartWrapper.hidden = false;
             chartActions.hidden = false;
@@ -5824,7 +8040,8 @@
             indicadorTableSection.hidden = false;
             indicadorChartData = data;
             indicadorChartMeta = { indicator: 'Inflación nacional', source: 'Fuente: Banxico (INPC SP1)', exportName: 'inflacion_nacional' };
-            document.querySelector('.indicador-chart-source').textContent = indicadorChartMeta.source;
+            window.indicadorChartMeta = indicadorChartMeta;
+            document.querySelector('.indicador-chart-source').textContent = indicadorChartMeta.source; loadSavedIaAnalisis('nacional', indicadorChartMeta.indicator, 'indicador-ia-response', 'indicador-ia-response-content');
             renderInflacionNacional(data);
             const tableData = data.map((r) => ({
                 'Periodo': r.texto_fecha || `${r.mes}/${r.anio}`,
@@ -5861,7 +8078,8 @@
             document.getElementById('pib-tab-total').classList.add('active');
             document.getElementById('pib-tab-percapita').classList.remove('active');
             indicadorChartMeta = { indicator: 'Proyección PIB (FMI WEO)', source: 'Fuente: FMI WEO & Banxico (TC FIX: ' + (proyeccionPibMeta.tc_fix ? proyeccionPibMeta.tc_fix.toFixed(2) : 'N/D') + ')', exportName: 'proyeccion_pib_total' };
-            document.querySelector('.indicador-chart-source').textContent = indicadorChartMeta.source;
+            window.indicadorChartMeta = indicadorChartMeta;
+            document.querySelector('.indicador-chart-source').textContent = indicadorChartMeta.source; loadSavedIaAnalisis('nacional', indicadorChartMeta.indicator, 'indicador-ia-response', 'indicador-ia-response-content');
             chartPlaceholder.hidden = true;
             chartWrapper.hidden = false;
             chartActions.hidden = false;
@@ -5917,7 +8135,8 @@
                 source: 'Fuente: Banco Mundial (WDI)',
                 exportName: 'ranking_turismo_mundial',
             };
-            document.querySelector('.indicador-chart-source').textContent = indicadorChartMeta.source;
+            window.indicadorChartMeta = indicadorChartMeta;
+            document.querySelector('.indicador-chart-source').textContent = indicadorChartMeta.source; loadSavedIaAnalisis('nacional', indicadorChartMeta.indicator, 'indicador-ia-response', 'indicador-ia-response-content');
             renderRankingTurismoMundial(data);
 
             const years = [...new Set(data.map((r) => r.year))].filter((y) => y > 0).sort((a, b) => a - b);
@@ -5974,7 +8193,8 @@
                 source: 'Fuente: INEGI (BISE)',
                 exportName: 'balanza_visitantes',
             };
-            document.querySelector('.indicador-chart-source').textContent = indicadorChartMeta.source;
+            window.indicadorChartMeta = indicadorChartMeta;
+            document.querySelector('.indicador-chart-source').textContent = indicadorChartMeta.source; loadSavedIaAnalisis('nacional', indicadorChartMeta.indicator, 'indicador-ia-response', 'indicador-ia-response-content');
             balanzaVisitantesMetric = 'flujo';
             document.getElementById('balanza-tab-flujo').classList.add('active');
             document.getElementById('balanza-tab-saldo').classList.remove('active');
@@ -6030,7 +8250,8 @@
                 source: 'Fuente: AFAC / DataTur',
                 exportName: 'participacion_mercado_aereo',
             };
-            document.querySelector('.indicador-chart-source').textContent = indicadorChartMeta.source;
+            window.indicadorChartMeta = indicadorChartMeta;
+            document.querySelector('.indicador-chart-source').textContent = indicadorChartMeta.source; loadSavedIaAnalisis('nacional', indicadorChartMeta.indicator, 'indicador-ia-response', 'indicador-ia-response-content');
             participacionMercadoAereoMetric = 'nacional';
             document.getElementById('pma-tab-nacional').classList.add('active');
             document.getElementById('pma-tab-internacional').classList.remove('active');
@@ -6082,7 +8303,8 @@
                 source: 'Fuente: AFAC / DataTur (Internacional)',
                 exportName: 'participacion_internacional',
             };
-            document.querySelector('.indicador-chart-source').textContent = indicadorChartMeta.source;
+            window.indicadorChartMeta = indicadorChartMeta;
+            document.querySelector('.indicador-chart-source').textContent = indicadorChartMeta.source; loadSavedIaAnalisis('nacional', indicadorChartMeta.indicator, 'indicador-ia-response', 'indicador-ia-response-content');
             renderParticipacionInternacionalRegion(data);
             const tableData = data.map((r) => ({
                 Región: r.region,
@@ -6130,7 +8352,8 @@
                 source: 'Fuente: Secretaría de Economía',
                 exportName: 'ied_paises',
             };
-            document.querySelector('.indicador-chart-source').textContent = indicadorChartMeta.source;
+            window.indicadorChartMeta = indicadorChartMeta;
+            document.querySelector('.indicador-chart-source').textContent = indicadorChartMeta.source; loadSavedIaAnalisis('nacional', indicadorChartMeta.indicator, 'indicador-ia-response', 'indicador-ia-response-content');
             renderIedPaisOrigen(data);
             const tableData = data.map((r) => ({
                 País: r.pais,
@@ -6171,7 +8394,8 @@
                 source: 'Fuente: Secretaría de Economía (datos.gob.mx)',
                 exportName: 'ied_flujo_entidad',
             };
-            document.querySelector('.indicador-chart-source').textContent = indicadorChartMeta.source;
+            window.indicadorChartMeta = indicadorChartMeta;
+            document.querySelector('.indicador-chart-source').textContent = indicadorChartMeta.source; loadSavedIaAnalisis('nacional', indicadorChartMeta.indicator, 'indicador-ia-response', 'indicador-ia-response-content');
 
             const estadoSelect = document.getElementById('ied-estado-select');
             const tabsIed = document.getElementById('indicador-chart-tabs-ied-estado');
@@ -6229,7 +8453,8 @@
                 source: 'Fuente: Secretaría de Economía',
                 exportName: 'ied_sectores',
             };
-            document.querySelector('.indicador-chart-source').textContent = indicadorChartMeta.source;
+            window.indicadorChartMeta = indicadorChartMeta;
+            document.querySelector('.indicador-chart-source').textContent = indicadorChartMeta.source; loadSavedIaAnalisis('nacional', indicadorChartMeta.indicator, 'indicador-ia-response', 'indicador-ia-response-content');
             renderIedSectorEconomico(data);
             const tableData = data.map((r) => ({
                 Sector: r.sector,
@@ -6265,7 +8490,8 @@
             indicadorTableSection.hidden = false;
             indicadorChartData = data;
             indicadorChartMeta = { indicator: 'Distribución de la población por edad', source: 'Fuente: INEGI', exportName: 'estructura_poblacional' };
-            document.querySelector('.indicador-chart-source').textContent = indicadorChartMeta.source;
+            window.indicadorChartMeta = indicadorChartMeta;
+            document.querySelector('.indicador-chart-source').textContent = indicadorChartMeta.source; loadSavedIaAnalisis('nacional', indicadorChartMeta.indicator, 'indicador-ia-response', 'indicador-ia-response-content');
             renderDistribucionPoblacionEdad(data);
             const tableData = data.map((r) => ({
                 'Año': r.year,
@@ -6353,9 +8579,9 @@
         } else if (value === 'participacion-internacional-region') {
             loadParticipacionInternacionalRegion();
         } else if (value === 'anuncios-inversion-combinados') {
-            loadAnunciosInversionCombinados();
+            loadAnunciosCombinados();
         } else if (value === 'anuncios-inversion-base') {
-            loadAnunciosInversionBase();
+            loadAnunciosBase();
         } else if (value === 'pib-sector-economico') {
             loadPibSectorEconomico();
         } else if (value === 'balanza-comercial-producto') {
@@ -6382,7 +8608,7 @@
             indicadorChartMeta.exportName = 'proyeccion_pib_total';
             renderProyeccionPib(indicadorChartData, proyeccionPibMetric);
         }
-        document.querySelector('.indicador-chart-source').textContent = indicadorChartMeta.source;
+        document.querySelector('.indicador-chart-source').textContent = indicadorChartMeta.source; loadSavedIaAnalisis('nacional', indicadorChartMeta.indicator, 'indicador-ia-response', 'indicador-ia-response-content');
     });
     document.getElementById('pib-tab-percapita').addEventListener('click', function () {
         this.classList.add('active');
@@ -6397,7 +8623,7 @@
             indicadorChartMeta.exportName = 'proyeccion_pib_per_capita';
             renderProyeccionPib(indicadorChartData, proyeccionPibMetric);
         }
-        document.querySelector('.indicador-chart-source').textContent = indicadorChartMeta.source;
+        document.querySelector('.indicador-chart-source').textContent = indicadorChartMeta.source; loadSavedIaAnalisis('nacional', indicadorChartMeta.indicator, 'indicador-ia-response', 'indicador-ia-response-content');
     });
 
     document.getElementById('tc-tab-diario').addEventListener('click', function () {
@@ -6743,7 +8969,7 @@
                         chartActions.hidden = false; indicadorTableSection.hidden = false;
                         window.indicadorChartData = data;
                         window.indicadorChartMeta = { indicator: 'Anuncios de Inversión Combinados', source: 'Fuente: Secretaría de Economía (DataMéxico)', exportName: 'anuncios_inversion_combinados' };
-                        document.querySelector('.indicador-chart-source').textContent = window.indicadorChartMeta.source;
+                        document.querySelector('.indicador-chart-source').textContent = window.indicadorChartMeta.source; loadSavedIaAnalisis('nacional', window.indicadorChartMeta.indicator, 'indicador-ia-response', 'indicador-ia-response-content');
                         /* Mostrar pestañas y activar la primera */
                         aicMetric = 'anual';
                         document.getElementById('indicador-chart-tabs-aic').hidden = false;
@@ -6780,7 +9006,7 @@
                         chartActions.hidden = false; indicadorTableSection.hidden = false;
                         window.indicadorChartData = data;
                         window.indicadorChartMeta = { indicator: 'Anuncios de Inversión Base', source: 'Fuente: Secretaría de Economía (DataMéxico)', exportName: 'anuncios_inversion_base' };
-                        document.querySelector('.indicador-chart-source').textContent = window.indicadorChartMeta.source;
+                        document.querySelector('.indicador-chart-source').textContent = window.indicadorChartMeta.source; loadSavedIaAnalisis('nacional', window.indicadorChartMeta.indicator, 'indicador-ia-response', 'indicador-ia-response-content');
                         /* Mostrar pestañas y activar la primera */
                         aibMetric = 'sector';
                         document.getElementById('indicador-chart-tabs-aib').hidden = false;
@@ -6992,7 +9218,7 @@
                             source: 'Fuente: INEGI (vía DataMéxico)',
                             exportName: 'pib_sector_economico'
                         };
-                        document.querySelector('.indicador-chart-source').textContent = window.indicadorChartMeta.source;
+                        document.querySelector('.indicador-chart-source').textContent = window.indicadorChartMeta.source; loadSavedIaAnalisis('nacional', window.indicadorChartMeta.indicator, 'indicador-ia-response', 'indicador-ia-response-content');
 
                         var info = renderPibSectorDonut(data);
 
@@ -7095,17 +9321,17 @@
                 Plotly.newPlot('indicador-chart-plot', [
                     {
                         x: years, y: imports, type: 'scatter', mode: 'lines+markers', name: 'Importaciones',
-                        line: { color: '#F47806', width: 2.5 }, marker: { size: 5 },
+                        line: { color: cfg.palette[2], width: 2.5 }, marker: { size: 5 },
                         hovertemplate: '<b>%{x}</b><br>Importaciones: $%{y:,.1f} B USD<extra></extra>'
                     },
                     {
                         x: years, y: exports, type: 'scatter', mode: 'lines+markers', name: 'Exportaciones',
-                        line: { color: '#36F48C', width: 2.5 }, marker: { size: 5 },
+                        line: { color: cfg.palette[1], width: 2.5 }, marker: { size: 5 },
                         hovertemplate: '<b>%{x}</b><br>Exportaciones: $%{y:,.1f} B USD<extra></extra>'
                     },
                     {
                         x: years, y: balance, type: 'bar', name: 'Saldo',
-                        marker: { color: balance.map(function (v) { return v >= 0 ? '#0576F3' : '#E91E63'; }) },
+                        marker: { color: balance.map(function (v) { return v >= 0 ? cfg.palette[0] : cfg.palette[4]; }) },
                         hovertemplate: '<b>%{x}</b><br>Saldo: $%{y:,.1f} B USD<extra></extra>',
                         opacity: 0.5
                     }
@@ -7168,12 +9394,12 @@
                 Plotly.newPlot('indicador-chart-plot', [
                     {
                         y: labels, x: impVals, type: 'bar', orientation: 'h', name: 'Importaciones',
-                        marker: { color: '#F47806' },
+                        marker: { color: cfg.palette[2] },
                         hovertemplate: '<b>%{y}</b><br>Importaciones: $%{x:,.1f} B USD<extra></extra>'
                     },
                     {
                         y: labels, x: expVals, type: 'bar', orientation: 'h', name: 'Exportaciones',
-                        marker: { color: '#36F48C' },
+                        marker: { color: cfg.palette[1] },
                         hovertemplate: '<b>%{y}</b><br>Exportaciones: $%{x:,.1f} B USD<extra></extra>'
                     }
                 ], {
@@ -7303,7 +9529,7 @@
                             source: 'Fuente: INEGI (vía DataMéxico)',
                             exportName: 'balanza_comercial_producto'
                         };
-                        document.querySelector('.indicador-chart-source').textContent = window.indicadorChartMeta.source;
+                        document.querySelector('.indicador-chart-source').textContent = window.indicadorChartMeta.source; loadSavedIaAnalisis('nacional', window.indicadorChartMeta.indicator, 'indicador-ia-response', 'indicador-ia-response-content');
 
                         renderBcpTab(bcpMetric);
 
@@ -7416,8 +9642,8 @@
                     {
                         x: years, y: ops, type: 'scatter', mode: 'lines+markers',
                         name: 'Total Operaciones',
-                        line: { color: '#0576F3', width: 3 },
-                        marker: { size: 6, color: '#0576F3' },
+                        line: { color: cfg.palette[0], width: 3 },
+                        marker: { size: 6, color: cfg.palette[0] },
                         fill: 'tozeroy', fillcolor: 'rgba(5,118,243,0.1)',
                         hovertemplate: '<b>%{x}</b><br>Operaciones: %{y:,.0f}<extra></extra>'
                     }
@@ -7586,6 +9812,7 @@
                             title: 'Operaciones Aeroportuarias',
                             data: (Array.isArray(totalArr) ? totalArr : []).concat(porGrupo.slice(0, 30))
                         };
+                        loadSavedIaAnalisis('nacional', window.indicadorChartMeta.indicator, 'indicador-ia-response', 'indicador-ia-response-content');
 
                         document.getElementById('indicador-chart-tabs-oap').hidden = false;
                         oapMetric = totalArr.length ? 'total' : (porGrupo.length ? 'grupo' : 'total');
@@ -7843,6 +10070,7 @@
                             title: 'Actividad Hotelera',
                             data: nacional.slice(0, 30)
                         };
+                        loadSavedIaAnalisis('nacional', window.indicadorChartMeta.indicator, 'indicador-ia-response', 'indicador-ia-response-content');
 
                         /* Mostrar pestañas y activar la primera */
                         ahMetric = 'historico';
@@ -7937,3 +10165,131 @@
     }
 </style>
 {% endblock %}
+    function renderPibPerCapitaCiudad(data, ciudadNombre) {
+        var container = document.getElementById('ciudad-chart-container');
+        if (!data || data.length === 0) {
+            container.innerHTML = '<p class="text-center text-muted">No hay datos de PIB Per Cápita para mostrar.</p>';
+            return;
+        }
+
+        container.innerHTML = '<div id="ciudad-pib-per-capita-chart" style="width:100%; height:0; padding-bottom:56.25%; position:relative;"></div>';
+
+        // Estilos: Utilizar color institucional y fuente
+        var xData = data.map(d => d.periodo);
+        var yData = data.map(d => d.valor); // MXN per capita
+
+        var trace = {
+            x: xData,
+            y: yData,
+            type: 'scatter', // Una gráfica de línea/área suele ser mejor para evolución per cápita, pero mantenemos consistencia con barras o líneas elegantes
+            mode: 'lines+markers',
+            line: {color: '#0576F3', width: 4}, // Azul base
+            marker: {size: 8, color: '#36F48C'}, // Verde secundario para los puntos
+            fill: 'tozeroy',
+            fillcolor: 'rgba(5, 118, 243, 0.1)',
+            name: 'PIB Per Cápita (MXN)',
+            hovertemplate: '$%{y:,.0f} MXN<extra></extra>'
+        };
+
+        var layout = {
+            title: {
+                text: 'PIB Estatal Per Cápita (Precios 2018): ' + ciudadNombre,
+                font: { family: 'Aptos Light', size: 18 }
+            },
+            font: { family: 'Aptos Light' },
+            xaxis: { title: 'Año', titlefont: {family: 'Aptos Light'} },
+            yaxis: { 
+                title: 'Pesos (MXN) / Habitante', 
+                tickformat: '$,.0f',
+                titlefont: {family: 'Aptos Light'}
+            },
+            margin: { t: 50, b: 50, l: 60, r: 20 },
+            showlegend: false,
+            autosize: true
+        };
+
+        var config = {
+            responsive: true,
+            displayModeBar: true,
+            toImageButtonOptions: {
+                format: 'png',
+                filename: `PIB_Per_Capita_${ciudadNombre}`,
+                height: 720,
+                width: 1280,
+                scale: 1
+            }
+        };
+
+        Plotly.newPlot('ciudad-pib-per-capita-chart', [trace], layout, config);
+        
+        // Populate the table below the chart
+        fillCiudadTablePibPerCapita(data);
+    }
+
+    function fillCiudadTablePibPerCapita(data) {
+        var tableHtml = `
+            <div class="row align-items-center mb-3">
+                <div class="col">
+                    <h5 class="m-0" style="font-family: 'Aptos Light';">Datos del indicador</h5>
+                </div>
+                <div class="col-auto">
+                    <button class="btn btn-sm text-dark d-flex align-items-center" style="background-color: #36F48C; font-family: 'Aptos Light';" onclick="downloadCiudadTablePibPerCapitaCSV()">
+                        <img src="https://img.icons8.com/color/48/export-csv.png" alt="csv" style="width: 20px; height: 20px; margin-right: 5px;"/>
+                        Descargar CSV
+                    </button>
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover table-sm" id="ciudad-pib-per-capita-table" style="font-family: 'Aptos Light';">
+                    <thead>
+                        <tr>
+                            <th>Año</th>
+                            <th>PIB Per Cápita (MXN)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+        `;
+        
+        data.forEach(function(row) {
+            tableHtml += `
+                        <tr>
+                            <td>${row.periodo}</td>
+                            <td>$${row.valor.toLocaleString('es-MX', {minimumFractionDigits: 0, maximumFractionDigits: 0})}</td>
+                        </tr>
+            `;
+        });
+        
+        tableHtml += `
+                    </tbody>
+                </table>
+            </div>
+        `;
+        
+        document.getElementById('ciudad-table-container').innerHTML = tableHtml;
+
+        // Añadir la anotación de la fuente de datos obligatoria
+        document.getElementById('ciudad-table-container').insertAdjacentHTML('beforeend', '<div style="font-family: \'Aptos Light\'; font-size: 12px; color: #666; margin-top: 10px;">Fuente: INEGI - Producto Interno Bruto por Entidad Federativa (Precios Constantes 2018) y Proyecciones Poblacionales (CONAPO)</div>');
+    }
+
+    // Assigning to window so it can be called from onclick
+    window.downloadCiudadTablePibPerCapitaCSV = function() {
+        var table = document.getElementById('ciudad-pib-per-capita-table');
+        if(!table) return;
+        var csv = [];
+        var rows = table.querySelectorAll('tr');
+        for (var i = 0; i < rows.length; i++) {
+            var row = [], cols = rows[i].querySelectorAll('td, th');
+            for (var j = 0; j < cols.length; j++) {
+                row.push('"' + cols[j].innerText.replace(/"/g, '""') + '"');
+            }
+            csv.push(row.join(','));
+        }
+        var csvFile = new Blob(["\ufeff" + csv.join('\n')], {type: 'text/csv;charset=utf-8;'});
+        var downloadLink = document.createElement("a");
+        downloadLink.download = 'pib_per_capita.csv';
+        downloadLink.href = window.URL.createObjectURL(csvFile);
+        downloadLink.style.display = "none";
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
+        document.body.removeChild(downloadLink);
+    };

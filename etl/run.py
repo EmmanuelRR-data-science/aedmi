@@ -690,22 +690,22 @@ def run_etl():
                         _data = _json.load(_f)
                     for _row in _data.get("crecimiento", []):
                         try:
-                            cur.execute("INSERT INTO demografia_estatal_crecimiento (estado_codigo,anio,valor,crecimiento_pct) VALUES (%s,%s,%s,%s) ON CONFLICT DO UPDATE SET valor=EXCLUDED.valor, crecimiento_pct=EXCLUDED.crecimiento_pct",
+                            cur.execute("INSERT INTO demografia_estatal_crecimiento (estado_codigo,anio,valor,crecimiento_pct) VALUES (%s,%s,%s,%s) ON CONFLICT (estado_codigo, anio) DO UPDATE SET valor=EXCLUDED.valor, crecimiento_pct=EXCLUDED.crecimiento_pct",
                                 (_cod, _row["anio"], _row["valor"], _row.get("crecimiento_pct")))
                             _dtotal += 1
                         except Exception:
                             conn.rollback()
                     for _row in _data.get("genero", []):
                         try:
-                            cur.execute("INSERT INTO demografia_estatal_genero (estado_codigo,anio,hombres,mujeres) VALUES (%s,%s,%s,%s) ON CONFLICT DO NOTHING",
+                            cur.execute("INSERT INTO demografia_estatal_genero (estado_codigo,anio,hombres,mujeres) VALUES (%s,%s,%s,%s) ON CONFLICT (estado_codigo, anio) DO NOTHING",
                                 (_cod, _row["anio"], _row["hombres"], _row["mujeres"]))
                             _dtotal += 1
                         except Exception:
                             conn.rollback()
                     for _row in _data.get("edad", []):
                         try:
-                            cur.execute("INSERT INTO demografia_estatal_edad (estado_codigo,anio,grupo_edad,valor) VALUES (%s,%s,%s,%s) ON CONFLICT DO NOTHING",
-                                (_cod, _row.get("anio",2020), _row.get("grupo",_row.get("grupo_edad","")), _row.get("valor",0)))
+                            cur.execute("INSERT INTO demografia_estatal_edad (estado_codigo,anio,g_0_19,g_20_64,g_65_plus,no_especificado) VALUES (%s,%s,%s,%s,%s,%s) ON CONFLICT (estado_codigo, anio) DO NOTHING",
+                                (_cod, _row.get("anio",2020), _row.get("g_0_19",0), _row.get("g_20_64",0), _row.get("g_65_plus",0), _row.get("no_especificado",0)))
                             _dtotal += 1
                         except Exception:
                             conn.rollback()

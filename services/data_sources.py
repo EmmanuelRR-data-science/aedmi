@@ -7047,3 +7047,126 @@ def fetch_and_process_crecimiento_historico_localidad():
             
     return combined_data
 
+def _scrape_observatur_generic(container_class, indicator_key, region_info=None):
+    """
+    Función genérica para hacer scraping del Observatorio Turístico de Yucatán.
+    Extrae datos de filas <tr> con atributos data-yr, data-mnth y data-vl.
+    """
+    import requests
+    from bs4 import BeautifulSoup
+    import urllib3
+    import re
+    
+    urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+    url = "https://www.observaturyucatan.org.mx/indicadores"
+    
+    if region_info is None:
+        region_info = {"estado_codigo": "31", "municipio_codigo": "050"} # Default Mérida
+        
+    try:
+        response = requests.get(url, verify=False, timeout=30)
+        response.raise_for_status()
+        soup = BeautifulSoup(response.text, 'html.parser')
+        
+        # Seleccionar todas las filas que tengan la clase del contenedor y los atributos de datos
+        rows = soup.select(f'tr{container_class}[data-vl], tr.{container_class.replace(".", "")}[data-vl]')
+        
+        # A veces la clase está en el contenedor padre, no en el <tr>
+        if not rows:
+            rows = soup.select(f'{container_class} tr[data-vl]')
+            
+        data = []
+        months_map = {
+            "enero": 1, "febrero": 2, "marzo": 3, "abril": 4, "mayo": 5, "junio": 6,
+            "julio": 7, "agosto": 8, "septiembre": 9, "octubre": 10, "noviembre": 11, "diciembre": 12,
+            "ene": 1, "feb": 2, "mar": 3, "abr": 4, "may": 5, "jun": 6,
+            "jul": 7, "ago": 8, "sep": 9, "oct": 10, "nov": 11, "dic": 12
+        }
+        
+        for row in rows:
+            year_str = row.get('data-yr')
+            period_str = row.get('data-mnth')
+            value_str = row.get('data-vl')
+            
+            if not year_str or not period_str or not value_str:
+                continue
+                
+            period_num = 0
+            is_quarter = False
+            
+            # Detectar si es trimestre (I, II, III, IV)
+            if re.search(r'\b(I|II|III|IV)\b', period_str):
+                is_quarter = True
+                if "IV" in period_str: period_num = 4
+                elif "III" in period_str: period_num = 3
+                elif "II" in period_str: period_num = 2
+                elif "I" in period_str: period_num = 1
+            else:
+                # Buscar mes en el mapa
+                for m_name, m_num in months_map.items():
+                    if m_name in period_str.lower():
+                        period_num = m_num
+                        break
+            
+            try:
+                year = int(year_str)
+                # Limpiar valor (quitar comas, signos de pesos, espacios)
+                clean_val = re.sub(r'[^\d.]', '', value_str)
+                value = float(clean_val) if "." in clean_val else int(clean_val)
+                
+                entry = {
+                    "estado_codigo": region_info["estado_codigo"],
+                    "municipio_codigo": region_info.get("municipio_codigo"),
+                    "anio": year,
+                    indicator_key: value
+                }
+                
+                if is_quarter:
+                    entry["trimestre"] = period_num
+                    entry["trimestre_lbl"] = period_str
+                else:
+                    entry["mes"] = period_num
+                    entry["mes_lbl"] = period_str
+                    
+                data.append(entry)
+            except:
+                continue
+        
+        # Ordenar chronológicamente
+        if data:
+            if "trimestre" in data[0]:
+                data.sort(key=lambda x: (x["anio"], x["trimestre"]))
+            elif "mes" in data[0]:
+                data.sort(key=lambda x: (x["anio"], x["mes"]))
+            else:
+                data.sort(key=lambda x: x["anio"])
+                
+        return data
+        
+    except Exception as e:
+        print(f"Error scraping {container_class}: {e}")
+        return []
+
+def _scrape_poblacion_ocupada_observatur():
+    return _scrape_observatur_generic(".rw_mid_poocupada", "poblacion_ocupada")
+
+def _scrape_ocupacion_hotelera_observatur():
+    return _scrape_observatur_generic(".rw_mid_ocup", "valor")
+
+def _scrape_llegada_visitantes_observatur():
+    return _scrape_observatur_generic(".rw_mid_llegada", "valor")
+
+def _scrape_ingreso_hotelero_observatur():
+    # En Mérida es impuesto al hospedaje / ingreso municipal
+    return _scrape_observatur_generic(".rw_mid_hotelero", "valor")
+
+def _scrape_gasto_promedio_observatur():
+    return _scrape_observatur_generic(".rw_mid_gasto", "valor")
+
+def _scrape_derrama_economica_observatur():
+    # Solo estatal
+    return _scrape_observatur_generic(".rw_yuc_gasto", "valor", {"estado_codigo": "31", "municipio_codigo": None})
+
+def _scrape_establecimientos_turismo_observatur():
+    return _scrape_observatur_generic(".rw_mid_establecimientos", "valor")
+

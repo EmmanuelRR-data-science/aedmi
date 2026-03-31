@@ -22,6 +22,55 @@ from flask import (
 load_dotenv()
 
 app = Flask(__name__)
+
+# ── ETL on-demand trigger ──────────────────────────────────────────────
+import threading
+_etl_lock = threading.Lock()
+_etl_running = False
+
+def _should_run_etl():
+    """Returns True if last ETL was >24 h ago or never ran."""
+    try:
+        print(f"[IA-DEBUG] Saving User Analysis: slug={slug}, ind_key={ind_key}")
+        from services.db import db_connection
+        with db_connection() as conn:
+            cur = conn.cursor()
+            cur.execute("""
+                SELECT updated_at FROM kpis_nacional
+                ORDER BY updated_at DESC LIMIT 1
+            """)
+            row = cur.fetchone()
+            if not row:
+                return True
+            from datetime import datetime, timezone, timedelta
+            last = row[0]
+            if last.tzinfo is None:
+                last = last.replace(tzinfo=timezone.utc)
+            now = datetime.now(timezone.utc)
+            return (now - last) > timedelta(hours=24)
+    except Exception as e:
+        print(f"[ETL-CHECK] Error checking last ETL: {e}", file=__import__('sys').stderr)
+        return False
+
+def _run_etl_background():
+    """Run ETL in background thread."""
+    global _etl_running
+    if _etl_running:
+        return
+    with _etl_lock:
+        if _etl_running:
+            return
+        _etl_running = True
+    try:
+        print("[ETL] Starting background ETL...", file=__import__('sys').stderr)
+        from etl.run import run_etl
+        result = run_etl()
+        print(f"[ETL] Background ETL finished with code: {result}", file=__import__('sys').stderr)
+    except Exception as e:
+        print(f"[ETL] Background ETL error: {e}", file=__import__('sys').stderr)
+    finally:
+        _etl_running = False
+# ── End ETL trigger ────────────────────────────────────────────────────
 app.secret_key = os.getenv("FLASK_SECRET_KEY", "dev-secret-key-change-in-production")
 
 # Credenciales desde variables de entorno
@@ -185,6 +234,13 @@ def dashboard():
     """Pantalla principal después del login"""
     if not _require_auth():
         return redirect(url_for("login"))
+    # Check if ETL needs to run (>24h since last update)
+    try:
+        if _should_run_etl():
+            t = threading.Thread(target=_run_etl_background, daemon=True)
+            t.start()
+    except Exception:
+        pass
     theme = session.get("theme", "light")
     return render_template("dashboard.html", theme=theme)
 
@@ -1033,6 +1089,7 @@ def api_estatal_actividad_hotelera_clear():
     if not _require_auth():
         return jsonify({"error": "No autorizado"}), 401
     try:
+        print(f"[IA-DEBUG] GET Analisis: slug={slug}, ind_key={ind_key}")
         from services.db import db_connection
         with db_connection() as conn:
             cur = conn.cursor()
@@ -1478,7 +1535,220 @@ def api_ciudad_crecimiento_historico(slug):
         return jsonify({"error": str(e)}), 500
 
 
+@app.route("/api/ciudades/<slug>/sexo-historico")
+def api_ciudad_sexo_historico(slug):
+    """
+    API: Histórico de población por sexo por ciudad (CONAPO).
+    """
+    if not _require_auth():
+        return jsonify({"error": "No autorizado"}), 401
+    try:
+        from services.db import get_ciudad_by_slug_from_db, get_proyeccion_poblacional_sexo_from_db
+        ciudad = get_ciudad_by_slug_from_db(slug)
+        if not ciudad:
+            return jsonify({"error": "Ciudad no encontrada"}), 404
+        municipio_codigo = None if ciudad.get("es_entidad_completa") else ciudad.get("municipio_codigo")
+        data = get_proyeccion_poblacional_sexo_from_db(ciudad["estado_codigo"], municipio_codigo)
+        return jsonify(data if data else [])
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/ciudades/<slug>/poblacion-ocupada-turismo")
+def api_ciudad_poblacion_ocupada_turismo(slug):
+    """
+    API: Población ocupada en restaurantes y hoteles por ciudad.
+    Obtenida de Observatorio Turístico de Yucatán (webscraping).
+    """
+    if not _require_auth():
+        return jsonify({"error": "No autorizado"}), 401
+    try:
+        from services.db import get_ciudad_by_slug_from_db, get_poblacion_ocupada_turismo_from_db
+        ciudad = get_ciudad_by_slug_from_db(slug)
+        if not ciudad:
+            return jsonify({"error": "Ciudad no encontrada"}), 404
+        
+        municipio_codigo = None if ciudad.get("es_entidad_completa") else ciudad.get("municipio_codigo")
+        data = get_poblacion_ocupada_turismo_from_db(ciudad["estado_codigo"], municipio_codigo)
+        return jsonify(data if data else [])
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/ciudades/<slug>/ocupacion-hotelera")
+def api_ciudad_ocupacion_hotelera(slug):
+    if not _require_auth():
+        return jsonify({"error": "No autorizado"}), 401
+    try:
+        from services.db import get_ciudad_by_slug_from_db, get_ocupacion_hotelera_from_db, get_actividad_hotelera_estatal_from_db
+        ciudad = get_ciudad_by_slug_from_db(slug)
+        if not ciudad: return jsonify({"error": "Ciudad no encontrada"}), 404
+        
+        # Monterrey usa datos estatales de NL (PED/SEDUM)
+        if slug == 'monterrey':
+            data, years = get_actividad_hotelera_estatal_from_db(ciudad["estado_codigo"])
+            if data:
+                return jsonify({"type": "estatal", "data": data})
+        
+        data = get_ocupacion_hotelera_from_db(ciudad["estado_codigo"], ciudad.get("municipio_codigo"))
+        return jsonify(data)
+    except Exception as e: return jsonify({"error": str(e)}), 500
+
+@app.route("/api/ciudades/<slug>/llegada-visitantes")
+def api_ciudad_llegada_visitantes(slug):
+    if not _require_auth():
+        return jsonify({"error": "No autorizado"}), 401
+    try:
+        from services.db import get_ciudad_by_slug_from_db, get_llegada_visitantes_from_db
+        ciudad = get_ciudad_by_slug_from_db(slug)
+        if not ciudad: return jsonify({"error": "Ciudad no encontrada"}), 404
+        data = get_llegada_visitantes_from_db(ciudad["estado_codigo"], ciudad.get("municipio_codigo"))
+        return jsonify(data)
+    except Exception as e: return jsonify({"error": str(e)}), 500
+
+@app.route("/api/ciudades/<slug>/gasto-promedio")
+def api_ciudad_gasto_promedio(slug):
+    if not _require_auth():
+        return jsonify({"error": "No autorizado"}), 401
+    try:
+        from services.db import get_ciudad_by_slug_from_db, get_gasto_promedio_from_db
+        ciudad = get_ciudad_by_slug_from_db(slug)
+        if not ciudad: return jsonify({"error": "Ciudad no encontrada"}), 404
+        data = get_gasto_promedio_from_db(ciudad["estado_codigo"], ciudad.get("municipio_codigo"))
+        return jsonify(data)
+    except Exception as e: return jsonify({"error": str(e)}), 500
+
+@app.route("/api/ciudades/<slug>/derrama-economica")
+def api_ciudad_derrama_economica(slug):
+    if not _require_auth():
+        return jsonify({"error": "No autorizado"}), 401
+    try:
+        from services.db import get_ciudad_by_slug_from_db, get_derrama_economica_from_db
+        ciudad = get_ciudad_by_slug_from_db(slug)
+        if not ciudad: return jsonify({"error": "Ciudad no encontrada"}), 404
+        # Derrama es mayormente estatal, municipio_codigo puede ser None
+        data = get_derrama_economica_from_db(ciudad["estado_codigo"], None)
+        return jsonify(data)
+    except Exception as e: return jsonify({"error": str(e)}), 500
+
+@app.route("/api/ciudades/<slug>/ingreso-hotelero")
+def api_ciudad_ingreso_hotelero(slug):
+    if not _require_auth():
+        return jsonify({"error": "No autorizado"}), 401
+    try:
+        from services.db import get_ciudad_by_slug_from_db, get_ingreso_hotelero_from_db
+        ciudad = get_ciudad_by_slug_from_db(slug)
+        if not ciudad: return jsonify({"error": "Ciudad no encontrada"}), 404
+        data = get_ingreso_hotelero_from_db(ciudad["estado_codigo"], ciudad.get("municipio_codigo"))
+        return jsonify(data)
+    except Exception as e: return jsonify({"error": str(e)}), 500
+
+@app.route("/api/ciudades/<slug>/establecimientos-turismo")
+def api_ciudad_establecimientos_turismo(slug):
+    if not _require_auth():
+        return jsonify({"error": "No autorizado"}), 401
+    try:
+        from services.db import get_ciudad_by_slug_from_db, get_establecimientos_turismo_from_db
+        ciudad = get_ciudad_by_slug_from_db(slug)
+        if not ciudad: return jsonify({"error": "Ciudad no encontrada"}), 404
+        data = get_establecimientos_turismo_from_db(ciudad["estado_codigo"], ciudad.get("municipio_codigo"))
+        return jsonify(data)
+    except Exception as e: return jsonify({"error": str(e)}), 500
+
+@app.route("/api/ciudades/<slug>/ventas-internacionales")
+def api_ciudad_ventas_internacionales(slug):
+    if not _require_auth():
+        return jsonify({"error": "No autorizado"}), 401
+    try:
+        from services.db import get_ciudad_by_slug_from_db, get_ventas_internacionales_from_db
+        ciudad = get_ciudad_by_slug_from_db(slug)
+        if not ciudad: return jsonify({"error": "Ciudad no encontrada"}), 404
+        data = get_ventas_internacionales_from_db(ciudad["estado_codigo"], ciudad.get("municipio_codigo"))
+        return jsonify(data)
+    except Exception as e: return jsonify({"error": str(e)}), 500
+
+@app.route("/api/ciudades/<slug>/conectividad-aerea")
+def api_ciudad_conectividad_aerea(slug):
+    if not _require_auth():
+        return jsonify({"error": "No autorizado"}), 401
+    try:
+        from services.db import get_ciudad_by_slug_from_db
+        from services.data_sources import get_aeropuertos_por_estado
+        ciudad = get_ciudad_by_slug_from_db(slug)
+        if not ciudad: return jsonify({"error": "Ciudad no encontrada"}), 404
+        data = get_aeropuertos_por_estado(ciudad["estado_codigo"])
+        if not data: return jsonify({"error": "No hay datos de aeropuertos para este estado"}), 404
+        return jsonify(data)
+    except Exception as e: return jsonify({"error": str(e)}), 500
+
+@app.route("/api/ciudades/<slug>/oferta-servicios-turisticos")
+def api_ciudad_oferta_servicios_turisticos(slug):
+    if not _require_auth():
+        return jsonify({"error": "No autorizado"}), 401
+    try:
+        from services.db import get_ciudad_by_slug_from_db, get_oferta_servicios_turisticos_from_db
+        ciudad = get_ciudad_by_slug_from_db(slug)
+        if not ciudad: return jsonify({"error": "Ciudad no encontrada"}), 404
+        data = get_oferta_servicios_turisticos_from_db(ciudad["estado_codigo"], ciudad.get("municipio_codigo"))
+        return jsonify(data)
+    except Exception as e: return jsonify({"error": str(e)}), 500
+
+@app.route("/api/ciudades/<slug>/vuelos-llegada")
+def api_ciudad_vuelos_llegada(slug):
+    if not _require_auth():
+        return jsonify({"error": "No autorizado"}), 401
+    try:
+        from services.db import get_ciudad_by_slug_from_db, get_vuelos_llegada_aicm_from_db
+        ciudad = get_ciudad_by_slug_from_db(slug)
+        if not ciudad: return jsonify({"error": "Ciudad no encontrada"}), 404
+        data = get_vuelos_llegada_aicm_from_db(ciudad["estado_codigo"], ciudad.get("municipio_codigo"))
+        return jsonify(data)
+    except Exception as e: return jsonify({"error": str(e)}), 500
+
+@app.route("/api/ciudades/<slug>/comercio-internacional")
+def api_ciudad_comercio_internacional(slug):
+    """
+    API: Comercio Internacional (IED) para la ciudad, basado en su estado.
+    """
+    if not _require_auth():
+        return jsonify({"error": "No autorizado"}), 401
+    try:
+        from services.db import get_ciudad_by_slug_from_db, get_comercio_internacional_from_db
+        ciudad = get_ciudad_by_slug_from_db(slug)
+        if not ciudad: return jsonify({"error": "Ciudad no encontrada"}), 404
+        
+        # Le pasamos el nombre del estado para filtrar en la BD de IED
+        data = get_comercio_internacional_from_db(ciudad["estado_nombre"])
+        return jsonify(data if data else [])
+    except Exception as e: 
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/ciudades/<slug>/llegada-pasajeros")
+def api_ciudad_llegada_pasajeros(slug):
+    """API: Llegada de pasajeros al aeropuerto de la ciudad."""
+    if not _require_auth():
+        return jsonify({"error": "No autorizado"}), 401
+    try:
+        from services.db import get_llegada_pasajeros_from_db
+        data = get_llegada_pasajeros_from_db(slug)
+        return jsonify(data if data else [])
+    except Exception as e: 
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/ciudades/<slug>/visitantes-nac-ext")
+def api_ciudad_visitantes_nac_ext(slug):
+    """API: Visitantes nacionales y extranjeros de la ciudad."""
+    if not _require_auth():
+        return jsonify({"error": "No autorizado"}), 401
+    try:
+        from services.db import get_visitantes_nac_ext_from_db
+        data = get_visitantes_nac_ext_from_db(slug)
+        return jsonify(data if data else [])
+    except Exception as e: 
+        return jsonify({"error": str(e)}), 500
+
 @app.route("/api/localidades")
+
 def api_localidades():
     """
     API: Lista de localidades por estado y opcionalmente municipio.
@@ -1566,7 +1836,7 @@ def api_crecimiento_poblacional():
 def api_analizar_ia_indicador():
     """
     Analiza datos de un indicador con IA (Groq).
-    Espera JSON: { "indicator": "nombre", "data": [{...}] }.
+    Espera JSON: { "indicator": "nombre", "data": [{...}], "slug": "X", "indicator_key": "Y" }.
     """
     if not _require_auth():
         return jsonify({"error": "No autorizado"}), 401
@@ -1574,26 +1844,31 @@ def api_analizar_ia_indicador():
     if not api_key:
         return jsonify({"error": "GROQ_API_KEY no configurada"}), 500
     payload = request.get_json() or {}
+    import sys
+    print(f"[IA-PAYLOAD] Received: {payload}", file=sys.stderr)
+    sys.stderr.flush()
     indicator = payload.get("indicator", "Indicador")
+    slug = (payload.get("slug") or "").strip().lower()
+    ind_key = (payload.get("indicator_key") or "").strip().lower()
     data = payload.get("data", [])
     if not data:
         return jsonify({"error": "No hay datos para analizar"}), 400
     try:
         import json as _json
-
         from groq import Groq
 
-        data_str = _json.dumps(data[:50], ensure_ascii=False, indent=2)
-        prompt = f"""Eres un analista experto en estudios de mercado inmobiliario en México.
+        data_str = _json.dumps(data[:50] if isinstance(data, list) else data, ensure_ascii=False, indent=2)
+        prompt = f"""Eres un analista experto en estudios de mercado inmobiliario en México y estudios de Máximo y Mejor Uso (Highest and Best Use).
 Analiza los siguientes datos del indicador «{indicator}»:
 
 {data_str}
 
 INSTRUCCIONES:
-1. Interpreta los datos y busca patrones, tendencias y posibles outliers.
-2. Explica por qué ocurre ese comportamiento.
-3. Relaciona con el contexto económico de México.
-4. Responde en Español de México. Sé conciso pero informativo."""
+1. **Identificación:** Menciona claramente el nombre del Estado, Ciudad, Municipio o Localidad que se está analizando (según se deduce o se indica en el título del indicador «{indicator}»).
+2. **Contexto Integral:** Complementa el análisis de estos datos específicos relacionándolo con los pilares del desarrollo de la zona: Demografía, Economía, Turismo y Conectividad (menciona los más relevantes para este indicador y zona).
+3. **Interpretación:** Interpreta los datos del indicador buscando patrones, tendencias y posibles outliers. Explica por qué ocurre ese comportamiento.
+4. **Enfoque Inmobiliario:** Todo el análisis debe estar firmemente proyectado hacia el Sector Inmobiliario y los Estudios de Mejor Uso (Highest and Best Use), explicando cómo estos indicadores influyen en la absorción, plusvalía o viabilidad de proyectos en la región.
+5. **Formato:** Responde en Español de México. Sé conciso pero con alta densidad de valor analítico."""
         client = Groq(api_key=api_key)
         resp = client.chat.completions.create(
             model=GROQ_MODEL,
@@ -1602,10 +1877,112 @@ INSTRUCCIONES:
             max_tokens=2048,
         )
         texto = resp.choices[0].message.content or ""
+
+        # Persistir análisis si tiene identificadores válidos
+        if slug and ind_key:
+            try:
+                print(f"[IA-DEBUG] Saving Analysis: slug={slug}, ind_key={ind_key}")
+                from services.db import db_connection
+                with db_connection() as conn:
+                    cur = conn.cursor()
+                    cur.execute("""
+                        INSERT INTO ia_analisis (slug, indicator, analisis, updated_at)
+                        VALUES (%s, %s, %s, CURRENT_TIMESTAMP)
+                        ON CONFLICT (slug, indicator) DO UPDATE SET
+                            analisis = EXCLUDED.analisis,
+                            updated_at = CURRENT_TIMESTAMP
+                    """, (str(slug), str(ind_key), texto))
+            except Exception as dbe:
+                import sys
+                print(f"[WARN] Error guardando análisis IA: {dbe}", file=sys.stderr)
+
         return jsonify({"analisis": texto})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+@app.route("/api/get-ia-analisis")
+def api_get_ia_analisis():
+    slug = (request.args.get("slug") or "").strip().lower()
+    ind_key = (request.args.get("indicator") or "").strip().lower()
+    if not slug or not ind_key:
+        return jsonify({"analisis": None})
+    try:
+        print(f"[IA-DEBUG] GET Analisis: slug={slug}, ind_key={ind_key}")
+        from services.db import db_connection
+        with db_connection() as conn:
+            cur = conn.cursor()
+            cur.execute("SELECT analisis, analisis_usuario FROM ia_analisis WHERE slug = %s AND indicator = %s", (str(slug), str(ind_key)))
+            row = cur.fetchone()
+            return jsonify({
+                "analisis": row[0] if row else None,
+                "analisis_usuario": row[1] if row else None
+            })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+
+@app.route("/api/save-user-analisis", methods=["POST"])
+def api_save_user_analisis():
+    if not _require_auth():
+        return jsonify({"error": "No autorizado"}), 401
+    
+    payload = request.get_json() or {}
+    slug = (payload.get("slug") or "").strip().lower()
+    ind_key = (payload.get("indicator") or "").strip().lower()
+    analisis_usuario = payload.get("analisis_usuario", "")
+    
+    if not slug or not ind_key:
+        return jsonify({"error": "Faltan parámetros"}), 400
+        
+    try:
+        print(f"[IA-DEBUG] Saving User Analysis: slug={slug}, ind_key={ind_key}")
+        from services.db import db_connection
+        with db_connection() as conn:
+            cur = conn.cursor()
+            cur.execute("""
+                INSERT INTO ia_analisis (slug, indicator, analisis_usuario, updated_at)
+                VALUES (%s, %s, %s, CURRENT_TIMESTAMP)
+                ON CONFLICT (slug, indicator) DO UPDATE SET
+                    analisis_usuario = EXCLUDED.analisis_usuario,
+                    updated_at = CURRENT_TIMESTAMP
+            """, (str(slug), str(ind_key), analisis_usuario))
+        return jsonify({"status": "ok"})
+    except Exception as e:
+        import sys
+        print(f"[WARN] Error guardando análisis de usuario: {e}", file=sys.stderr)
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/etl-status")
+def api_etl_status():
+    """Check ETL status and last update time."""
+    if not _require_auth():
+        return jsonify({"error": "No autorizado"}), 401
+    try:
+        from services.db import db_connection
+        with db_connection() as conn:
+            cur = conn.cursor()
+            cur.execute("SELECT updated_at FROM kpis_nacional ORDER BY updated_at DESC LIMIT 1")
+            row = cur.fetchone()
+        return jsonify({
+            "last_update": str(row[0]) if row else None,
+            "etl_running": _etl_running,
+            "needs_update": _should_run_etl()
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/run-etl", methods=["POST"])
+def api_run_etl():
+    """Manually trigger ETL."""
+    if not _require_auth():
+        return jsonify({"error": "No autorizado"}), 401
+    if _etl_running:
+        return jsonify({"status": "already_running"})
+    t = threading.Thread(target=_run_etl_background, daemon=True)
+    t.start()
+    return jsonify({"status": "started"})
 
 @app.route("/toggle-theme", methods=["POST"])
 def toggle_theme():
@@ -1616,6 +1993,83 @@ def toggle_theme():
     session["theme"] = "dark" if current == "light" else "light"
     return redirect(request.referrer or url_for("dashboard"))
 
+
+
+
+@app.route("/api/ciudades/<slug>/pea")
+def api_ciudad_pea(slug):
+    try:
+        from services.db import get_pea_municipal_from_db
+        data = get_pea_municipal_from_db(slug)
+        if not data:
+            return jsonify([])
+        return jsonify(data)
+    except Exception as e:
+        print(f"Error api_ciudad_pea: {e}")
+        return jsonify([])
+
+
+@app.route("/api/ciudades/<slug>/tasa-participacion")
+def api_ciudad_tasa_participacion(slug):
+    try:
+        from services.db import get_tasa_participacion_municipal_from_db
+        data = get_tasa_participacion_municipal_from_db(slug)
+        if not data:
+            return jsonify([])
+        return jsonify(data)
+    except Exception as e:
+        print(f"Error api_ciudad_tasa_participacion: {e}")
+        return jsonify([])
+
+
+@app.route("/api/ciudades/<slug>/tasa-desocupacion")
+def api_ciudad_tasa_desocupacion(slug):
+    try:
+        from services.db import get_tasa_desocupacion_municipal_from_db
+        data = get_tasa_desocupacion_municipal_from_db(slug)
+        if not data:
+            return jsonify([])
+        return jsonify(data)
+    except Exception as e:
+        print(f"Error api_ciudad_tasa_desocupacion: {e}")
+        return jsonify([])
+
+
+@app.route("/api/ciudades/<slug>/composicion-sectorial")
+def api_ciudad_composicion_sectorial(slug):
+    try:
+        from services.db import get_composicion_sectorial_municipal_from_db
+        data = get_composicion_sectorial_municipal_from_db(slug)
+        if not data:
+            return jsonify([])
+        return jsonify(data)
+    except Exception as e:
+        print(f"Error api_ciudad_composicion_sectorial: {e}")
+        return jsonify([])
+
+
+@app.route("/api/ciudades/<slug>/pib-estatal")
+def api_ciudad_pib_estatal(slug):
+    try:
+        from services.db import get_pib_estatal_municipal_from_db
+        data = get_pib_estatal_municipal_from_db(slug)
+        if not data:
+            return jsonify([])
+        return jsonify(data)
+    except Exception as e:
+        print(f"Error api_ciudad_pib_estatal: {e}")
+        return jsonify([])
+
+
+@app.route('/api/ciudades/<slug>/pib-per-capita')
+def api_pib_per_capita_ciudad(slug):
+    try:
+        from services.db import get_pib_per_capita_municipal_from_db
+        data = get_pib_per_capita_municipal_from_db(slug)
+        return jsonify(data)
+    except Exception as e:
+        print(f"[API] Error PIB Per Capita ciudad {slug}: {e}")
+        return jsonify([])
 
 
 if __name__ == "__main__":

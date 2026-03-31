@@ -11,7 +11,7 @@ services:
       - ./etl/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
       - ./etl/seeds/actividad_hotelera_estatal.sql:/docker-entrypoint-initdb.d/02-actividad-hotelera-estatal.sql
     ports:
-      - "${POSTGRES_PORT:-5433}:5432"
+      - "127.0.0.1:${POSTGRES_PORT:-5433}:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-dash_db}"]
       interval: 5s
@@ -54,7 +54,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
-    command: ["/usr/sbin/cron", "-f"]
+    command: >
+      /bin/sh -c "printenv > /etc/environment && /usr/sbin/cron -f"
 
   web:
     build: .

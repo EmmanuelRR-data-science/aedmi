@@ -1106,6 +1106,13 @@ body {
     color: var(--text-secondary);
 }
 
+.indicador-chart-source-static {
+    font-size: 11px;
+    color: var(--text-secondary);
+    margin-top: 10px;
+    margin-bottom: 5px;
+}
+
 .indicador-chart-wrapper-estatal .indicador-chart-source {
     bottom: 30px;
 }

@@ -2649,3 +2649,367 @@ def get_municipios_from_db(estado_nombre: str) -> list[dict]:
             ]
     except Exception:
         return []
+
+def get_proyeccion_poblacional_sexo_from_db(estado_codigo: str, municipio_codigo: str | None = None) -> list[dict]:
+    """
+    Obtiene histórico/proyección de población por sexo desde proyeccion_poblacional_municipal (CONAPO).
+    Retorna [{anio, hombres, mujeres}, ...] ordenado por año.
+    """
+    try:
+        with db_connection() as conn:
+            cur = conn.cursor()
+            if municipio_codigo:
+                cur.execute(
+                    """SELECT anio, 
+                              SUM(CASE WHEN UPPER(sexo) IN ('HOMBRES', 'HOMBRE') THEN poblacion ELSE 0 END) as hombres,
+                              SUM(CASE WHEN UPPER(sexo) IN ('MUJERES', 'MUJER') THEN poblacion ELSE 0 END) as mujeres
+                       FROM proyeccion_poblacional_municipal
+                       WHERE estado_codigo = %s AND municipio_codigo = %s
+                       GROUP BY anio ORDER BY anio""",
+                    (estado_codigo, municipio_codigo),
+                )
+            else:
+                cur.execute(
+                    """SELECT anio, 
+                              SUM(CASE WHEN UPPER(sexo) IN ('HOMBRES', 'HOMBRE') THEN poblacion ELSE 0 END) as hombres,
+                              SUM(CASE WHEN UPPER(sexo) IN ('MUJERES', 'MUJER') THEN poblacion ELSE 0 END) as mujeres
+                       FROM proyeccion_poblacional_municipal
+                       WHERE estado_codigo = %s
+                       GROUP BY anio ORDER BY anio""",
+                    (estado_codigo,),
+                )
+            rows = cur.fetchall()
+            return [{"anio": r[0], "hombres": int(r[1]), "mujeres": int(r[2])} for r in rows]
+    except Exception as e:
+        print(f"Error get_proyeccion_poblacional_sexo_from_db: {e}")
+        return []
+
+def save_tourism_generic_bulk(table_name, data, value_key="valor"):
+    """Guarda datos de turismo de forma genérica (ON CONFLICT)."""
+    if not data: return 0
+    try:
+        from services.db import db_connection
+        with db_connection() as conn:
+            with conn.cursor() as cur:
+                # Determinar si tiene mes o trimestre
+                period_col = "mes" if "mes" in data[0] else "trimestre"
+                period_lbl_col = f"{period_col}_lbl"
+                
+                tuples = []
+                for r in data:
+                    val = r.get(value_key) or r.get("valor")
+                    tuples.append((
+                        r["estado_codigo"], 
+                        r.get("municipio_codigo"), 
+                        r["anio"], 
+                        r[period_col], 
+                        r.get(period_lbl_col, ""),
+                        val
+                    ))
+                
+                # Construir consulta dinámica
+                query = f"""
+                    INSERT INTO {table_name} 
+                    (estado_codigo, municipio_codigo, anio, {period_col}, {period_lbl_col}, valor)
+                    VALUES (%s, %s, %s, %s, %s, %s)
+                    ON CONFLICT (estado_codigo, municipio_codigo, anio, {period_col}) 
+                    DO UPDATE SET valor = EXCLUDED.valor, {period_lbl_col} = EXCLUDED.{period_lbl_col}
+                """
+                if "municipio_codigo" in data[0] and data[0]["municipio_codigo"] is None:
+                    # Caso estatal, el ON CONFLICT debe manejar el NULL si la tabla lo permite
+                    # pero usualmente las tablas tienen UNIQUE (estado, municipio, anio, periodo)
+                    # Si municipio es NULL, Postgres lo ve como diferente.
+                    # Para simplificar, asumimos que municipio_codigo es "" o NULL según la tabla.
+                    pass
+                
+                cur.executemany(query, tuples)
+                return len(tuples)
+    except Exception as e:
+        print(f"Error save_tourism_generic_bulk ({table_name}): {e}")
+        return 0
+
+def get_tourism_generic_from_db(table_name, estado_codigo, municipio_codigo=None):
+    """Obtiene datos de turismo de forma genérica desde PostgreSQL."""
+    try:
+        from services.db import db_connection
+        with db_connection() as conn:
+            with conn.cursor() as cur:
+                # Verificar si la tabla usa mes o trimestre
+                cur.execute(f"SELECT column_name FROM information_schema.columns WHERE table_name = '{table_name}' AND column_name = 'mes'")
+                is_monthly = cur.fetchone() is not None
+                period_col = "mes" if is_monthly else "trimestre"
+                period_lbl_col = f"{period_col}_lbl"
+
+                query = f"SELECT anio, {period_col}, {period_lbl_col}, valor FROM {table_name} WHERE estado_codigo = %s"
+                params = [estado_codigo]
+                if municipio_codigo:
+                    query += " AND municipio_codigo = %s"
+                    params.append(municipio_codigo)
+                else:
+                    query += " AND municipio_codigo IS NULL"
+                query += f" ORDER BY anio, {period_col}"
+                
+                cur.execute(query, params)
+                rows = cur.fetchall()
+                
+                results = []
+                for r in rows:
+                    y, p_num, p_lbl, val = r
+                    # Limpiar label si existe, si no usar inicial
+                    lbl = p_lbl if p_lbl else f"P{p_num}"
+                    
+                    # Opcional: Acortar meses largos
+                    months_map = {"enero": "Ene", "febrero": "Feb", "marzo": "Mar", "abril": "Abr", "mayo": "May", "junio": "Jun", 
+                                  "julio": "Jul", "agosto": "Ago", "septiembre": "Sep", "octubre": "Oct", "noviembre": "Nov", "diciembre": "Dic",
+                                  "i trimestre": "1T", "ii trimestre": "2T", "iii trimestre": "3T", "iv trimestre": "4T"}
+                    
+                    short_lbl = lbl
+                    for full, short in months_map.items():
+                        if full in lbl.lower():
+                            short_lbl = f"{short} {y}"
+                            break
+                    else:
+                        short_lbl = f"{lbl} {y}"
+                    
+                    results.append({
+                        "anio": y,
+                        "periodo_num": p_num,
+                        "periodo": short_lbl,
+                        "valor": float(val)
+                    })
+                return results
+    except Exception as e:
+        print(f"Error get_tourism_generic_from_db ({table_name}): {e}")
+        return []
+
+def save_poblacion_ocupada_turismo_bulk(data):
+    return save_tourism_generic_bulk("poblacion_ocupada_turismo_municipal", data, "poblacion_ocupada")
+
+def get_poblacion_ocupada_turismo_from_db(estado_codigo, municipio_codigo=None):
+    data = get_tourism_generic_from_db("poblacion_ocupada_turismo_municipal", estado_codigo, municipio_codigo)
+    return data
+
+def save_ocupacion_hotelera_bulk(data):
+    return save_tourism_generic_bulk("ocupacion_hotelera_municipal", data)
+
+def get_ocupacion_hotelera_from_db(estado_codigo, municipio_codigo=None):
+    return get_tourism_generic_from_db("ocupacion_hotelera_municipal", estado_codigo, municipio_codigo)
+
+def save_llegada_visitantes_bulk(data):
+    return save_tourism_generic_bulk("llegada_visitantes_municipal", data)
+
+def get_llegada_visitantes_from_db(estado_codigo, municipio_codigo=None):
+    return get_tourism_generic_from_db("llegada_visitantes_municipal", estado_codigo, municipio_codigo)
+
+def save_gasto_promedio_bulk(data):
+    return save_tourism_generic_bulk("gasto_promedio_municipal", data)
+
+def get_gasto_promedio_from_db(estado_codigo, municipio_codigo=None):
+    return get_tourism_generic_from_db("gasto_promedio_municipal", estado_codigo, municipio_codigo)
+
+def save_derrama_economica_bulk(data):
+    return save_tourism_generic_bulk("derrama_economica_turismo", data)
+
+def get_derrama_economica_from_db(estado_codigo, municipio_codigo=None):
+    return get_tourism_generic_from_db("derrama_economica_turismo", estado_codigo, municipio_codigo)
+
+def save_ingreso_hotelero_bulk(data):
+    return save_tourism_generic_bulk("ingreso_hotelero_municipal", data)
+
+def get_ingreso_hotelero_from_db(estado_codigo, municipio_codigo=None):
+    return get_tourism_generic_from_db("ingreso_hotelero_municipal", estado_codigo, municipio_codigo)
+
+def save_establecimientos_turismo_bulk(data):
+    return save_tourism_generic_bulk("establecimientos_turismo_municipal", data)
+
+def get_establecimientos_turismo_from_db(estado_codigo, municipio_codigo=None):
+    return get_tourism_generic_from_db("establecimientos_turismo_municipal", estado_codigo, municipio_codigo)
+
+def get_ventas_internacionales_from_db(estado_codigo, municipio_codigo):
+    if not municipio_codigo: return []
+    try:
+        from services.db import db_connection
+        with db_connection() as conn:
+            cur = conn.cursor()
+            cur.execute("""
+                SELECT anio, mes, flujo, valor_usd 
+                FROM ventas_internacionales_municipal
+                WHERE estado_codigo = %s AND municipio_codigo = %s
+                ORDER BY anio, mes
+            """, (estado_codigo, municipio_codigo))
+            rows = cur.fetchall()
+            
+            results = []
+            meses_map = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"]
+            for r in rows:
+                anio, mes, flujo, valor = r
+                results.append({
+                    "anio": anio,
+                    "mes": mes,
+                    "periodo": f"{meses_map[mes - 1]} {anio}",
+                    "flujo": "Exportaciones" if "Export" in flujo else "Importaciones",
+                    "valor_usd": float(valor)
+                })
+            return results
+    except Exception as e:
+        print(f"Error get_ventas_internacionales_from_db: {e}")
+        return []
+
+
+def get_oferta_servicios_turisticos_from_db(estado_codigo, municipio_codigo):
+    """Lee de oferta_servicios_turisticos_municipal: ventas por categoría (Turissste)."""
+    if not municipio_codigo: return []
+    try:
+        with db_connection() as conn:
+            cur = conn.cursor()
+            cur.execute("""
+                SELECT anio, ventas_hospedaje, ventas_aereos, ventas_terrestre, ventas_excursiones, 
+                       ventas_paquetes_propios, ventas_paquetes_no_propios, ventas_turismo_negocios
+                FROM oferta_servicios_turisticos_municipal
+                WHERE estado_codigo = %s AND municipio_codigo = %s
+                ORDER BY anio
+            """, (estado_codigo, municipio_codigo))
+            rows = cur.fetchall()
+            
+            results = []
+            for r in rows:
+                anio, hospedaje, aereos, terrestre, excursiones, pq_propios, pq_no_propios, negocios = r
+                results.append({
+                    "anio": anio,
+                    "ventas_hospedaje": float(hospedaje or 0),
+                    "ventas_aereos": float(aereos or 0),
+                    "ventas_terrestre": float(terrestre or 0),
+                    "ventas_excursiones": float(excursiones or 0),
+                    "ventas_paquetes": float((pq_propios or 0) + (pq_no_propios or 0)),
+                    "ventas_turismo_negocios": float(negocios or 0)
+                })
+            return results
+    except Exception as e:
+        print(f"Error get_oferta_servicios_turisticos_from_db: {e}")
+        return []
+
+def get_vuelos_llegada_aicm_from_db(estado_codigo, municipio_codigo):
+    if not municipio_codigo: return []
+    try:
+        from services.db import db_connection
+        with db_connection() as conn:
+            cur = conn.cursor()
+            cur.execute("""
+                SELECT anio, llegadas_t1, llegadas_t2
+                FROM vuelos_llegada_aicm_municipal
+                WHERE estado_codigo = %s AND municipio_codigo = %s
+                ORDER BY anio
+            """, (estado_codigo, municipio_codigo))
+            rows = cur.fetchall()
+            
+            results = []
+            for r in rows:
+                anio, t1, t2 = r
+                results.append({
+                    "anio": anio,
+                    "llegadas_t1": int(t1),
+                    "llegadas_t2": int(t2)
+                })
+            return results
+    except Exception as e:
+        print(f"Error get_vuelos_llegada_aicm_from_db: {e}")
+        return []
+
+def get_comercio_internacional_from_db(estado_nombre):
+    """
+    Obtiene los datos de Inversión Extranjera Directa (Comercio Internacional) para un estado,
+    agrupados por año y mostrando los principales sectores (top 5 y 'Otros').
+    """
+    if not estado_nombre: return []
+    try:
+        from services.db import db_connection
+        with db_connection() as conn:
+            cur = conn.cursor()
+            
+            cur.execute("""
+                SELECT anio, sector, SUM(monto_mdd) AS total_mdd
+                FROM ied_historico_entidad_sector
+                WHERE estado_nombre = %s AND monto_mdd > 0
+                GROUP BY anio, sector
+                ORDER BY anio, total_mdd DESC
+            """, (estado_nombre,))
+            rows = cur.fetchall()
+            
+            data_by_year = {}
+            for anio, sector, monto_mdd in rows:
+                if anio not in data_by_year:
+                    data_by_year[anio] = {"anio": anio, "sectores": [], "otros": 0}
+                
+                # Si tenemos menos de 5 sectores, lo agregamos a la lista, sino a otros
+                if len(data_by_year[anio]["sectores"]) < 5:
+                    data_by_year[anio]["sectores"].append({
+                        "sector": sector,
+                        "monto_mdd": float(monto_mdd)
+                    })
+                else:
+                    data_by_year[anio]["otros"] += float(monto_mdd)
+            
+            # Formatear la salida como una lista simple de valores por año para facilitar la gráfica
+            return list(data_by_year.values())
+
+    except Exception as e:
+        print(f"Error get_comercio_internacional_from_db: {e}")
+        return []
+
+def get_llegada_pasajeros_from_db(ciudad_slug):
+    """Obtiene datos de llegada de pasajeros al aeropuerto por ciudad."""
+    if not ciudad_slug: return []
+    try:
+        from services.db import db_connection
+        with db_connection() as conn:
+            cur = conn.cursor()
+            cur.execute("""
+                SELECT anio, pasajeros_nacionales, pasajeros_internacionales, pasajeros_total
+                FROM llegada_pasajeros_aeropuerto
+                WHERE ciudad_slug = %s
+                ORDER BY anio
+            """, (ciudad_slug,))
+            rows = cur.fetchall()
+            results = []
+            for r in rows:
+                anio, nac, intl, total = r
+                results.append({
+                    "anio": anio,
+                    "nacionales": int(nac or 0),
+                    "internacionales": int(intl or 0),
+                    "total": int(total or 0)
+                })
+            return results
+    except Exception as e:
+        print(f"Error get_llegada_pasajeros_from_db: {e}")
+        return []
+
+def get_visitantes_nac_ext_from_db(ciudad_slug):
+    """Obtiene visitantes nacionales y extranjeros por ciudad."""
+    if not ciudad_slug: return []
+    try:
+        from services.db import db_connection
+        with db_connection() as conn:
+            cur = conn.cursor()
+            cur.execute("""
+                SELECT anio, visitantes_nacionales, visitantes_extranjeros, pct_nacionales, pct_extranjeros
+                FROM visitantes_nacionales_extranjeros
+                WHERE ciudad_slug = %s
+                ORDER BY anio
+            """, (ciudad_slug,))
+            rows = cur.fetchall()
+            results = []
+            for r in rows:
+                anio, nac, ext, pct_nac, pct_ext = r
+                results.append({
+                    "anio": anio,
+                    "nacionales": int(nac or 0),
+                    "extranjeros": int(ext or 0),
+                    "total": int(nac or 0) + int(ext or 0),
+                    "pct_nacionales": round(float(pct_nac or 0) * 100, 1),
+                    "pct_extranjeros": round(float(pct_ext or 0) * 100, 1)
+                })
+            return results
+    except Exception as e:
+        print(f"Error get_visitantes_nac_ext_from_db: {e}")
+        return []
