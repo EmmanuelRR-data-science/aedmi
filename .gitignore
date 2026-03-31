@@ -23,3 +23,24 @@ Thumbs.db
 # Build / cache
 *.sqlite
 .ruff_cache/
+
+# Credenciales y configuración sensible
+VPS_DEPLOYMENT_INFO.md
+.env.*
+.env.production
+
+# IDE Kiro
+.kiro/
+
+# Datos crudos (no son código fuente)
+data/raw/*.json
+data/raw/*.xlsx
+data/raw/*.zip
+
+# Seeds y scripts SQL locales
+seed_crecimiento_ciudades.sql
+mock_*.sql
+
+# Archivos temporales y de diagnóstico
+*.zip
+inegi_test.zip
