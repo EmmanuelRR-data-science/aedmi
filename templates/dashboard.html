@@ -2044,8 +2044,15 @@
     ];
 
     const INDICADORES_MONTERREY = [
-        {val: 'poblacion-total', text: 'Población Total'},
-        {val: 'ocupacion-hotelera', text: 'Ocupación hotelera'}
+        {val: 'poblacion-total', text: 'Población total'},
+        {val: 'crecimiento-historico', text: 'Crecimiento poblacional anual'},
+        {val: 'distribucion-sexo', text: 'Distribución por sexo (Histórico)'},
+        {val: 'distribucion-edad', text: 'Distribución por edad (2020)'},
+        {val: 'ocupacion-hotelera', text: 'Ocupación hotelera'},
+        {val: 'comercio-internacional', text: 'Comercio Internacional (IED)'},
+        {val: 'ventas-internacionales', text: 'Exportaciones e importaciones'},
+        {val: 'llegada-pasajeros', text: 'Llegadas de pasajeros'},
+        {val: 'visitantes-nacionales-extranjeros', text: 'Visitantes nacionales y extranjeros'}
     ];
 
     const INDICADORES_GENERAL = [
@@ -2053,11 +2060,17 @@
         {val: 'crecimiento-historico', text: 'Crecimiento poblacional anual'},
         {val: 'distribucion-sexo', text: 'Distribución por sexo (Histórico)'},
         {val: 'distribucion-edad', text: 'Distribución por edad (2020)'},
+        {val: 'ocupacion-hotelera', text: 'Ocupación hotelera'},
         {val: 'comercio-internacional', text: 'Comercio Internacional (IED)'},
-        {val: 'exportaciones-importaciones', text: 'Exportaciones e importaciones'},
+        {val: 'ventas-internacionales', text: 'Exportaciones e importaciones'},
         {val: 'llegada-pasajeros', text: 'Llegadas de pasajeros'},
         {val: 'visitantes-nacionales-extranjeros', text: 'Visitantes nacionales y extranjeros'},
-        {val: 'ocupacion-hotelera', text: 'Ocupación hotelera'}
+        {val: 'poblacion-economica-activa', text: 'Población Económicamente Activa'},
+        {val: 'tasa-participacion-laboral', text: 'Tasa de Participación Laboral'},
+        {val: 'tasa-desocupacion', text: 'Tasa de Desocupación'},
+        {val: 'composicion-sectorial', text: 'Composición Sectorial'},
+        {val: 'pib-estatal-ciudad', text: 'PIB Estatal'},
+        {val: 'pib-per-capita-ciudad', text: 'PIB Per Cápita'}
     ];
 
     function updateIndicadoresSelect() {
@@ -2622,9 +2635,10 @@
             plot_bgcolor: 'white',
             paper_bgcolor: 'transparent',
             barmode: 'group',
-            margin: { l: 90, r: 80, t: 70, b: 120 },
+            margin: { l: 90, r: 80, t: 70, b: 150 },
             height: 560,
             legend: { orientation: 'h', y: -0.2, x: 0.5, xanchor: 'center', font: { size: fontSize } },
+            annotations: [{ text: 'Fuente: Secretaría de Turismo con datos de DATATUR (Indicadores PED Nuevo León)', xref: 'paper', yref: 'paper', x: 0, y: -0.25, showarrow: false, font: { family: fontFamily, size: 10, color: 'gray' } }],
             autosize: true
         };
         var plotlyConfig = { responsive: true, displayModeBar: true, locale: 'es', toImageButtonOptions: { format: 'png', filename: 'ocupacion_hotelera_' + ciudadNombre, height: 720, width: 1280, scale: 2 } };
@@ -3230,7 +3244,7 @@
                 filename: `PEA_${ciudadNombre}`,
                 height: 720,
                 width: 1280,
-                scale: 1
+                scale: 2
             }
         };
 
@@ -3283,8 +3297,8 @@ function renderDistribucionEdadCiudad(data, ciudadNombre) {
             yaxis: { type: 'category', title: 'Grupos de Edad', categoryarray: gruposEdad, side: 'left' },
             barmode: 'overlay', bargap: 0.1, plot_bgcolor: 'white', paper_bgcolor: 'transparent',
             margin: { l: 120, r: 80, t: 90, b: 120 },
-            legend: { orientation: 'h', y: -0.2, x: 0.5, xanchor: 'center' },
-            annotations: [{ text: 'Fuente: INEGI (Censo de Población y Vivienda 2020)', xref: 'paper', yref: 'paper', x: 0, y: -0.25, showarrow: false, font: { size: 12, color: 'gray' } }],
+            legend: { orientation: 'h', y: -0.2, x: 0.5, xanchor: 'center', font: { size: cfg.fontSize } },
+            annotations: [{ text: 'Fuente: INEGI (Censo de Población y Vivienda 2020)', xref: 'paper', yref: 'paper', x: 0, y: -0.25, showarrow: false, font: { family: cfg.fontFamily, size: 10, color: 'gray' } }],
             autosize: true
         };
         Plotly.newPlot(container, [
@@ -3312,8 +3326,8 @@ function renderDistribucionEdadCiudad(data, ciudadNombre) {
             yaxis: { title: 'Población estimada', tickformat: ',d', gridcolor: 'rgba(0,0,0,0.08)' },
             plot_bgcolor: 'white', paper_bgcolor: 'transparent',
             margin: { l: 80, r: 80, t: 90, b: 120 }, showlegend: true,
-            legend: { orientation: 'h', y: -0.2, x: 0.5, xanchor: 'center' },
-            annotations: [{ text: 'Fuente: CONAPO - Proyecciones de la Población de los Municipios de México', xref: 'paper', yref: 'paper', x: 0, y: -0.25, showarrow: false, font: { size: 12, color: 'gray' } }],
+            legend: { orientation: 'h', y: -0.2, x: 0.5, xanchor: 'center', font: { size: cfg.fontSize } },
+            annotations: [{ text: 'Fuente: CONAPO - Proyecciones de la Población de los Municipios de México', xref: 'paper', yref: 'paper', x: 0, y: -0.25, showarrow: false, font: { family: cfg.fontFamily, size: 10, color: 'gray' } }],
             autosize: true
         };
         Plotly.newPlot(container, [
@@ -3340,7 +3354,9 @@ function renderDistribucionEdadCiudad(data, ciudadNombre) {
             xaxis: { title: 'Trimestre', tickangle: -45, automargin: true },
             yaxis: { title: 'Personas', tickformat: ',.0f' },
             plot_bgcolor: 'white', paper_bgcolor: 'transparent',
-            margin: { l: 80, r: 80, t: 80, b: 200 },
+            margin: { l: 80, r: 80, t: 80, b: 150 },
+            legend: { orientation: 'h', y: -0.2, x: 0.5, xanchor: 'center', font: { size: cfg.fontSize } },
+            annotations: [{ text: 'Fuente: Observatorio Turístico de Yucatán (Webscraping)', xref: 'paper', yref: 'paper', x: 0, y: -0.25, showarrow: false, font: { family: cfg.fontFamily, size: 10, color: 'gray' } }],
             autosize: true
         };
         Plotly.newPlot(container, [
@@ -3351,7 +3367,18 @@ function renderDistribucionEdadCiudad(data, ciudadNombre) {
                 line: { color: palette[0], width: 3 },
                 marker: { size: 8 }
             }
-        ], layout, { responsive: true, displayModeBar: true, locale: 'es' });
+        ], layout, { 
+            responsive: true, 
+            displayModeBar: true, 
+            locale: 'es',
+            toImageButtonOptions: {
+                format: 'png',
+                filename: 'PoblacionOcupadaTurismo_' + ciudadNombre,
+                height: 720,
+                width: 1280,
+                scale: 2
+            }
+        });
     }
 
     function renderTurismoGenericoCiudad(data, ciudadNombre, indKey) {
@@ -3381,7 +3408,9 @@ function renderDistribucionEdadCiudad(data, ciudadNombre) {
             xaxis: { title: 'Periodo', tickangle: -45, automargin: true },
             yaxis: { title: currentLabel.y, tickformat: currentLabel.fmt },
             plot_bgcolor: 'white', paper_bgcolor: 'transparent',
-            margin: { l: 80, r: 80, t: 80, b: 200 },
+            margin: { l: 80, r: 80, t: 80, b: 150 },
+            legend: { orientation: 'h', y: -0.2, x: 0.5, xanchor: 'center', font: { size: cfg.fontSize } },
+            annotations: [{ text: 'Fuente: Observatorio Turístico de Yucatán', xref: 'paper', yref: 'paper', x: 0, y: -0.25, showarrow: false, font: { family: cfg.fontFamily, size: 10, color: 'gray' } }],
             autosize: true
         };
 
@@ -3393,7 +3422,18 @@ function renderDistribucionEdadCiudad(data, ciudadNombre) {
                 line: { color: palette[0], width: 3 },
                 marker: { size: 6 }
             }
-        ], layout, { responsive: true, displayModeBar: true, locale: 'es' });
+        ], layout, { 
+            responsive: true, 
+            displayModeBar: true, 
+            locale: 'es',
+            toImageButtonOptions: {
+                format: 'png',
+                filename: 'Turismo_' + indKey + '_' + ciudadNombre,
+                height: 720,
+                width: 1280,
+                scale: 2
+            }
+        });
     }
 
     function renderVentasInternacionalesCiudad(data, ciudadNombre) {
@@ -3422,14 +3462,27 @@ function renderDistribucionEdadCiudad(data, ciudadNombre) {
             font: { family: cfg.fontFamily, size: cfg.fontSize },
             xaxis: { title: 'Mes', tickangle: -45, automargin: true },
             yaxis: { title: 'Dólares (US$)', tickformat: '$,.0f' },
+            legend: { orientation: 'h', y: -0.2, x: 0.5, xanchor: 'center', font: { size: cfg.fontSize } },
             plot_bgcolor: 'white', paper_bgcolor: 'transparent',
-            margin: { l: 80, r: 80, t: 80, b: 200 },
+            margin: { l: 80, r: 80, t: 80, b: 150 },
+            annotations: [{ text: 'Fuente: Banco de México (Banxico) a través de Data México', xref: 'paper', yref: 'paper', x: 0, y: -0.25, showarrow: false, font: { family: cfg.fontFamily, size: 10, color: 'gray' } }],
             autosize: true
         };
         Plotly.newPlot(container, [
             { type: 'scatter', x: periodos, y: exportaciones, name: 'Exportaciones', mode: 'lines', line: { color: palette[2], width: 3 } },
             { type: 'scatter', x: periodos, y: importaciones, name: 'Importaciones', mode: 'lines', line: { color: palette[0], width: 3 } }
-        ], layout, { responsive: true, displayModeBar: true, locale: 'es' });
+        ], layout, { 
+            responsive: true, 
+            displayModeBar: true, 
+            locale: 'es',
+            toImageButtonOptions: {
+                format: 'png',
+                filename: 'ExportacionesImportaciones_' + ciudadNombre,
+                height: 720,
+                width: 1280,
+                scale: 2
+            }
+        });
 
         var thead = document.getElementById('kpis-table-ciudad-thead');
         var tbody = document.getElementById('kpis-table-ciudad-body');
@@ -3477,11 +3530,23 @@ function renderDistribucionEdadCiudad(data, ciudadNombre) {
             font: { family: cfg.fontFamily, size: cfg.fontSize },
             xaxis: { title: 'Año', dtick: 1 },
             yaxis: { title: 'Total de Operaciones', tickformat: ',.0f' },
-            legend: { orientation: 'h', y: -0.2, x: 0.5, xanchor: 'center' },
+            legend: { orientation: 'h', y: -0.2, x: 0.5, xanchor: 'center', font: { size: cfg.fontSize } },
             plot_bgcolor: 'white', paper_bgcolor: 'transparent',
-            margin: { l: 80, r: 80, t: 80, b: 120 },
+            margin: { l: 80, r: 80, t: 80, b: 150 },
+            annotations: [{ text: 'Fuente: Agencia Federal de Aviación Civil (AFAC)', xref: 'paper', yref: 'paper', x: 0, y: -0.25, showarrow: false, font: { family: cfg.fontFamily, size: 10, color: 'gray' } }]
         };
-        Plotly.newPlot(container, traces, layout, { responsive: true, displayModeBar: true, locale: 'es' });
+        Plotly.newPlot(container, traces, layout, { 
+            responsive: true, 
+            displayModeBar: true, 
+            locale: 'es',
+            toImageButtonOptions: {
+                format: 'png',
+                filename: 'ConectividadAerea_' + ciudadNombre,
+                height: 720,
+                width: 1280,
+                scale: 2
+            }
+        });
         
         var thead = document.getElementById('kpis-table-ciudad-thead');
         var tbody = document.getElementById('kpis-table-ciudad-body');
@@ -3519,11 +3584,23 @@ function renderDistribucionEdadCiudad(data, ciudadNombre) {
             yaxis: { title: 'Miles de Pesos ($)', tickformat: '$,.0f' },
             barmode: 'stack',
             plot_bgcolor: 'white', paper_bgcolor: 'transparent',
-            margin: { l: 80, r: 80, t: 80, b: 120 },
+            margin: { l: 80, r: 80, t: 80, b: 150 },
             autosize: true,
-            legend: { orientation: 'h', y: -0.2, x: 0.5, xanchor: 'center' }
+            legend: { orientation: 'h', y: -0.2, x: 0.5, xanchor: 'center', font: { size: cfg.fontSize } },
+            annotations: [{ text: 'Fuente: Datos Abiertos (Gobierno de México) - TURISSSTE', xref: 'paper', yref: 'paper', x: 0, y: -0.25, showarrow: false, font: { family: cfg.fontFamily, size: 10, color: 'gray' } }]
         };
-        Plotly.newPlot(container, traces, layout, { responsive: true, displayModeBar: true, locale: 'es' });
+        Plotly.newPlot(container, traces, layout, { 
+            responsive: true, 
+            displayModeBar: true, 
+            locale: 'es',
+            toImageButtonOptions: {
+                format: 'png',
+                filename: 'OfertaServiciosTuristicos_' + ciudadNombre,
+                height: 720,
+                width: 1280,
+                scale: 2
+            }
+        });
 
         var thead = document.getElementById('kpis-table-ciudad-thead');
         var tbody = document.getElementById('kpis-table-ciudad-body');
@@ -3562,10 +3639,23 @@ function renderDistribucionEdadCiudad(data, ciudadNombre) {
             xaxis: { title: 'Año', dtick: 1 },
             yaxis: { title: 'Pasajeros', tickformat: ',.0f' },
             plot_bgcolor: 'white', paper_bgcolor: 'transparent',
-            margin: { l: 80, r: 80, t: 80, b: 80 },
+            margin: { l: 80, r: 80, t: 80, b: 150 },
+            legend: { orientation: 'h', y: -0.2, x: 0.5, xanchor: 'center', font: { size: cfg.fontSize } },
+            annotations: [{ text: 'Fuente: Datos Abiertos (Gobierno de México) - AICM', xref: 'paper', yref: 'paper', x: 0, y: -0.25, showarrow: false, font: { family: cfg.fontFamily, size: 10, color: 'gray' } }],
             autosize: true
         };
-        Plotly.newPlot(container, traces, layout, { responsive: true, displayModeBar: true, locale: 'es' });
+        Plotly.newPlot(container, traces, layout, { 
+            responsive: true, 
+            displayModeBar: true, 
+            locale: 'es',
+            toImageButtonOptions: {
+                format: 'png',
+                filename: 'VuelosLlegada_' + terminal + '_' + ciudadNombre,
+                height: 720,
+                width: 1280,
+                scale: 2
+            }
+        });
         
         var thead = document.getElementById('kpis-table-ciudad-thead');
         var tbody = document.getElementById('kpis-table-ciudad-body');
@@ -3600,7 +3690,7 @@ function renderDistribucionEdadCiudad(data, ciudadNombre) {
             plot_bgcolor: 'white', paper_bgcolor: 'transparent',
             margin: { l: 80, r: 80, t: 90, b: 120 }, showlegend: false,
             annotations: [
-                { text: 'Fuente: Censos de Población y Vivienda (2005, 2010, 2020), INEGI.', x: 0, y: -0.22, xref: 'paper', yref: 'paper', showarrow: false, font: { size: 12, color: 'gray' }, xanchor: 'left', yanchor: 'top' }
+                { text: 'Fuente: Censos de Población y Vivienda (2005, 2010, 2020), INEGI.', x: 0, y: -0.22, xref: 'paper', yref: 'paper', showarrow: false, font: { family: cfg.fontFamily, size: 10, color: 'gray' }, xanchor: 'left', yanchor: 'top' }
             ],
             autosize: true
         };
@@ -3615,7 +3705,18 @@ function renderDistribucionEdadCiudad(data, ciudadNombre) {
             hoverinfo: 'x+y',
             hovertemplate: '<b>Año %{x}</b><br>Población: %{y:,.0f}<extra></extra>'
         };
-        Plotly.newPlot(container, [trace], layout, { responsive: true, displayModeBar: true, locale: 'es', toImageButtonOptions: { format: 'png', filename: 'Poblacion_' + ciudadNombre, height: 720, width: 1280, scale: 2 } });
+        Plotly.newPlot(container, [trace], layout, { 
+            responsive: true, 
+            displayModeBar: true, 
+            locale: 'es', 
+            toImageButtonOptions: { 
+                format: 'png', 
+                filename: 'Poblacion_' + ciudadNombre, 
+                height: 720, 
+                width: 1280, 
+                scale: 2 
+            } 
+        });
     }
 
 function renderCrecimientoHistoricoCiudad(data, ciudadNombre) {
@@ -3638,9 +3739,9 @@ function renderCrecimientoHistoricoCiudad(data, ciudadNombre) {
             yaxis: { title: 'Población', tickformat: ',d', gridcolor: 'rgba(0,0,0,0.08)' },
             barmode: 'group', plot_bgcolor: 'white', paper_bgcolor: 'transparent',
             margin: { l: 80, r: 80, t: 90, b: 120 }, height: 460, showlegend: true,
-            legend: { orientation: 'h', y: -0.2, x: 0.5, xanchor: 'center' },
+            legend: { orientation: 'h', y: -0.2, x: 0.5, xanchor: 'center', font: { size: cfg.fontSize } },
             annotations: [
-                { text: 'Fuente: Censos de Población y Vivienda (2005, 2010, 2020), INEGI.', x: 0, y: -0.25, xref: 'paper', yref: 'paper', showarrow: false, font: { size: 12, color: 'gray' }, xanchor: 'left', yanchor: 'top' }
+                { text: 'Fuente: Censos de Población y Vivienda (2005, 2010, 2020), INEGI.', x: 0, y: -0.25, xref: 'paper', yref: 'paper', showarrow: false, font: { family: cfg.fontFamily, size: 10, color: 'gray' }, xanchor: 'left', yanchor: 'top' }
             ],
             autosize: true
         };
@@ -3648,7 +3749,18 @@ function renderCrecimientoHistoricoCiudad(data, ciudadNombre) {
             { type: 'bar', x: anos, y: total, name: 'Total', marker: { color: palette[0] }, text: total.map(function (v) { return v.toLocaleString('es-MX'); }), textposition: 'auto' },
             { type: 'bar', x: anos, y: hombres, name: 'Hombres', marker: { color: palette[1] }, text: hombres.map(function (v) { return v.toLocaleString('es-MX'); }), textposition: 'auto' },
             { type: 'bar', x: anos, y: mujeres, name: 'Mujeres', marker: { color: palette[2] }, text: mujeres.map(function (v) { return v.toLocaleString('es-MX'); }), textposition: 'auto' }
-        ], layout, { responsive: true, displayModeBar: true, locale: 'es' });
+        ], layout, { 
+            responsive: true, 
+            displayModeBar: true, 
+            locale: 'es',
+            toImageButtonOptions: {
+                format: 'png',
+                filename: 'CrecimientoPoblacional_' + ciudadNombre,
+                height: 720,
+                width: 1280,
+                scale: 2
+            }
+        });
     }
 
     function fillCiudadTableEdad(data) {
@@ -3736,11 +3848,23 @@ function renderCrecimientoHistoricoCiudad(data, ciudadNombre) {
             yaxis: { title: 'N\u00famero de Visitantes', tickformat: ',.0f', gridcolor: 'rgba(0,0,0,0.08)' },
             barmode: 'group', plot_bgcolor: 'white', paper_bgcolor: 'transparent',
             margin: { l: 80, r: 40, t: 90, b: 120 }, showlegend: true,
-            legend: { orientation: 'h', y: -0.25, x: 0.5, xanchor: 'center' },
+            legend: { orientation: 'h', y: -0.2, x: 0.5, xanchor: 'center', font: { size: cfg.fontSize } },
+            annotations: [{ text: 'Fuente: SECTUR - Información Turística por Entidad Federativa', xref: 'paper', yref: 'paper', x: 0, y: -0.25, showarrow: false, font: { family: cfg.fontFamily, size: 10, color: 'gray' } }],
             autosize: true
         };
 
-        Plotly.newPlot(container, traces, layout, { responsive: true, displayModeBar: true, locale: 'es' });
+        Plotly.newPlot(container, traces, layout, { 
+            responsive: true, 
+            displayModeBar: true, 
+            locale: 'es',
+            toImageButtonOptions: {
+                format: 'png',
+                filename: 'VisitantesNacExt_' + ciudadNombre,
+                height: 720,
+                width: 1280,
+                scale: 2
+            }
+        });
     }
 
     function fillCiudadTableVisitantesNacExt(data) {
@@ -3803,11 +3927,23 @@ function renderCrecimientoHistoricoCiudad(data, ciudadNombre) {
             yaxis: { title: 'N\u00famero de Pasajeros', tickformat: ',.0f', gridcolor: 'rgba(0,0,0,0.08)' },
             barmode: 'group', plot_bgcolor: 'white', paper_bgcolor: 'transparent',
             margin: { l: 80, r: 40, t: 90, b: 120 }, showlegend: true,
-            legend: { orientation: 'h', y: -0.25, x: 0.5, xanchor: 'center' },
+            legend: { orientation: 'h', y: -0.2, x: 0.5, xanchor: 'center', font: { size: cfg.fontSize } },
+            annotations: [{ text: 'Fuente: Grupo Aeropuertario Centro-Norte OMA', xref: 'paper', yref: 'paper', x: 0, y: -0.25, showarrow: false, font: { family: cfg.fontFamily, size: 10, color: 'gray' } }],
             autosize: true
         };
 
-        Plotly.newPlot(container, traces, layout, { responsive: true, displayModeBar: true, locale: 'es' });
+        Plotly.newPlot(container, traces, layout, { 
+            responsive: true, 
+            displayModeBar: true, 
+            locale: 'es',
+            toImageButtonOptions: {
+                format: 'png',
+                filename: 'LlegadaPasajeros_' + ciudadNombre,
+                height: 720,
+                width: 1280,
+                scale: 2
+            }
+        });
     }
 
     function fillCiudadTableLlegadaPasajeros(data) {
@@ -3890,11 +4026,23 @@ function renderCrecimientoHistoricoCiudad(data, ciudadNombre) {
             yaxis: { title: 'Inversión (Millones de USD)', tickformat: ',.1f', gridcolor: 'rgba(0,0,0,0.08)' },
             barmode: 'stack', plot_bgcolor: 'white', paper_bgcolor: 'transparent',
             margin: { l: 80, r: 80, t: 90, b: 150 }, showlegend: true,
-            legend: { orientation: 'h', y: -0.25, x: 0.5, xanchor: 'center' },
+            legend: { orientation: 'h', y: -0.2, x: 0.5, xanchor: 'center', font: { size: cfg.fontSize } },
+            annotations: [{ text: 'Fuente: Datos Abiertos (Secretaría de Economía) - IED', xref: 'paper', yref: 'paper', x: 0, y: -0.25, showarrow: false, font: { family: cfg.fontFamily, size: 10, color: 'gray' } }],
             autosize: true
         };
 
-        Plotly.newPlot(container, traces, layout, { responsive: true, displayModeBar: true, locale: 'es' });
+        Plotly.newPlot(container, traces, layout, { 
+            responsive: true, 
+            displayModeBar: true, 
+            locale: 'es',
+            toImageButtonOptions: {
+                format: 'png',
+                filename: 'ComercioInternacional_' + ciudadNombre,
+                height: 720,
+                width: 1280,
+                scale: 2
+            }
+        });
     }
 
     function fillCiudadTableComercioInternacional(data) {
@@ -10193,8 +10341,10 @@ function renderCrecimientoHistoricoCiudad(data, ciudadNombre) {
 
         var layout = {
             title: {
-                text: 'PIB Estatal Per Cápita (Precios 2018): ' + ciudadNombre,
-                font: { family: 'Aptos Light', size: 18 }
+                text: '<b>PIB Estatal Per Cápita (Precios 2018): ' + ciudadNombre + '</b>',
+                font: { family: 'Aptos Light', size: 18 },
+                x: 0.5,
+                xanchor: 'center'
             },
             font: { family: 'Aptos Light' },
             xaxis: { title: 'Año', titlefont: {family: 'Aptos Light'} },
@@ -10203,8 +10353,15 @@ function renderCrecimientoHistoricoCiudad(data, ciudadNombre) {
                 tickformat: '$,.0f',
                 titlefont: {family: 'Aptos Light'}
             },
-            margin: { t: 50, b: 50, l: 60, r: 20 },
+            margin: { t: 80, b: 120, l: 80, r: 40 },
             showlegend: false,
+            annotations: [{ 
+                text: 'Fuente: INEGI - Sistema de Cuentas Nacionales de México', 
+                xref: 'paper', yref: 'paper', 
+                x: 0, y: -0.25, 
+                showarrow: false, 
+                font: { family: 'Aptos Light', size: 10, color: 'gray' } 
+            }],
             autosize: true
         };
 
@@ -10216,7 +10373,7 @@ function renderCrecimientoHistoricoCiudad(data, ciudadNombre) {
                 filename: `PIB_Per_Capita_${ciudadNombre}`,
                 height: 720,
                 width: 1280,
-                scale: 1
+                scale: 2
             }
         };
 
