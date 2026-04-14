@@ -1,3 +1,8 @@
+# Variables de entorno
+.env
+.env.prod
+.env.local
+
 # Python
 __pycache__/
 *.py[cod]
@@ -6,13 +11,29 @@ __pycache__/
 .Python
 .venv/
 venv/
-env/
-.env
-.env.local
+*.egg-info/
+dist/
+build/
+.hypothesis/
+.pytest_cache/
+.ruff_cache/
+*.pyc
 
-# IDE
-.idea/
+# Node.js
+node_modules/
+.next/
+out/
+*.tsbuildinfo
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Docker volumes
+pgdata/
+
+# IDEs
 .vscode/
+.idea/
 *.swp
 *.swo
 
@@ -20,29 +41,13 @@ env/
 .DS_Store
 Thumbs.db
 
-# Build / cache
-*.sqlite
-.ruff_cache/
+# UV
+.uv/
+uv.lock
 
-# Credenciales y configuración sensible
-VPS_DEPLOYMENT_INFO.md
-.env
-.env.local
-.env.production
-.env.*.local
+# Archivos de respaldo/artefactos locales
+*.tar.gz
+*.dump
 
-# IDE Kiro
+# Metadatos locales de herramientas
 .kiro/
-
-# Datos crudos (no son código fuente)
-data/raw/*.json
-data/raw/*.xlsx
-data/raw/*.zip
-
-# Seeds y scripts SQL locales
-seed_crecimiento_ciudades.sql
-mock_*.sql
-
-# Archivos temporales y de diagnóstico
-*.zip
-inegi_test.zip

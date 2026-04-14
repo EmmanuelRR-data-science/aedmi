@@ -1,0 +1,32 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+  font-family: 'ballingermono-light';
+  src: url('/fonts/ballingermono-light.ttf') format('truetype');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  --font-ballinger: 'ballingermono-light', monospace;
+  --color-blue: #0576F3;
+  --color-green: #36F48C;
+  --color-orange: #F47806;
+  --color-yellow: #F3F40B;
+  --color-pink: #F479F4;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-ballinger);
+  background-color: #0f1117;
+  color: #e2e8f0;
+  margin: 0;
+  padding: 0;
+}
