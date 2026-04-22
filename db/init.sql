@@ -8,6 +8,7 @@ CREATE SCHEMA IF NOT EXISTS anual;
 CREATE SCHEMA IF NOT EXISTS mensual;
 CREATE SCHEMA IF NOT EXISTS diario;
 CREATE SCHEMA IF NOT EXISTS quinquenal;
+CREATE SCHEMA IF NOT EXISTS geoespacial;
 
 -- ============================================================
 -- Schema PUBLIC — Metadatos y catálogos
@@ -85,6 +86,26 @@ CREATE INDEX IF NOT EXISTS idx_indicadores_fuente ON public.indicadores(fuente_i
 CREATE INDEX IF NOT EXISTS idx_analisis_indicador ON public.analisis(indicador_id);
 CREATE INDEX IF NOT EXISTS idx_etl_logs_fuente ON public.etl_logs(fuente_id);
 CREATE INDEX IF NOT EXISTS idx_etl_logs_inicio ON public.etl_logs(inicio DESC);
+
+-- Cache geoespacial para capas dinámicas del módulo mapa
+CREATE TABLE IF NOT EXISTS geoespacial.mapa_capas_features (
+    id BIGSERIAL PRIMARY KEY,
+    scope_key TEXT NOT NULL,
+    capa_id TEXT NOT NULL,
+    cve_ent TEXT,
+    cve_mun TEXT,
+    feature_id TEXT NOT NULL,
+    geometry_type TEXT NOT NULL,
+    coordinates JSONB NOT NULL,
+    properties JSONB NOT NULL DEFAULT '{}'::jsonb,
+    source_type TEXT NOT NULL,
+    source_name TEXT NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_mapa_capas_features_scope
+    ON geoespacial.mapa_capas_features (scope_key, capa_id);
+CREATE INDEX IF NOT EXISTS idx_mapa_capas_features_geo
+    ON geoespacial.mapa_capas_features (cve_ent, cve_mun, capa_id);
 
 -- ============================================================
 -- Schema ANUAL — Indicadores de actualización anual

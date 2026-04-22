@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react'
 
 import {
+  type MapaCapaDatos,
   useMapaAgeb,
   useMapaAlcance,
   useMapaAnalisisIA,
@@ -13,6 +14,7 @@ import {
   useMapaSugerencias,
   useMapaTopPoi,
 } from '@/hooks/useMapa'
+import { apiFetch } from '@/lib/api'
 
 const RADIOS = [1000, 3000, 5000, 10000]
 const TOP_POI_LIMITS = [10, 20, 30]
@@ -216,6 +218,306 @@ function getMapViewport(lat: number, lng: number, radioMetros: number): {
   return { url, left, right, top, bottom }
 }
 
+function slugifyLabel(value: string): string {
+  const normalized = value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+  return normalized || 'ciudad'
+}
+
+function escapeForInlineScript(value: string): string {
+  return value.replace(/<\//g, '<\\/')
+}
+
+function buildMapDownloadHtml(args: {
+  ciudad: string
+  lat: number
+  lng: number
+  radio_m: number
+  capas: Array<{ id: string; nombre: string }>
+  capasDatos: MapaCapaDatos[]
+  generatedAtISO: string
+}): string {
+  const capasConColor = args.capas.map((capa) => ({
+    id: capa.id,
+    nombre: capa.nombre,
+    color: MAP_LAYER_COLORS[capa.id] ?? '#94a3b8',
+  }))
+
+  const payload = {
+    meta: {
+      ciudad: args.ciudad,
+      lat: args.lat,
+      lng: args.lng,
+      radio_m: args.radio_m,
+      generated_at: args.generatedAtISO,
+    },
+    capas: capasConColor,
+    capasDatos: args.capasDatos,
+  }
+
+  const payloadJson = escapeForInlineScript(JSON.stringify(payload))
+  const generatedLabel = new Date(args.generatedAtISO).toLocaleString('es-MX')
+
+  return `<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Mapa exportado · ${args.ciudad}</title>
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin=""
+    />
+    <style>
+      body {
+        margin: 0;
+        font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+        background: #0f172a;
+        color: #e2e8f0;
+      }
+      .layout {
+        display: grid;
+        grid-template-rows: auto 1fr;
+        min-height: 100vh;
+      }
+      .header {
+        border-bottom: 1px solid #334155;
+        padding: 12px 16px;
+        background: #111827;
+      }
+      .title {
+        margin: 0;
+        font-size: 18px;
+      }
+      .meta {
+        margin-top: 4px;
+        font-size: 12px;
+        color: #94a3b8;
+      }
+      #map {
+        width: 100%;
+        height: calc(100vh - 92px);
+      }
+      .leaflet-control-layers {
+        max-width: 320px;
+      }
+      .leaflet-control-layers-overlays label {
+        font-size: 12px;
+      }
+      .feature-card {
+        position: fixed;
+        right: 16px;
+        bottom: 16px;
+        width: min(360px, calc(100vw - 32px));
+        max-height: 45vh;
+        overflow: auto;
+        border: 1px solid #334155;
+        border-radius: 10px;
+        background: rgba(15, 23, 42, 0.95);
+        color: #e2e8f0;
+        box-shadow: 0 8px 24px rgba(2, 6, 23, 0.45);
+        backdrop-filter: blur(4px);
+        z-index: 1000;
+      }
+      .feature-card.is-hidden {
+        display: none;
+      }
+      .feature-card__body {
+        padding: 10px 12px;
+      }
+      .feature-card__title {
+        font-size: 13px;
+        font-weight: 600;
+        margin: 0;
+      }
+      .feature-card__subtitle {
+        margin: 4px 0 0;
+        font-size: 11px;
+        color: #94a3b8;
+      }
+      .feature-card__meta {
+        margin-top: 8px;
+        display: grid;
+        gap: 4px;
+        font-size: 12px;
+      }
+      .feature-card__empty {
+        color: #94a3b8;
+        font-size: 12px;
+      }
+      .feature-card__close {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        border: 1px solid #334155;
+        background: #1e293b;
+        color: #e2e8f0;
+        border-radius: 6px;
+        padding: 3px 7px;
+        cursor: pointer;
+        font-size: 11px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="layout">
+      <header class="header">
+        <h1 class="title">Mapa exportado · ${args.ciudad}</h1>
+        <div class="meta">
+          Coordenadas: ${args.lat.toFixed(6)}, ${args.lng.toFixed(6)} · Radio: ${args.radio_m.toLocaleString('es-MX')} m · Generado: ${generatedLabel}
+        </div>
+      </header>
+      <main id="map"></main>
+    </div>
+    <aside id="feature-card" class="feature-card is-hidden">
+      <button id="feature-card-close" class="feature-card__close" type="button">Cerrar</button>
+      <div class="feature-card__body">
+        <h2 id="feature-card-title" class="feature-card__title">Elemento seleccionado</h2>
+        <p id="feature-card-subtitle" class="feature-card__subtitle"></p>
+        <div id="feature-card-meta" class="feature-card__meta"></div>
+      </div>
+    </aside>
+
+    <script
+      src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+      crossorigin=""
+    ></script>
+    <script>
+      const payload = ${payloadJson}
+      const map = L.map('map', { preferCanvas: true }).setView([payload.meta.lat, payload.meta.lng], 13)
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      }).addTo(map)
+      const featureCard = document.getElementById('feature-card')
+      const featureCardTitle = document.getElementById('feature-card-title')
+      const featureCardSubtitle = document.getElementById('feature-card-subtitle')
+      const featureCardMeta = document.getElementById('feature-card-meta')
+      const featureCardClose = document.getElementById('feature-card-close')
+
+      const showFeatureCard = (name, layerName, properties) => {
+        if (!featureCard || !featureCardTitle || !featureCardSubtitle || !featureCardMeta) return
+        featureCard.classList.remove('is-hidden')
+        featureCardTitle.textContent = name || 'Elemento seleccionado'
+        featureCardSubtitle.textContent = layerName ? 'Capa: ' + layerName : ''
+        const safeEntries = Object.entries(properties || {})
+          .filter(([key, value]) => !String(key).startsWith('__') && value !== null && value !== '')
+          .slice(0, 12)
+        if (!safeEntries.length) {
+          featureCardMeta.innerHTML = '<div class="feature-card__empty">Sin atributos disponibles.</div>'
+          return
+        }
+        featureCardMeta.innerHTML = safeEntries
+          .map(([key, value]) => '<div><strong>' + key + ':</strong> ' + String(value) + '</div>')
+          .join('')
+      }
+
+      if (featureCardClose && featureCard) {
+        featureCardClose.addEventListener('click', () => {
+          featureCard.classList.add('is-hidden')
+        })
+      }
+
+      const overlayMaps = {}
+      const bounds = L.latLngBounds([])
+      const colorById = Object.fromEntries(payload.capas.map((capa) => [capa.id, capa.color]))
+      const nombreById = Object.fromEntries(payload.capas.map((capa) => [capa.id, capa.nombre]))
+
+      const styleByLayer = (layerId) => {
+        const color = colorById[layerId] || '#94a3b8'
+        return { color, weight: 2, fillColor: color, fillOpacity: 0.18, opacity: 0.9 }
+      }
+
+      payload.capas.forEach((capa) => {
+        const grupo = L.layerGroup().addTo(map)
+        overlayMaps[capa.nombre] = grupo
+      })
+
+      payload.capasDatos.forEach((capaData) => {
+        const nombre = nombreById[capaData.capa_id] || capaData.nombre || capaData.capa_id
+        const grupo = overlayMaps[nombre] || L.layerGroup().addTo(map)
+        overlayMaps[nombre] = grupo
+        const featureCollection = {
+          type: 'FeatureCollection',
+          features: (capaData.features || []).map((feature) => ({
+            type: 'Feature',
+            id: feature.id,
+            geometry: {
+              type: feature.geometry_type,
+              coordinates: feature.coordinates,
+            },
+            properties: {
+              ...(feature.properties || {}),
+              __layer_name: nombre,
+              __layer_id: capaData.capa_id,
+              __geometry_type: feature.geometry_type,
+            },
+          })),
+        }
+
+        const geo = L.geoJSON(featureCollection, {
+          style: () => styleByLayer(capaData.capa_id),
+          pointToLayer: (feature, latlng) =>
+            L.circleMarker(latlng, {
+              radius: 5,
+              ...styleByLayer(capaData.capa_id),
+              fillOpacity: 0.85,
+            }),
+          onEachFeature: (feature, layer) => {
+            const props = feature.properties || {}
+            const title = props.name || props.nombre || nombre
+            const info = Object.entries(props)
+              .filter(([key, value]) => !String(key).startsWith('__') && value !== null && value !== '')
+              .slice(0, 8)
+              .map(([key, value]) => '<div><strong>' + key + ':</strong> ' + String(value) + '</div>')
+              .join('')
+            layer.bindPopup('<div><strong>' + title + '</strong><div style="margin-top:6px">' + info + '</div></div>')
+            layer.on('click', () => {
+              const geometry = String(props.__geometry_type || '')
+              if (
+                geometry === 'Point' ||
+                geometry === 'Polygon' ||
+                geometry === 'MultiPolygon'
+              ) {
+                showFeatureCard(String(title), String(nombre), props)
+              }
+            })
+          },
+        }).addTo(grupo)
+
+        try {
+          const geoBounds = geo.getBounds()
+          if (geoBounds.isValid()) bounds.extend(geoBounds)
+        } catch {
+          // noop
+        }
+      })
+
+      L.circle([payload.meta.lat, payload.meta.lng], {
+        radius: payload.meta.radio_m,
+        color: '#ffffff',
+        weight: 1,
+        fillOpacity: 0.05,
+      }).addTo(map)
+
+      L.marker([payload.meta.lat, payload.meta.lng]).addTo(map).bindPopup('Ubicación consultada')
+      L.control.layers({}, overlayMaps, { collapsed: false }).addTo(map)
+
+      if (bounds.isValid()) {
+        map.fitBounds(bounds.pad(0.1))
+      }
+    </script>
+  </body>
+</html>`
+}
+
 export default function MapaInteractivoPanel() {
   const [search, setSearch] = useState('')
   const [selectedLat, setSelectedLat] = useState(20.5888)
@@ -239,6 +541,8 @@ export default function MapaInteractivoPanel() {
     fuente?: string
     propiedades?: Record<string, string | number | boolean | null>
   } | null>(null)
+  const [isDownloadingMapHtml, setIsDownloadingMapHtml] = useState(false)
+  const [downloadMapError, setDownloadMapError] = useState<string | null>(null)
 
   // Persistir filtros en sesión del navegador para mantener contexto al navegar.
   useEffect(() => {
@@ -403,8 +707,8 @@ export default function MapaInteractivoPanel() {
     const lngSpan = Math.max(mapViewport.right - mapViewport.left, 1e-8)
     const latSpan = Math.max(mapViewport.top - mapViewport.bottom, 1e-8)
     const project = (lat: number, lng: number) => ({
-      x: clamp(((lng - mapViewport.left) / lngSpan) * 100, 0, 100),
-      y: clamp(((mapViewport.top - lat) / latSpan) * 100, 0, 100),
+      x: ((lng - mapViewport.left) / lngSpan) * 100,
+      y: ((mapViewport.top - lat) / latSpan) * 100,
     })
     const mkPath = (coords: number[][]) =>
       coords
@@ -431,6 +735,8 @@ export default function MapaInteractivoPanel() {
         if (feature.geometry_type === 'Point') {
           const [lng, lat] = feature.coordinates as [number, number]
           const p = project(lat, lng)
+          const isVisiblePoint = p.x >= 0 && p.x <= 100 && p.y >= 0 && p.y <= 100
+          if (!isVisiblePoint) return
           points.push({
             key: `${capa.capa_id}-${feature.id}`,
             x: p.x,
@@ -525,6 +831,48 @@ export default function MapaInteractivoPanel() {
     setPueblosRadioKm(300)
   }
 
+  const descargarMapaHtml = async () => {
+    if (!hasLocation || capasDisponibles.length === 0 || isDownloadingMapHtml) return
+    setIsDownloadingMapHtml(true)
+    setDownloadMapError(null)
+    try {
+      const capasIds = capasDisponibles.map((capa) => capa.id)
+      const params = new URLSearchParams({
+        lat: String(selectedLat),
+        lng: String(selectedLng),
+        radio_m: String(radio),
+        capas: capasIds.join(','),
+      })
+      if (selectedCveEnt) params.set('cve_ent', selectedCveEnt)
+      if (selectedCveMun) params.set('cve_mun', selectedCveMun)
+
+      const capasDatos = await apiFetch<MapaCapaDatos[]>(`/mapa/capas/datos?${params.toString()}`)
+      const generatedAtISO = new Date().toISOString()
+      const html = buildMapDownloadHtml({
+        ciudad: selectedEntidad,
+        lat: selectedLat,
+        lng: selectedLng,
+        radio_m: radio,
+        capas: capasDisponibles.map((capa) => ({ id: capa.id, nombre: capa.nombre })),
+        capasDatos,
+        generatedAtISO,
+      })
+      const blob = new Blob([html], { type: 'text/html;charset=utf-8' })
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = `mapa-${slugifyLabel(selectedEntidad)}-${generatedAtISO.slice(0, 10)}.html`
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+      URL.revokeObjectURL(url)
+    } catch {
+      setDownloadMapError('No se pudo generar la descarga del mapa en este momento.')
+    } finally {
+      setIsDownloadingMapHtml(false)
+    }
+  }
+
   const generarInformeIA = async () => {
     const capasActivasData = (capasDatosQuery.data ?? []).filter((capa) =>
       capasActivas.includes(capa.capa_id)
@@ -590,14 +938,34 @@ export default function MapaInteractivoPanel() {
       }}
     >
       <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h2 style={{ margin: 0, color: '#e2e8f0', fontSize: 18, fontWeight: 500 }}>
-          Sección Mapa Interactivo
-        </h2>
-        <span style={{ fontSize: 12, color: '#94a3b8' }}>
-          Estado: {query.data?.degradacion.activa ? 'Fallback activo' : 'Tiempo real'} ·{' '}
-          {getModoLabel(sourceMode)}
-        </span>
+        <h2 style={{ margin: 0, color: '#e2e8f0', fontSize: 18, fontWeight: 500 }}>Sección Mapa Interactivo</h2>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+          <span style={{ fontSize: 12, color: '#94a3b8' }}>
+            Estado: {query.data?.degradacion.activa ? 'Fallback activo' : 'Tiempo real'} ·{' '}
+            {getModoLabel(sourceMode)}
+          </span>
+          <button
+            onClick={descargarMapaHtml}
+            disabled={!hasLocation || capasDisponibles.length === 0 || isDownloadingMapHtml}
+            style={{
+              background:
+                !hasLocation || capasDisponibles.length === 0 || isDownloadingMapHtml ? '#202635' : '#0b5cc4',
+              color: '#e2e8f0',
+              border: '1px solid #2d3148',
+              borderRadius: 6,
+              padding: '8px 10px',
+              fontSize: 12,
+              cursor:
+                !hasLocation || capasDisponibles.length === 0 || isDownloadingMapHtml
+                  ? 'not-allowed'
+                  : 'pointer',
+            }}
+          >
+            {isDownloadingMapHtml ? 'Generando HTML...' : 'Descargar mapa HTML'}
+          </button>
+        </div>
       </header>
+      {downloadMapError && <div style={{ color: '#fca5a5', fontSize: 12 }}>{downloadMapError}</div>}
 
       <div
         style={{
@@ -958,6 +1326,17 @@ export default function MapaInteractivoPanel() {
         <div style={{ color: '#94a3b8', fontSize: 12, marginBottom: 8 }}>
           Estado de capas de datos
         </div>
+        {capasDatosQuery.isLoading && (
+          <div style={{ color: '#94a3b8', fontSize: 11, marginBottom: 8 }}>
+            Consultando capas activas...
+          </div>
+        )}
+        {capasDatosQuery.isError && (
+          <div style={{ color: '#fca5a5', fontSize: 11, marginBottom: 8 }}>
+            No fue posible cargar una o más capas en este momento.{' '}
+            {capasDatosQuery.error instanceof Error ? capasDatosQuery.error.message : 'Intenta de nuevo.'}
+          </div>
+        )}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 8 }}>
           {capasDisponibles.map((capa) => {
             const isOn = capasActivas.includes(capa.id)
