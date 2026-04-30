@@ -45,6 +45,9 @@ services:
     environment:
       POSTGRES_HOST: db
       POSTGRES_PORT: "5432"
+      # Tras `docker compose down -v` o BD nueva: cargar indicadores (~varios minutos). Desactivar con "0" si no quieres tráfico al arranque.
+      ETL_RUN_ON_START: "1"
+      ETL_BOOTSTRAP_DELAY_SEC: "30"
     depends_on:
       db:
         condition: service_healthy
@@ -68,6 +71,8 @@ services:
       - api
     volumes:
       - ./frontend:/app
+      # Conserva node_modules en volumen: si añades dependencias en package.json, ejecuta
+      # `docker compose exec frontend npm install` o borra el volumen y vuelve a levantar.
       - /app/node_modules
       - /app/.next
     restart: unless-stopped

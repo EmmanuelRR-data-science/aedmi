@@ -26,6 +26,19 @@ class Settings(BaseSettings):
     # CORS (lista separada por comas)
     cors_origins: str = "http://localhost:3000"
 
+    # Módulo mapa (tolerancia, caché y resiliencia; sobreescribir por .env)
+    mapa_provider_timeout_ms: int = 4000
+    mapa_max_retries: int = 2
+    mapa_circuit_breaker_failures: int = 5
+    mapa_cooldown_seconds: int = 120
+    mapa_fallback_max_age_seconds: int = 86400
+    mapa_query_cache_ttl_seconds: int = 300
+
+    # Gamma (exportación de presentación vía API pública; opcional)
+    gamma_api_key: str = ""
+    gamma_id: str = ""  # legado; ya no se usa (solo theme_id + generación desde texto)
+    theme_id: str = ""
+
     class Config:
         env_file = ".env"
         case_sensitive = False

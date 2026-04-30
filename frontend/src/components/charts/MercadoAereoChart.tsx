@@ -8,7 +8,12 @@ import { useStyleConfig, getColorForIndex } from '@/hooks/useStyleConfig'
 import { useIndicadores, useIndicadorDatos } from '@/hooks/useIndicador'
 import AnalisisIA from '@/components/ai/AnalisisIA'
 import AnalisisRevisado from '@/components/ai/AnalisisRevisado'
+import ChartExportToolbar from '@/components/presentation/ChartExportToolbar'
+import { mapDatosForGammaExport } from '@/lib/datosSerieGamma'
 import type { DatoIndicador } from '@/types'
+
+const LEYENDA_FUENTE_PRESENTACION =
+  'Fuente: AFAC / Datatur — Estadísticas de aviación civil (2025)'
 
 function downloadChartAsPng(containerRef: RefObject<HTMLDivElement>, filename: string) {
   const svg = containerRef.current?.querySelector('svg')
@@ -35,7 +40,7 @@ function downloadChartAsPng(containerRef: RefObject<HTMLDivElement>, filename: s
 type Tab = 'nacional' | 'internacional'
 
 export default function MercadoAereoChart() {
-  const { palette, fontFamily, titleSize, xAxisSize } = useStyleConfig()
+  const { palette, fontFamily, xAxisSize } = useStyleConfig()
   const chartRef = useRef<HTMLDivElement>(null)
   const [tab, setTab] = useState<Tab>('nacional')
 
@@ -79,26 +84,28 @@ export default function MercadoAereoChart() {
     ? 'Participación de Mercado Aéreo — Nacional (por Aerolínea)'
     : 'Participación de Mercado Aéreo — Internacional (por Región)'
   const filename = tab === 'nacional' ? 'mercado-aereo-nacional' : 'mercado-aereo-internacional'
+  const datosSerieVista =
+    tab === 'nacional'
+      ? datos.filter((d) => d.entidad_clave?.startsWith('aero:'))
+      : datos.filter((d) => d.entidad_clave?.startsWith('pais:'))
 
   return (
     <div style={{ background: '#1a1d27', border: '1px solid #2d3148', borderRadius: '10px',
       padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
 
-      {/* Título + botón descarga */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
-        <p style={{ fontSize: `${titleSize}px`, fontFamily, color: '#e2e8f0', margin: 0, fontWeight: 700, textAlign: 'center' }}>
-          {chartTitle}
-        </p>
-        <button onClick={() => downloadChartAsPng(chartRef, filename)}
-          title="Descargar gráfica en alta resolución"
-          style={{ position: 'absolute', right: 0, background: 'transparent', border: '1px solid #2d3148',
-            borderRadius: '4px', color: '#64748b', fontSize: '11px', fontFamily, padding: '4px 10px',
-            cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
-          onMouseEnter={(e) => { e.currentTarget.style.borderColor = '#0576F3'; e.currentTarget.style.color = '#0576F3' }}
-          onMouseLeave={(e) => { e.currentTarget.style.borderColor = '#2d3148'; e.currentTarget.style.color = '#64748b' }}>
-          ↓ PNG
-        </button>
-      </div>
+      <ChartExportToolbar
+        chartRef={chartRef}
+        title={chartTitle}
+        indicadorId={indicador?.id ?? null}
+        nivelGeografico="nacional"
+        entidadClave={null}
+        titulo={chartTitle}
+        subtitulo="AFAC / Datatur — participación de mercado"
+        datosSerie={mapDatosForGammaExport(datosSerieVista)}
+        leyendaFuente={LEYENDA_FUENTE_PRESENTACION}
+        excelChartKind="pie"
+        onDownloadPng={() => downloadChartAsPng(chartRef, filename)}
+      />
 
       {/* Tabs Nacional / Internacional */}
       <div style={{ display: 'flex', gap: '6px', justifyContent: 'center' }}>
@@ -138,7 +145,7 @@ export default function MercadoAereoChart() {
       </div>
 
       <p style={{ fontSize: '11px', color: '#4a5568', fontFamily, margin: '-8px 0 0 0', textAlign: 'left' }}>
-        Fuente: AFAC / Datatur — Estadísticas de aviación civil (2025)
+        {LEYENDA_FUENTE_PRESENTACION}
       </p>
 
       {/* Tabla */}

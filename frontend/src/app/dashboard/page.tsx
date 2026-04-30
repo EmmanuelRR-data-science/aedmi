@@ -8,6 +8,7 @@ import TopBar from '@/components/layout/TopBar'
 import TabNav from '@/components/layout/TabNav'
 import StylePanel from '@/components/style-panel/StylePanel'
 import AccordionSection from '@/components/layout/AccordionSection'
+import { PresentationQueueProvider } from '@/context/PresentationQueueContext'
 import { TabGeografico } from '@/types'
 
 const KpiCards = dynamic(() => import('@/components/charts/KpiCards'), { ssr: false })
@@ -50,6 +51,10 @@ const BalanzaVisitantesChart = dynamic(() => import('@/components/charts/Balanza
 const ActividadHoteleraChart = dynamic(() => import('@/components/charts/ActividadHoteleraChart'), { ssr: false })
 const MercadoAereoChart = dynamic(() => import('@/components/charts/MercadoAereoChart'), { ssr: false })
 const OperacionesAeroportuariasChart = dynamic(() => import('@/components/charts/OperacionesAeroportuariasChart'), { ssr: false })
+const PresentationQueueBar = dynamic(
+  () => import('@/components/presentation/PresentationQueueBar'),
+  { ssr: false }
+)
 
 export default function DashboardPage() {
   const router = useRouter()
@@ -67,6 +72,7 @@ export default function DashboardPage() {
   if (!mounted) return null
 
   return (
+    <PresentationQueueProvider>
     <div
       style={{
         minHeight: '100vh',
@@ -197,6 +203,9 @@ export default function DashboardPage() {
           </div>
         )}
       </main>
+
+      <PresentationQueueBar />
     </div>
+    </PresentationQueueProvider>
   )
 }

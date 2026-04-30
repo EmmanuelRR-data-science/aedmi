@@ -1375,3 +1375,119 @@ SELECT
     'line'
 FROM public.fuentes_datos WHERE modulo_etl = 'sources.afac.historico_toneladas_transportadas_aiq_queretaro'
 ON CONFLICT (clave) DO NOTHING;
+
+-- ============================================================
+-- Módulo Mapa: fuente catálogo pueblos mágicos (ETL dinámico por id)
+-- ============================================================
+INSERT INTO public.fuentes_datos (nombre, url_referencia, periodicidad, modulo_etl, estado, activo)
+SELECT
+    'SECTUR — Pueblos Mágicos (catálogo mapa)',
+    'https://www.gob.mx/sectur',
+    'anual',
+    'sources.sectur.pueblos_magicos_catalogo',
+    'etl_listo',
+    TRUE
+WHERE NOT EXISTS (
+    SELECT 1 FROM public.fuentes_datos
+    WHERE modulo_etl = 'sources.sectur.pueblos_magicos_catalogo'
+);
+
+-- ============================================================
+-- Schema geoespacial: tablas base (ETL e informes; geometría en JSON por compat.)
+-- ============================================================
+CREATE TABLE IF NOT EXISTS geoespacial.puntos_interes (
+    id BIGSERIAL PRIMARY KEY,
+    fuente_id INTEGER REFERENCES public.fuentes_datos(id),
+    categoria TEXT NOT NULL,
+    payload JSONB NOT NULL DEFAULT '{}'::jsonb,
+    cve_ent TEXT,
+    cve_mun TEXT,
+    lat DOUBLE PRECISION,
+    lng DOUBLE PRECISION,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_poi_geo_ent ON geoespacial.puntos_interes (cve_ent, cve_mun);
+
+CREATE TABLE IF NOT EXISTS geoespacial.generadores_demanda (
+    id BIGSERIAL PRIMARY KEY,
+    fuente_id INTEGER REFERENCES public.fuentes_datos(id),
+    payload JSONB NOT NULL DEFAULT '{}'::jsonb,
+    cve_ent TEXT,
+    cve_mun TEXT,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_gen_cve ON geoespacial.generadores_demanda (cve_ent, cve_mun);
+
+CREATE TABLE IF NOT EXISTS geoespacial.oferta_territorial (
+    id BIGSERIAL PRIMARY KEY,
+    fuente_id INTEGER REFERENCES public.fuentes_datos(id),
+    payload JSONB NOT NULL DEFAULT '{}'::jsonb,
+    cve_ent TEXT,
+    cve_mun TEXT,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_ofe_cve ON geoespacial.oferta_territorial (cve_ent, cve_mun);
+
+CREATE TABLE IF NOT EXISTS geoespacial.vias_acceso (
+    id BIGSERIAL PRIMARY KEY,
+    fuente_id INTEGER REFERENCES public.fuentes_datos(id),
+    geometry_json JSONB,
+    cve_ent TEXT,
+    cve_mun TEXT,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_vias_cve ON geoespacial.vias_acceso (cve_ent, cve_mun);
+
+CREATE TABLE IF NOT EXISTS geoespacial.servicios_urbanos (
+    id BIGSERIAL PRIMARY KEY,
+    fuente_id INTEGER REFERENCES public.fuentes_datos(id),
+    tipo TEXT NOT NULL,
+    payload JSONB NOT NULL DEFAULT '{}'::jsonb,
+    cve_ent TEXT,
+    cve_mun TEXT,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_srv_cve ON geoespacial.servicios_urbanos (cve_ent, cve_mun);
+
+CREATE TABLE IF NOT EXISTS geoespacial.places_category_mapping (
+    id SERIAL PRIMARY KEY,
+    google_type TEXT,
+    categoria_interna TEXT NOT NULL,
+    scian_ref TEXT,
+    mapping_version INT NOT NULL DEFAULT 1,
+    prioridad INT NOT NULL DEFAULT 100
+);
+CREATE INDEX IF NOT EXISTS idx_places_type ON geoespacial.places_category_mapping (google_type, mapping_version);
+
+CREATE TABLE IF NOT EXISTS geoespacial.ageb (
+    cvegeo TEXT PRIMARY KEY,
+    cve_ent TEXT,
+    cve_mun TEXT,
+    cve_loc TEXT,
+    cve_ageb TEXT,
+    ambito CHAR(1) NOT NULL CHECK (ambito IN ('U', 'R')),
+    geometry_json JSONB,
+    snapshot_version TEXT,
+    fuente TEXT,
+    fecha_corte TIMESTAMPTZ
+);
+CREATE INDEX IF NOT EXISTS idx_ageb_cvemun ON geoespacial.ageb (cve_ent, cve_mun);
+
+-- Catálogo pueblos mágicos (misma estructura que el ETL; datos vía ETL o seed manual)
+CREATE TABLE IF NOT EXISTS public.pueblos_magicos_catalogo (
+    id SERIAL PRIMARY KEY,
+    clave TEXT UNIQUE NOT NULL,
+    nombre TEXT NOT NULL,
+    entidad TEXT NOT NULL,
+    municipio TEXT,
+    lat DOUBLE PRECISION NOT NULL,
+    lng DOUBLE PRECISION NOT NULL,
+    fuente TEXT NOT NULL,
+    fecha_referencia TIMESTAMPTZ,
+    activo BOOLEAN DEFAULT TRUE,
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_pueblos_magicos_entidad
+    ON public.pueblos_magicos_catalogo (entidad);
+CREATE INDEX IF NOT EXISTS idx_pueblos_magicos_activo
+    ON public.pueblos_magicos_catalogo (activo);

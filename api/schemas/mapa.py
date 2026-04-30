@@ -166,3 +166,31 @@ class MapaAnalisisIARequest(BaseModel):
 class MapaAnalisisIAResponse(BaseModel):
     analisis_ia: str
     generated_at: datetime
+
+
+class MapaFuenteResponse(BaseModel):
+    id: str
+    nombre: str
+    url: str
+    cobertura: str
+    periodicidad: str
+    formato: str
+    acceso: Literal["api", "descarga", "hibrido"]
+    token_requerido: bool = False
+    capa_indicador: str
+    fase: Literal["mvp", "refuerzo"]
+
+
+class MapaExportHtmlRequest(BaseModel):
+    lat: float
+    lng: float
+    radio_m: int = 3000
+    ciudad: str = "Ubicación"
+    capas: list[dict[str, Any]] = Field(default_factory=list)
+    capas_datos: list[dict[str, Any]] = Field(default_factory=list)
+    source_mode: str = "real_time_first"
+
+
+class MapaExportPdfRequest(MapaExportHtmlRequest):
+    titulo: str = "Informe de viabilidad (mapa)"
+    notas: str = ""

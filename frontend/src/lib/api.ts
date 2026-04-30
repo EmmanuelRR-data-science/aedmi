@@ -2,6 +2,13 @@ import { getToken, removeToken } from './auth'
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080'
 
+/** Respuesta de POST /export/presentacion/gamma (Gamma completó en servidor). */
+export type GammaPresentacionResponse = {
+  generation_id: string
+  gamma_url: string | null
+  export_url: string | null
+}
+
 export class ApiError extends Error {
   constructor(
     public status: number,
@@ -64,4 +71,49 @@ export async function apiFetch<T = unknown>(
   }
 
   return undefined as T
+}
+
+/**
+ * Petición autenticada que devuelve cuerpo binario (p. ej. PPTX).
+ */
+export async function apiFetchBlob(
+  path: string,
+  options: RequestInit = {}
+): Promise<Blob> {
+  const token = getToken()
+
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    ...(options.headers as Record<string, string>),
+  }
+
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`
+  }
+
+  const response = await fetch(`${API_BASE}${path}`, {
+    ...options,
+    headers,
+  })
+
+  if (response.status === 401) {
+    removeToken()
+    if (typeof window !== 'undefined') {
+      window.location.href = '/login'
+    }
+    throw new ApiError(401, 'No autorizado — redirigiendo a login')
+  }
+
+  if (!response.ok) {
+    let message = `Error ${response.status}`
+    try {
+      const body = await response.json()
+      message = (body as { detail?: string })?.detail ?? message
+    } catch {
+      // cuerpo no JSON
+    }
+    throw new ApiError(response.status, String(message))
+  }
+
+  return response.blob()
 }

@@ -8,6 +8,8 @@ import {
 import { useStyleConfig } from '@/hooks/useStyleConfig'
 import { useIndicadores, useIndicadorDatos, useOpcionesGeograficas } from '@/hooks/useIndicador'
 import type { DatoIndicador } from '@/types'
+import ChartExportToolbar from '@/components/presentation/ChartExportToolbar'
+import { mapDatosForGammaExport } from '@/lib/datosSerieGamma'
 
 function fmt(v: number): string {
   return new Intl.NumberFormat('es-MX', { maximumFractionDigits: 0 }).format(v)
@@ -342,20 +344,19 @@ export default function MunicipiosPoblacionKpis() {
         Fuente: CONAPO — Reconstrucción y proyecciones de la población de los municipios de México (base censal INEGI + proyecciones).
       </p>
 
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
-        <p style={{ fontSize: `${titleSize}px`, fontFamily, color: '#e2e8f0', margin: 0, fontWeight: 700, textAlign: 'center' }}>
-          Distribución de la población ({selectedMunicipio}, {latestYearPiramide ?? 'N/A'})
-        </p>
-        <button
-          onClick={() => downloadChartAsPng(chartRef, `piramide-municipio-${selectedEstado}-${selectedMunicipio}`.toLowerCase().replace(/ /g, '-'))}
-          title="Descargar gráfica en alta resolución"
-          style={{ position: 'absolute', right: 0, background: 'transparent', border: '1px solid #2d3148', borderRadius: '4px', color: '#64748b', fontSize: '11px', fontFamily, padding: '4px 10px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
-          onMouseEnter={(e) => { e.currentTarget.style.borderColor = '#0576F3'; e.currentTarget.style.color = '#0576F3' }}
-          onMouseLeave={(e) => { e.currentTarget.style.borderColor = '#2d3148'; e.currentTarget.style.color = '#64748b' }}
-        >
-          ↓ PNG
-        </button>
-      </div>
+      <ChartExportToolbar
+        chartRef={chartRef}
+        title={`Distribución de la población (${selectedMunicipio}, ${latestYearPiramide ?? 'N/A'})`}
+        indicadorId={indicadorPiramide?.id ?? null}
+        nivelGeografico="municipal"
+        entidadClave={canLoadMunicipioData ? `mun:${selectedEstado}:${selectedMunicipio}` : null}
+        titulo={`Distribución de la población (${selectedMunicipio}, ${latestYearPiramide ?? 'N/A'})`}
+        subtitulo="CONAPO — pirámide por edad municipal"
+        datosSerie={mapDatosForGammaExport(datosPiramide)}
+        leyendaFuente="CONAPO — Reconstrucción y proyecciones de la población de los municipios de México (base censal INEGI + proyecciones)."
+        excelChartKind="column"
+        onDownloadPng={() => downloadChartAsPng(chartRef, `piramide-municipio-${selectedEstado}-${selectedMunicipio}`.toLowerCase().replace(/ /g, '-'))}
+      />
 
       {hasPiramideData ? (
         <div ref={chartRef}>
@@ -420,20 +421,19 @@ export default function MunicipiosPoblacionKpis() {
         </table>
       </div>
 
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
-        <p style={{ fontSize: `${titleSize}px`, fontFamily, color: '#e2e8f0', margin: 0, fontWeight: 700, textAlign: 'center' }}>
-          Proyección poblacional ({selectedMunicipio}, próximos 5 años)
-        </p>
-        <button
-          onClick={() => downloadChartAsPng(proyChartRef, `proyeccion-municipio-${selectedEstado}-${selectedMunicipio}`.toLowerCase().replace(/ /g, '-'))}
-          title="Descargar gráfica en alta resolución"
-          style={{ position: 'absolute', right: 0, background: 'transparent', border: '1px solid #2d3148', borderRadius: '4px', color: '#64748b', fontSize: '11px', fontFamily, padding: '4px 10px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
-          onMouseEnter={(e) => { e.currentTarget.style.borderColor = '#0576F3'; e.currentTarget.style.color = '#0576F3' }}
-          onMouseLeave={(e) => { e.currentTarget.style.borderColor = '#2d3148'; e.currentTarget.style.color = '#64748b' }}
-        >
-          ↓ PNG
-        </button>
-      </div>
+      <ChartExportToolbar
+        chartRef={proyChartRef}
+        title={`Proyección poblacional (${selectedMunicipio}, próximos 5 años)`}
+        indicadorId={indicadorProyeccion?.id ?? null}
+        nivelGeografico="municipal"
+        entidadClave={canLoadMunicipioData ? `mun:${selectedEstado}:${selectedMunicipio}` : null}
+        titulo={`Proyección poblacional (${selectedMunicipio}, próximos 5 años)`}
+        subtitulo="CONAPO — proyección municipal"
+        datosSerie={mapDatosForGammaExport(datosProyeccion)}
+        leyendaFuente="CONAPO — Reconstrucción y proyecciones de la población de los municipios de México (base censal INEGI + proyecciones)."
+        excelChartKind="column"
+        onDownloadPng={() => downloadChartAsPng(proyChartRef, `proyeccion-municipio-${selectedEstado}-${selectedMunicipio}`.toLowerCase().replace(/ /g, '-'))}
+      />
 
       {hasProyeccionData ? (
         <div ref={proyChartRef}>

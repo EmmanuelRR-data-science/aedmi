@@ -1,17 +1,21 @@
 import asyncio
 import json
 import math
+import re
 from datetime import datetime, timedelta, timezone
 from typing import Any
 from urllib.parse import quote
 
 import httpx
 from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi.responses import HTMLResponse, Response
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.config import get_settings
 from core.db import get_db
+from core.mapa_export import build_mapa_html_report, build_mapa_pdf_viabilidad
+from core.mapa_fuentes import CATALOGO_FUENTES_MAPA, indicadores_mapa_10
 from routers.auth import get_current_user
 from schemas.mapa import (
     MapaAgebResponse,
@@ -23,6 +27,9 @@ from schemas.mapa import (
     MapaCapaResponse,
     MapaCiudadObjetivoResponse,
     MapaDegradacionResponse,
+    MapaExportHtmlRequest,
+    MapaExportPdfRequest,
+    MapaFuenteResponse,
     MapaIndicadorResponse,
     MapaPoiTopResponse,
     MapaPuebloMagicoResponse,
@@ -48,10 +55,10 @@ OVERPASS_ZONIFICATION_TIMEOUT_SECONDS = 18.0
 OVERPASS_LAYER_RADIUS_MAX_M = 1500
 OVERPASS_ZONIFICATION_RADIUS_MAX_M = 3000
 OVERPASS_ZONIFICATION_MAX_FEATURES = 300
-GEOJSON_CACHE_TTL_SECONDS = 600
+GEOJSON_CACHE_TTL_SECONDS = max(600, settings.mapa_query_cache_ttl_seconds * 2)
 TABULAR_CACHE_TTL_SECONDS = 300
 OVERPASS_CACHE_TTL_SECONDS = 120
-AGEB_FALLBACK_MAX_AGE_SECONDS = 86400
+AGEB_FALLBACK_MAX_AGE_SECONDS = settings.mapa_fallback_max_age_seconds
 DEFAULT_CVE_ENT = "22"
 DEFAULT_CVE_MUN = "014"
 
@@ -478,9 +485,7 @@ def _scope_key_for_capa(
     capa_norm = _normalize_capa_id(capa_id)
     if capa_norm in {"ageb_urbano", "ageb_rural"}:
         return f"{capa_norm}|{cve_ent}|{cve_mun}|municipal"
-    return (
-        f"{capa_norm}|{cve_ent}|{cve_mun}|{round(lat,4)}|{round(lng,4)}|{radio_m}"
-    )
+    return f"{capa_norm}|{cve_ent}|{cve_mun}|{round(lat, 4)}|{round(lng, 4)}|{radio_m}"
 
 
 async def _load_cached_capa_features(
@@ -1148,6 +1153,7 @@ async def _fetch_overpass_ways(
         )
     return features
 
+
 def _build_red_vial_fallback_features(
     *, lat: float, lng: float, radio_m: int
 ) -> list[MapaCapaFeatureResponse]:
@@ -1772,7 +1778,9 @@ async def _build_capa_datos(
                 try:
                     try:
                         geo = await _fetch_wscatgeo_geojson(f"agebr/{cve_ent}/{cve_mun}")
-                        source_name = "INEGI wscatgeo agebr (proxy zonificación industrial municipal)"
+                        source_name = (
+                            "INEGI wscatgeo agebr (proxy zonificación industrial municipal)"
+                        )
                     except Exception:
                         geo = await _fetch_wscatgeo_geojson(f"agebr/{cve_ent}")
                         source_name = "INEGI wscatgeo agebr (proxy zonificación industrial entidad)"
@@ -1789,7 +1797,9 @@ async def _build_capa_datos(
                         max_items=60,
                     )
                     if not proxy_features:
-                        proxy_features = _extract_polygon_features_direct(raw_features, max_items=40)
+                        proxy_features = _extract_polygon_features_direct(
+                            raw_features, max_items=40
+                        )
                     features = _build_ageb_proxy_landuse_features(
                         base_features=proxy_features,
                         landuse_label="industrial_proxy_ageb",
@@ -1827,7 +1837,9 @@ async def _build_capa_datos(
                         max_items=60,
                     )
                     if not proxy_features:
-                        proxy_features = _extract_polygon_features_direct(raw_features, max_items=40)
+                        proxy_features = _extract_polygon_features_direct(
+                            raw_features, max_items=40
+                        )
                     features = _build_ageb_proxy_landuse_features(
                         base_features=proxy_features,
                         landuse_label="residential_proxy_ageb",
@@ -1894,7 +1906,9 @@ async def _build_capa_datos(
                     feature_prefix="ind_proxy",
                 )
             except Exception:
-                source_name = "OpenStreetMap Overpass (landuse industrial no disponible por timeout)"
+                source_name = (
+                    "OpenStreetMap Overpass (landuse industrial no disponible por timeout)"
+                )
             disponibilidad = "parcial"
         elif capa_id_norm == "zona_vivienda":
             features = []
@@ -1925,7 +1939,9 @@ async def _build_capa_datos(
                     feature_prefix="viv_proxy",
                 )
             except Exception:
-                source_name = "OpenStreetMap Overpass (residential/building no disponible por timeout)"
+                source_name = (
+                    "OpenStreetMap Overpass (residential/building no disponible por timeout)"
+                )
             disponibilidad = "parcial"
     if disponibilidad != "parcial":
         disponibilidad = "ok" if features else "sin_datos"
@@ -2612,4 +2628,42 @@ async def get_mapa_ageb(
             "No se encontró AGEB para las coordenadas dentro del municipio configurado. "
             "Valida cve_ent/cve_mun o la ubicación."
         ),
+    )
+
+
+@router.get("/fuentes", response_model=list[MapaFuenteResponse])
+async def get_mapa_fuentes(
+    _: str = Depends(get_current_user),
+) -> list[MapaFuenteResponse]:
+    return [MapaFuenteResponse.model_validate(x) for x in CATALOGO_FUENTES_MAPA]
+
+
+@router.get("/indicadores/catalogo")
+async def get_mapa_indicadores_catalogo(
+    _: str = Depends(get_current_user),
+) -> list[dict[str, str]]:
+    return indicadores_mapa_10()
+
+
+@router.post("/export/html", response_class=HTMLResponse)
+async def post_mapa_export_html(
+    body: MapaExportHtmlRequest,
+    _: str = Depends(get_current_user),
+) -> HTMLResponse:
+    html = build_mapa_html_report(body.model_dump())
+    return HTMLResponse(content=html)
+
+
+@router.post("/export/pdf")
+async def post_mapa_export_pdf(
+    body: MapaExportPdfRequest,
+    _: str = Depends(get_current_user),
+) -> Response:
+    data = build_mapa_pdf_viabilidad(body.model_dump())
+    safe = re.sub(r"[^A-Za-z0-9._-]+", "-", body.ciudad)[:40] or "mapa"
+    fn = f"mapa-informe-{safe}.pdf"
+    return Response(
+        content=data,
+        media_type="application/pdf",
+        headers={"Content-Disposition": f'attachment; filename="{fn}"'},
     )

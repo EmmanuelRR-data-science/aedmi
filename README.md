@@ -48,6 +48,8 @@ La primera vez construirá las imágenes e inicializará la base de datos autom�
 | API | http://localhost:8080 |
 | PostgreSQL | localhost:5432 |
 
+**Probar en local (Mapa).** Inicia sesión, abre el dashboard y la pestaña **Mapa**. La API expone `GET /mapa/fuentes`, `GET /mapa/alcance`, búsqueda, capas, `POST /mapa/export/pdf` (botón *Descargar informe PDF*) y descarga HTML generada en cliente. Ajusta variables opcionales `MAPA_*` en `.env` (timeouts, caché) si trabajas con redes lentas. Tras levantar la base, el ETL de pueblos mágicos se registra solo si existe la fila en `public.fuentes_datos` (`init.sql` la inserta).
+
 ---
 
 ## Despliegue en VPS (producción)
@@ -219,6 +221,8 @@ uv run pytest tests/ -v
 # Linting
 uv run ruff check . && uv run ruff format --check .
 ```
+
+**Exportación a PowerPoint (Requisito 25):** con sesión iniciada, en el dashboard usa el botón **Exportar a PowerPoint** en el bloque de la gráfica. El backend genera un PPTX vía `POST /export/presentacion` (JWT). El texto del análisis prioriza el **análisis revisado**; si no hay, el **análisis IA**. Si la captura de la gráfica falla, aún se genera la presentación con título y texto.
 
 ### Frontend (Node.js)
 

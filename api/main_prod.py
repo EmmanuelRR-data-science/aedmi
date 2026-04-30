@@ -8,7 +8,15 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from core.config import get_settings
-from routers import analisis, auth, etl_admin, indicadores, infraestructura, mapa
+from routers import (
+    analisis,
+    auth,
+    etl_admin,
+    export_presentacion,
+    indicadores,
+    infraestructura,
+    mapa,
+)
 
 settings = get_settings()
 
@@ -21,7 +29,7 @@ app = FastAPI(
 # Configuración de CORS corregida para producción
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], # Permitir todos temporalmente para debug
+    allow_origins=["*"],  # Permitir todos temporalmente para debug
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -33,6 +41,7 @@ app.include_router(analisis.router)
 app.include_router(etl_admin.router)
 app.include_router(infraestructura.router)
 app.include_router(mapa.router)
+app.include_router(export_presentacion.router)
 
 
 @app.get("/health")
