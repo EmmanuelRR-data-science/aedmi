@@ -9,7 +9,7 @@ const ALL_FONTS = ['ballingermono-light', ...GOOGLE_FONTS]
 
 const HEX_REGEX = /^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$/
 
-function isValidHex(value: string): boolean {
+export function isValidHex(value: string): boolean {
   return HEX_REGEX.test(value)
 }
 

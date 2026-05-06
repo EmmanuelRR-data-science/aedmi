@@ -9,6 +9,8 @@ import { useStyleConfig } from '@/hooks/useStyleConfig'
 import { useIndicadores, useIndicadorDatos } from '@/hooks/useIndicador'
 import AnalisisIA from '@/components/ai/AnalisisIA'
 import AnalisisRevisado from '@/components/ai/AnalisisRevisado'
+import ChartExportToolbar from '@/components/presentation/ChartExportToolbar'
+import { mapDatosForGammaExport } from '@/lib/datosSerieGamma'
 import type { DatoIndicador } from '@/types'
 
 function downloadChartAsPng(containerRef: RefObject<HTMLDivElement>, filename: string) {
@@ -36,7 +38,7 @@ function downloadChartAsPng(containerRef: RefObject<HTMLDivElement>, filename: s
 const CURRENT_YEAR = new Date().getFullYear()
 
 export default function PIBProyeccionChart() {
-  const { palette, fontFamily, titleSize, xAxisSize, yAxisSize } = useStyleConfig()
+  const { palette, fontFamily, xAxisSize, yAxisSize } = useStyleConfig()
   const chartRefTotal = useRef<HTMLDivElement>(null)
   const chartRefPC = useRef<HTMLDivElement>(null)
 
@@ -83,29 +85,25 @@ export default function PIBProyeccionChart() {
   const colorHistorico = palette[0] ?? palette[1]
   const colorProyeccion = palette[2] ?? palette[0]
 
-  const btnStyle = {
-    position: 'absolute' as const, right: 0, background: 'transparent', border: '1px solid #2d3148',
-    borderRadius: '4px', color: '#64748b', fontSize: '11px', fontFamily, padding: '4px 10px',
-    cursor: 'pointer', display: 'flex' as const, alignItems: 'center' as const, gap: '4px',
-  }
-
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
       {/* PIB Total con proyecciones */}
       <div style={{ background: '#1a1d27', border: '1px solid #2d3148', borderRadius: '10px',
         padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
 
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
-          <p style={{ fontSize: `${titleSize}px`, fontFamily, color: '#e2e8f0', margin: 0, fontWeight: 700, textAlign: 'center' }}>
-            Proyección del PIB Nacional (MXN)
-          </p>
-          <button onClick={() => downloadChartAsPng(chartRefTotal, 'pib-proyeccion-total')}
-            title="Descargar gráfica en alta resolución" style={btnStyle}
-            onMouseEnter={(e) => { e.currentTarget.style.borderColor = '#0576F3'; e.currentTarget.style.color = '#0576F3' }}
-            onMouseLeave={(e) => { e.currentTarget.style.borderColor = '#2d3148'; e.currentTarget.style.color = '#64748b' }}>
-            ↓ PNG
-          </button>
-        </div>
+        <ChartExportToolbar
+          chartRef={chartRefTotal}
+          title="Proyección del PIB Nacional (MXN)"
+          indicadorId={indicador?.id ?? null}
+          nivelGeografico="nacional"
+          entidadClave="PIB Total MXN"
+          titulo="Proyección del PIB Nacional (MXN)"
+          subtitulo="FMI — WEO, serie nominal"
+          datosSerie={mapDatosForGammaExport(datos.filter((d) => d.entidad_clave === 'PIB Total MXN'))}
+          leyendaFuente="FMI — World Economic Outlook (NGDPD × TC FIX Banxico). Barras naranjas = proyecciones."
+          excelChartKind="column"
+          onDownloadPng={() => downloadChartAsPng(chartRefTotal, 'pib-proyeccion-total')}
+        />
 
         <div ref={chartRefTotal}>
           <ResponsiveContainer width="100%" height={320}>
@@ -144,17 +142,19 @@ export default function PIBProyeccionChart() {
       <div style={{ background: '#1a1d27', border: '1px solid #2d3148', borderRadius: '10px',
         padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
 
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
-          <p style={{ fontSize: `${titleSize}px`, fontFamily, color: '#e2e8f0', margin: 0, fontWeight: 700, textAlign: 'center' }}>
-            Proyección del PIB Per Cápita (MXN)
-          </p>
-          <button onClick={() => downloadChartAsPng(chartRefPC, 'pib-proyeccion-percapita')}
-            title="Descargar gráfica en alta resolución" style={btnStyle}
-            onMouseEnter={(e) => { e.currentTarget.style.borderColor = '#0576F3'; e.currentTarget.style.color = '#0576F3' }}
-            onMouseLeave={(e) => { e.currentTarget.style.borderColor = '#2d3148'; e.currentTarget.style.color = '#64748b' }}>
-            ↓ PNG
-          </button>
-        </div>
+        <ChartExportToolbar
+          chartRef={chartRefPC}
+          title="Proyección del PIB Per Cápita (MXN)"
+          indicadorId={indicador?.id ?? null}
+          nivelGeografico="nacional"
+          entidadClave="PIB Per Cápita MXN"
+          titulo="Proyección del PIB Per Cápita (MXN)"
+          subtitulo="FMI — WEO, per cápita"
+          datosSerie={mapDatosForGammaExport(datos.filter((d) => d.entidad_clave === 'PIB Per Cápita MXN'))}
+          leyendaFuente="FMI — World Economic Outlook (NGDPDPC × TC FIX Banxico). Barras naranjas = proyecciones."
+          excelChartKind="column"
+          onDownloadPng={() => downloadChartAsPng(chartRefPC, 'pib-proyeccion-percapita')}
+        />
 
         <div ref={chartRefPC}>
           <ResponsiveContainer width="100%" height={320}>

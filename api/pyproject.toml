@@ -17,6 +17,8 @@ dependencies = [
     "python-multipart>=0.0.9",
     "pypdfium2>=4.30",
     "pillow>=10.0",
+    "python-pptx>=0.6.23",
+    "fpdf2>=2.7.0",
 ]
 
 [project.optional-dependencies]
@@ -40,3 +42,8 @@ known-first-party = ["core", "routers", "schemas"]
 [tool.ruff.format]
 quote-style = "double"
 indent-style = "space"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = "-q"

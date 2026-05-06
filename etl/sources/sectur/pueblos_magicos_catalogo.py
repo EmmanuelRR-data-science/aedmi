@@ -127,16 +127,10 @@ class PueblosMagicosCatalogoExtractor(BaseExtractor):
 
         for idx, row in enumerate(raw):
             nombre = str(
-                row.get("nombre")
-                or row.get("pueblo_magico")
-                or row.get("nombre_pueblo")
-                or ""
+                row.get("nombre") or row.get("pueblo_magico") or row.get("nombre_pueblo") or ""
             ).strip()
             entidad = str(
-                row.get("entidad")
-                or row.get("estado")
-                or row.get("nombre_entidad")
-                or ""
+                row.get("entidad") or row.get("estado") or row.get("nombre_entidad") or ""
             ).strip()
             if not nombre or not entidad:
                 continue

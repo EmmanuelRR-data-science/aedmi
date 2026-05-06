@@ -8,6 +8,8 @@ import {
 import { useStyleConfig } from '@/hooks/useStyleConfig'
 import { useIndicadores, useIndicadorDatos, useOpcionesGeograficas } from '@/hooks/useIndicador'
 import type { DatoIndicador } from '@/types'
+import ChartExportToolbar from '@/components/presentation/ChartExportToolbar'
+import { mapDatosForGammaExport } from '@/lib/datosSerieGamma'
 
 function fmt(v: number): string {
   return new Intl.NumberFormat('es-MX', { maximumFractionDigits: 0 }).format(v)
@@ -312,20 +314,19 @@ export default function LocalidadesPoblacionKpis() {
         Fuente: CONAPO (base censal INEGI) — Población por localidad (referencial).
       </p>
 
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
-        <p style={{ fontSize: `${titleSize}px`, fontFamily, color: '#e2e8f0', margin: 0, fontWeight: 700, textAlign: 'center' }}>
-          Distribución de la población ({selectedLocalidad}, {latestYearPiramide ?? 'N/A'})
-        </p>
-        <button
-          onClick={() => downloadChartAsPng(chartRef, `piramide-localidad-${selectedEstado}-${selectedMunicipio}-${selectedLocalidad}`.toLowerCase().replace(/ /g, '-'))}
-          title="Descargar gráfica en alta resolución"
-          style={{ position: 'absolute', right: 0, background: 'transparent', border: '1px solid #2d3148', borderRadius: '4px', color: '#64748b', fontSize: '11px', fontFamily, padding: '4px 10px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
-          onMouseEnter={(e) => { e.currentTarget.style.borderColor = '#0576F3'; e.currentTarget.style.color = '#0576F3' }}
-          onMouseLeave={(e) => { e.currentTarget.style.borderColor = '#2d3148'; e.currentTarget.style.color = '#64748b' }}
-        >
-          ↓ PNG
-        </button>
-      </div>
+      <ChartExportToolbar
+        chartRef={chartRef}
+        title={`Distribución de la población (${selectedLocalidad}, ${latestYearPiramide ?? 'N/A'})`}
+        indicadorId={indicadorPiramide?.id ?? null}
+        nivelGeografico="localidad"
+        entidadClave={canLoadLocalidadData ? `loc:${selectedEstado}:${selectedMunicipio}:${selectedLocalidad}` : null}
+        titulo={`Distribución de la población (${selectedLocalidad}, ${latestYearPiramide ?? 'N/A'})`}
+        subtitulo="CONAPO — pirámide por edad en localidad"
+        datosSerie={mapDatosForGammaExport(datosPiramide)}
+        leyendaFuente="CONAPO (base censal INEGI) — Población por localidad (referencial)."
+        excelChartKind="column"
+        onDownloadPng={() => downloadChartAsPng(chartRef, `piramide-localidad-${selectedEstado}-${selectedMunicipio}-${selectedLocalidad}`.toLowerCase().replace(/ /g, '-'))}
+      />
 
       {hasPiramideData ? (
         <div ref={chartRef}>
@@ -386,20 +387,19 @@ export default function LocalidadesPoblacionKpis() {
         </table>
       </div>
 
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
-        <p style={{ fontSize: `${titleSize}px`, fontFamily, color: '#e2e8f0', margin: 0, fontWeight: 700, textAlign: 'center' }}>
-          Crecimiento histórico ({selectedLocalidad})
-        </p>
-        <button
-          onClick={() => downloadChartAsPng(growthChartRef, `crecimiento-localidad-${selectedEstado}-${selectedMunicipio}-${selectedLocalidad}`.toLowerCase().replace(/ /g, '-'))}
-          title="Descargar gráfica en alta resolución"
-          style={{ position: 'absolute', right: 0, background: 'transparent', border: '1px solid #2d3148', borderRadius: '4px', color: '#64748b', fontSize: '11px', fontFamily, padding: '4px 10px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
-          onMouseEnter={(e) => { e.currentTarget.style.borderColor = '#0576F3'; e.currentTarget.style.color = '#0576F3' }}
-          onMouseLeave={(e) => { e.currentTarget.style.borderColor = '#2d3148'; e.currentTarget.style.color = '#64748b' }}
-        >
-          ↓ PNG
-        </button>
-      </div>
+      <ChartExportToolbar
+        chartRef={growthChartRef}
+        title={`Crecimiento histórico (${selectedLocalidad})`}
+        indicadorId={indicador?.id ?? null}
+        nivelGeografico="localidad"
+        entidadClave={canLoadLocalidadData ? `loc:${selectedEstado}:${selectedMunicipio}:${selectedLocalidad}` : null}
+        titulo={`Crecimiento histórico (${selectedLocalidad})`}
+        subtitulo="CONAPO — serie histórica localidad"
+        datosSerie={mapDatosForGammaExport(datos)}
+        leyendaFuente="CONAPO (base censal INEGI) — Población por localidad (referencial)."
+        excelChartKind="column"
+        onDownloadPng={() => downloadChartAsPng(growthChartRef, `crecimiento-localidad-${selectedEstado}-${selectedMunicipio}-${selectedLocalidad}`.toLowerCase().replace(/ /g, '-'))}
+      />
 
       {hasHistoricalData ? (
         <div ref={growthChartRef}>

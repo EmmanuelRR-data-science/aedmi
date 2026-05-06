@@ -224,6 +224,26 @@ Almacena datos de indicadores con periodicidad quinquenal (censos, conteos).
 
 ---
 
+## Schema `geoespacial` y catálogos de mapa
+
+Uso: capas y metadatos del módulo **Mapa** (indicadores por ubicación, caché de features, mapeo Places, AGEB en snapshot). La geometría se almacena preferentemente en **JSONB** (GeoJSON) para no depender de PostGIS en el entorno base.
+
+| Tabla | Descripción breve |
+|--------|-------------------|
+| `geoespacial.mapa_capas_features` | Caché de entidades geoespaciales por `scope_key` y `capa_id` (Overpass/ETL). |
+| `geoespacial.puntos_interes` | Receptáculo de POI normalizados (ETL futuro). |
+| `geoespacial.generadores_demanda` | Receptáculo de generadores de demanda. |
+| `geoespacial.oferta_territorial` | Receptáculo de oferta territorial. |
+| `geoespacial.vias_acceso` | Geometría vial en `geometry_json`. |
+| `geoespacial.servicios_urbanos` | Servicios urbanos por `tipo` + `payload`. |
+| `geoespacial.places_category_mapping` | Mapeo Google/Places → categoría interna / referencia (versión con `mapping_version`). |
+| `geoespacial.ageb` | Snapshots de AGEB (`geometry_json`, `ambito` U/R, corte y fuente). |
+| `public.pueblos_magicos_catalogo` | Catálogo de pueblos mágicos (ETL `sources.sectur.pueblos_magicos_catalogo`); clave única `clave`. |
+
+**Fuente de mapa (registro ETL):** `modulo_etl = 'sources.sectur.pueblos_magicos_catalogo'` en `public.fuentes_datos` (carga vía ETL; sin fila, el módulo no se registra en el scheduler).
+
+---
+
 ## Diagrama de Relaciones
 
 ```

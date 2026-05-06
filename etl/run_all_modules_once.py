@@ -1,3 +1,4 @@
+from registro_modulos import registrar_modulo_si_fuente_existe
 from scheduler import registrar_modulo, run_all_modules
 
 MODULES = [
@@ -233,14 +234,14 @@ MODULES = [
         "HistoricoToneladasTransportadasAIQQueretaroExtractor",
         76,
     ),
-    (
-        "sources.sectur.pueblos_magicos_catalogo",
-        "PueblosMagicosCatalogoExtractor",
-        77,
-    ),
 ]
 
 for module, cls, fuente_id in MODULES:
     registrar_modulo(module, cls, fuente_id)
+
+registrar_modulo_si_fuente_existe(
+    "sources.sectur.pueblos_magicos_catalogo",
+    "PueblosMagicosCatalogoExtractor",
+)
 
 run_all_modules()

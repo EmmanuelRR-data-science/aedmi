@@ -9,6 +9,8 @@ import { useStyleConfig } from '@/hooks/useStyleConfig'
 import { useIndicadores, useIndicadorDatos } from '@/hooks/useIndicador'
 import AnalisisIA from '@/components/ai/AnalisisIA'
 import AnalisisRevisado from '@/components/ai/AnalisisRevisado'
+import ChartExportToolbar from '@/components/presentation/ChartExportToolbar'
+import { mapDatosForGammaExport } from '@/lib/datosSerieGamma'
 import type { DatoIndicador } from '@/types'
 
 function downloadChartAsPng(containerRef: RefObject<HTMLDivElement>, filename: string) {
@@ -90,20 +92,19 @@ export default function BalanzaVisitantesChart() {
     <div style={{ background: '#1a1d27', border: '1px solid #2d3148', borderRadius: '10px',
       padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
 
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
-        <p style={{ fontSize: `${titleSize}px`, fontFamily, color: '#e2e8f0', margin: 0, fontWeight: 700, textAlign: 'center' }}>
-          Balanza de Visitantes Internacionales
-        </p>
-        <button onClick={() => downloadChartAsPng(chartRef, 'balanza-visitantes')}
-          title="Descargar gráfica en alta resolución"
-          style={{ position: 'absolute', right: 0, background: 'transparent', border: '1px solid #2d3148',
-            borderRadius: '4px', color: '#64748b', fontSize: '11px', fontFamily, padding: '4px 10px',
-            cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
-          onMouseEnter={(e) => { e.currentTarget.style.borderColor = '#0576F3'; e.currentTarget.style.color = '#0576F3' }}
-          onMouseLeave={(e) => { e.currentTarget.style.borderColor = '#2d3148'; e.currentTarget.style.color = '#64748b' }}>
-          ↓ PNG
-        </button>
-      </div>
+      <ChartExportToolbar
+  chartRef={chartRef}
+  title="Balanza de Visitantes Internacionales"
+  indicadorId={indicador?.id ?? null}
+  nivelGeografico="nacional"
+  entidadClave={null}
+  titulo="Balanza de Visitantes Internacionales"
+  subtitulo=""
+  datosSerie={mapDatosForGammaExport(datos)}
+  leyendaFuente="INEGI / Banxico — Balanza turística de México"
+  excelChartKind="column"
+  onDownloadPng={() => downloadChartAsPng(chartRef, 'balanza-visitantes')}
+/>
 
       <div ref={chartRef}>
         <ResponsiveContainer width="100%" height={320}>

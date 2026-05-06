@@ -6,6 +6,7 @@ from typing import Any
 from sqlalchemy import text
 
 from core.db import get_db_session
+from core.fuente_check import fuente_activa_y_registrada
 from core.logger import get_logger
 
 logger = get_logger(__name__)
@@ -62,6 +63,9 @@ class BaseExtractor(ABC):
         errores = 0
 
         with get_db_session() as session:
+            if not fuente_activa_y_registrada(session, self.fuente_id):
+                return 0, 0
+
             # Resolver indicador_id si no está seteado
             indicador_id_cache: dict[str, int | None] = {}
 

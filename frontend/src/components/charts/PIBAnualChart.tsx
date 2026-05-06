@@ -9,6 +9,8 @@ import { useStyleConfig } from '@/hooks/useStyleConfig'
 import { useIndicadores, useIndicadorDatos } from '@/hooks/useIndicador'
 import AnalisisIA from '@/components/ai/AnalisisIA'
 import AnalisisRevisado from '@/components/ai/AnalisisRevisado'
+import ChartExportToolbar from '@/components/presentation/ChartExportToolbar'
+import { mapDatosForGammaExport } from '@/lib/datosSerieGamma'
 import type { DatoIndicador } from '@/types'
 
 function downloadChartAsPng(containerRef: RefObject<HTMLDivElement>, filename: string) {
@@ -42,7 +44,7 @@ function fmtMiles(v: number): string {
 }
 
 export default function PIBAnualChart() {
-  const { palette, fontFamily, titleSize, xAxisSize, yAxisSize } = useStyleConfig()
+  const { palette, fontFamily, xAxisSize, yAxisSize } = useStyleConfig()
   const chartRefTotal = useRef<HTMLDivElement>(null)
   const chartRefPC = useRef<HTMLDivElement>(null)
 
@@ -96,20 +98,19 @@ export default function PIBAnualChart() {
       <div style={{ background: '#1a1d27', border: '1px solid #2d3148', borderRadius: '10px',
         padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
 
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
-          <p style={{ fontSize: `${titleSize}px`, fontFamily, color: '#e2e8f0', margin: 0, fontWeight: 700, textAlign: 'center' }}>
-            PIB Nacional Total (MXN corrientes)
-          </p>
-          <button onClick={() => downloadChartAsPng(chartRefTotal, 'pib-nacional-total-anual')}
-            title="Descargar gráfica en alta resolución"
-            style={{ position: 'absolute', right: 0, background: 'transparent', border: '1px solid #2d3148',
-              borderRadius: '4px', color: '#64748b', fontSize: '11px', fontFamily, padding: '4px 10px',
-              cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
-            onMouseEnter={(e) => { e.currentTarget.style.borderColor = '#0576F3'; e.currentTarget.style.color = '#0576F3' }}
-            onMouseLeave={(e) => { e.currentTarget.style.borderColor = '#2d3148'; e.currentTarget.style.color = '#64748b' }}>
-            ↓ PNG
-          </button>
-        </div>
+        <ChartExportToolbar
+          chartRef={chartRefTotal}
+          title="PIB Nacional Total (MXN corrientes)"
+          indicadorId={indicador?.id ?? null}
+          nivelGeografico="nacional"
+          entidadClave="PIB Total"
+          titulo="PIB Nacional Total (MXN corrientes)"
+          subtitulo="World Bank — PIB nominal MXN"
+          datosSerie={mapDatosForGammaExport(datos.filter((d) => d.entidad_clave === 'PIB Total'))}
+          leyendaFuente="World Bank — GDP (current LCU), indicator NY.GDP.MKTP.CN"
+          excelChartKind="column"
+          onDownloadPng={() => downloadChartAsPng(chartRefTotal, 'pib-nacional-total-anual')}
+        />
 
         <div ref={chartRefTotal}>
           <ResponsiveContainer width="100%" height={320}>
@@ -140,20 +141,19 @@ export default function PIBAnualChart() {
       <div style={{ background: '#1a1d27', border: '1px solid #2d3148', borderRadius: '10px',
         padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
 
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
-          <p style={{ fontSize: `${titleSize}px`, fontFamily, color: '#e2e8f0', margin: 0, fontWeight: 700, textAlign: 'center' }}>
-            PIB Per Cápita (MXN corrientes)
-          </p>
-          <button onClick={() => downloadChartAsPng(chartRefPC, 'pib-percapita-anual')}
-            title="Descargar gráfica en alta resolución"
-            style={{ position: 'absolute', right: 0, background: 'transparent', border: '1px solid #2d3148',
-              borderRadius: '4px', color: '#64748b', fontSize: '11px', fontFamily, padding: '4px 10px',
-              cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
-            onMouseEnter={(e) => { e.currentTarget.style.borderColor = '#0576F3'; e.currentTarget.style.color = '#0576F3' }}
-            onMouseLeave={(e) => { e.currentTarget.style.borderColor = '#2d3148'; e.currentTarget.style.color = '#64748b' }}>
-            ↓ PNG
-          </button>
-        </div>
+        <ChartExportToolbar
+          chartRef={chartRefPC}
+          title="PIB Per Cápita (MXN corrientes)"
+          indicadorId={indicador?.id ?? null}
+          nivelGeografico="nacional"
+          entidadClave="PIB Per Cápita"
+          titulo="PIB Per Cápita (MXN corrientes)"
+          subtitulo="World Bank — PIB per cápita MXN"
+          datosSerie={mapDatosForGammaExport(datos.filter((d) => d.entidad_clave === 'PIB Per Cápita'))}
+          leyendaFuente="World Bank — GDP per capita (current LCU), indicator NY.GDP.PCAP.CN"
+          excelChartKind="column"
+          onDownloadPng={() => downloadChartAsPng(chartRefPC, 'pib-percapita-anual')}
+        />
 
         <div ref={chartRefPC}>
           <ResponsiveContainer width="100%" height={320}>

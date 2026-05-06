@@ -1,12 +1,15 @@
 import os
 import sys
+import threading
+import time
 
 # Asegurar que el directorio etl/ esté en el path
 sys.path.insert(0, os.path.dirname(__file__))
 
 from core.db import connect_with_retry
 from core.logger import get_logger
-from scheduler import create_scheduler
+from registro_modulos import registrar_modulo_si_fuente_existe
+from scheduler import create_scheduler, run_all_modules
 
 logger = get_logger("etl.main")
 
@@ -283,13 +286,44 @@ def main() -> None:
         "HistoricoToneladasTransportadasAIQQueretaroExtractor",
         fuente_id=76,
     )
-    registrar_modulo(
+    registrar_modulo_si_fuente_existe(
         "sources.sectur.pueblos_magicos_catalogo",
         "PueblosMagicosCatalogoExtractor",
-        fuente_id=77,
     )
 
     scheduler = create_scheduler()
+
+    # Tras recrear volúmenes la BD solo tiene esquema + metadatos; los datos viven en mensual/anual/etc.
+    # El job diario es a las 19:00 MX — sin esto el dashboard queda vacío hasta esa hora.
+    # Por defecto ACTIVO si la variable no está o está vacía (véase .env). Desactivar: ETL_RUN_ON_START=0
+    _raw_flag = os.environ.get("ETL_RUN_ON_START")
+    if _raw_flag is None or not str(_raw_flag).strip():
+        _raw_flag = "1"
+    _flag = str(_raw_flag).strip().lower()
+    run_on_start = _flag not in ("0", "false", "no", "off")
+
+    def _bootstrap_etl() -> None:
+        delay = int(os.environ.get("ETL_BOOTSTRAP_DELAY_SEC", "30"))
+        logger.info(
+            "ETL_RUN_ON_START: esperando %ds antes de ejecutar todos los módulos...",
+            delay,
+        )
+        time.sleep(delay)
+        try:
+            logger.info("ETL_RUN_ON_START: ejecutando todos los módulos (primera carga)...")
+            run_all_modules()
+            logger.info("ETL_RUN_ON_START: ejecución inicial terminada.")
+        except Exception:
+            logger.exception("ETL_RUN_ON_START: falló la ejecución inicial.")
+
+    logger.info(
+        "ETL_RUN_ON_START=%r → %s",
+        os.environ.get("ETL_RUN_ON_START"),
+        "bootstrap programado" if run_on_start else "solo scheduler (sin bootstrap)",
+    )
+
+    if run_on_start:
+        threading.Thread(target=_bootstrap_etl, name="etl_bootstrap", daemon=True).start()
 
     logger.info("Scheduler iniciado. Esperando ejecución programada...")
     try:
