@@ -67,4 +67,12 @@ def get_settings() -> Settings:
 
 
 def parse_cors_origins(raw: str) -> list[str]:
-    return [origin.strip() for origin in raw.split(",") if origin.strip()]
+    if raw is None:
+        return ["*"]
+    normalized = raw.strip()
+    if not normalized or normalized == "*":
+        return ["*"]
+    origins = [origin.strip() for origin in normalized.split(",") if origin.strip()]
+    if any(origin == "*" for origin in origins):
+        return ["*"]
+    return origins

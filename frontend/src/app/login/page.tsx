@@ -4,6 +4,7 @@ import { useState, FormEvent } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { saveToken } from '@/lib/auth'
+import { getApiBase } from '@/lib/api'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -19,7 +20,7 @@ export default function LoginPage() {
 
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080'}/auth/login`,
+        `${getApiBase()}/auth/login`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },

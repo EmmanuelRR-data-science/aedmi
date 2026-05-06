@@ -1,6 +1,31 @@
 import { getToken, removeToken } from './auth'
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080'
+function normalizeBaseUrl(baseUrl: string): string {
+  return baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl
+}
+
+function isPlaceholderLocalApi(url: string): boolean {
+  const normalized = normalizeBaseUrl(url)
+  return normalized === 'http://localhost:8080' || normalized === 'http://127.0.0.1:8080'
+}
+
+export function getApiBase(): string {
+  const configured = process.env.NEXT_PUBLIC_API_URL
+
+  if (configured && !isPlaceholderLocalApi(configured)) {
+    return normalizeBaseUrl(configured)
+  }
+
+  if (typeof window !== 'undefined') {
+    const host = window.location.hostname
+    const protocol = window.location.protocol
+    return `${protocol}//${host}:8080`
+  }
+
+  return normalizeBaseUrl(configured ?? 'http://localhost:8080')
+}
+
+const API_BASE = getApiBase()
 
 /** Respuesta de POST /export/presentacion/gamma (Gamma completó en servidor). */
 export type GammaPresentacionResponse = {

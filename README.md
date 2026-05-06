@@ -65,8 +65,13 @@ Editar `.env.prod` y ajustar como mínimo:
 - `JWT_SECRET`
 - `ADMIN_PASSWORD`
 - `GROQ_API_KEY`
-- `API_URL` (recomendado `https://tu-dominio.com/api`)
-- `CORS_ORIGINS` (por ejemplo `https://tu-dominio.com`)
+- `API_URL` (**obligatorio** para que el frontend apunte a la API correcta)
+  - Con puertos (sin Nginx): `http://TU_IP:8080`
+  - Con reverse proxy: `https://tu-dominio.com/api`
+- `CORS_ORIGINS` (origen permitido por la API)
+  - Con puertos (sin Nginx): `http://TU_IP:3000`
+  - Con reverse proxy: `https://tu-dominio.com`
+  - Si no se define, el API permite todos los orígenes (sin credentials).
 
 ### 2. Desplegar stack productivo
 
@@ -77,7 +82,25 @@ chmod +x scripts/deploy_prod.sh scripts/smoke_test_prod.sh scripts/backup_db.sh
 
 Esto construye imágenes, levanta contenedores y ejecuta smoke tests básicos.
 
-### 3. Operación diaria
+### 3. Restaurar snapshot de base de datos (recomendado para VPS)
+
+El repo versiona un snapshot listo para producción en `db/vps-snapshot/aedmi-data.sql.gz`. Para restaurarlo en un VPS:
+
+```bash
+# Levanta solo la base primero (para inicializar init.sql en volumen vacío)
+docker compose --env-file .env.prod -f docker-compose.prod.yml up -d db
+
+# Restaura schema+datos desde db/vps-snapshot/aedmi-data.sql.gz
+bash scripts/restore_vps_db_snapshot.sh
+```
+
+Si ya restauraste datos, desactiva el ETL masivo al arranque:
+
+```env
+ETL_RUN_ON_START=0
+```
+
+### 4. Operación diaria
 
 ```bash
 # Estado de servicios
@@ -91,7 +114,7 @@ docker compose --env-file .env.prod -f docker-compose.prod.yml build
 docker compose --env-file .env.prod -f docker-compose.prod.yml up -d
 ```
 
-### 4. Reverse proxy (Nginx en host)
+### 5. Reverse proxy (Nginx en host)
 
 Se incluye plantilla en `deploy/nginx/aedmi.conf` para servir:
 - Frontend: `/` -> `127.0.0.1:3000`
@@ -99,7 +122,7 @@ Se incluye plantilla en `deploy/nginx/aedmi.conf` para servir:
 
 Después de copiar el archivo a Nginx y ajustar `server_name`, puedes emitir TLS con Certbot.
 
-### 5. Backup de base de datos
+### 6. Backup de base de datos
 
 ```bash
 ./scripts/backup_db.sh
