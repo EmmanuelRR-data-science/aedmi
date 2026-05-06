@@ -51,3 +51,4 @@ uv.lock
 
 # Metadatos locales de herramientas
 .kiro/
+.claude/
