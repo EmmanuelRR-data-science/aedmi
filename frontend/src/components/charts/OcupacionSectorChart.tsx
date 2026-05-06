@@ -116,7 +116,7 @@ export default function OcupacionSectorChart() {
   nivelGeografico="nacional"
   entidadClave={null}
   titulo="Población Ocupada por Sector Económico"
-  subtitulo="Dashboard AEDMI"
+  subtitulo=""
   datosSerie={mapDatosForGammaExport(datos)}
   leyendaFuente="INEGI — Encuesta Nacional de Ocupación y Empleo (ENOE)"
   excelChartKind="column"

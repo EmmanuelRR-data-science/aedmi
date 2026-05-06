@@ -79,7 +79,7 @@ export default function OperacionesAeroportuariasChart() {
   nivelGeografico="nacional"
   entidadClave={null}
   titulo={titles[tab]}
-  subtitulo="Dashboard AEDMI"
+  subtitulo=""
   datosSerie={mapDatosForGammaExport(datos)}
   leyendaFuente="AFAC / Datatur — Estadísticas de aviación civil"
   excelChartKind="column"

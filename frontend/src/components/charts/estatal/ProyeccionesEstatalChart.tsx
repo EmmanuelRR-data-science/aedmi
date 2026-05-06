@@ -91,7 +91,7 @@ export default function ProyeccionesEstatalChart({ estado }: Props) {
   nivelGeografico="estatal"
   entidadClave={estado}
   titulo="Proyecciones de Población — {estado} (2026-2030)"
-  subtitulo="Dashboard AEDMI"
+  subtitulo=""
   datosSerie={mapDatosForGammaExport(edoDatos)}
   leyendaFuente="CONAPO — Proyecciones de Población de México y Entidades Federativas 2020-2070"
   excelChartKind="column"

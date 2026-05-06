@@ -1,6 +1,7 @@
 # api/core/presentacion_export.py
 from __future__ import annotations
 
+import logging
 import base64
 import binascii
 import re
@@ -34,6 +35,22 @@ class SeccionPptx(NamedTuple):
     leyenda_fuente: str | None
 
 
+# Subtítulos que no aportan contexto (marca del producto); se omiten en PPTX/Excel/Gamma.
+_GENERIC_SUBTITULOS_EXPORT = frozenset({"dashboard aedmi", "dashboaard aedmi"})
+
+
+def subtitulo_contexto_para_exportacion(raw: str | None) -> str | None:
+    """Devuelve ``None`` si el subtítulo es genérico o vacío; si no, el texto normalizado."""
+    if not raw:
+        return None
+    t = " ".join(str(raw).strip().split())
+    if not t:
+        return None
+    if t.casefold() in _GENERIC_SUBTITULOS_EXPORT:
+        return None
+    return t
+
+
 def resolver_texto_analisis_exportacion(
     analisis_revisado: str | None,
     analisis_ia: str | None,
@@ -54,7 +71,7 @@ def etiqueta_origen_analisis(origen: OrigenAnalisis) -> str:
     if origen == "ia":
         return "Análisis asistido por IA"
     if origen == "app":
-        return "Análisis (texto tomado desde el dashboard)"
+        return ""
     return "Análisis"
 
 
@@ -207,7 +224,7 @@ def _slide_grafica_analisis(prs: Presentation, seccion: SeccionPptx) -> None:
         y_emu += int(Inches(0.5)) + gap_chart_analisis_emu
 
     bullets = _analisis_a_bullets(seccion.cuerpo_analisis)
-    etiqueta = etiqueta_origen_analisis(seccion.origen)
+    etiqueta = (etiqueta_origen_analisis(seccion.origen) or "").strip()
     analisis_top = y_emu
     analisis_h_emu = int(slide_h) - bottom_reserve_emu - analisis_top
     if analisis_h_emu < int(Inches(1.2)):
@@ -217,21 +234,41 @@ def _slide_grafica_analisis(prs: Presentation, seccion: SeccionPptx) -> None:
     rtf = body.text_frame
     rtf.word_wrap = True
     rtf.clear()
-    p_hdr = rtf.paragraphs[0]
-    p_hdr.text = _texto_pptx_seguro(etiqueta)
-    p_hdr.alignment = PP_ALIGN.LEFT
-    p_hdr.font.name = FONT_APTOS
-    p_hdr.font.size = Pt(PT_DOC)
-    p_hdr.font.bold = True
-    p_hdr.font.color.rgb = RGBColor(15, 23, 42)
-    p_hdr.space_after = Pt(6)
-    for line in bullets:
-        bp = rtf.add_paragraph()
-        bp.text = _texto_pptx_seguro(f"• {line}")
-        bp.space_after = Pt(4)
-        bp.font.name = FONT_APTOS
-        bp.font.size = Pt(PT_DOC)
-        bp.font.color.rgb = RGBColor(15, 23, 42)
+    if etiqueta:
+        p_hdr = rtf.paragraphs[0]
+        p_hdr.text = _texto_pptx_seguro(etiqueta)
+        p_hdr.alignment = PP_ALIGN.LEFT
+        p_hdr.font.name = FONT_APTOS
+        p_hdr.font.size = Pt(PT_DOC)
+        p_hdr.font.bold = True
+        p_hdr.font.color.rgb = RGBColor(15, 23, 42)
+        p_hdr.space_after = Pt(6)
+        for line in bullets:
+            bp = rtf.add_paragraph()
+            bp.text = _texto_pptx_seguro(f"• {line}")
+            bp.space_after = Pt(4)
+            bp.font.name = FONT_APTOS
+            bp.font.size = Pt(PT_DOC)
+            bp.font.color.rgb = RGBColor(15, 23, 42)
+    else:
+        if not bullets:
+            p0 = rtf.paragraphs[0]
+            p0.text = "—"
+            p0.space_after = Pt(4)
+            p0.font.name = FONT_APTOS
+            p0.font.size = Pt(PT_DOC)
+            p0.font.color.rgb = RGBColor(15, 23, 42)
+        else:
+            first = True
+            for line in bullets:
+                bp = rtf.paragraphs[0] if first else rtf.add_paragraph()
+                first = False
+                bp.text = _texto_pptx_seguro(f"• {line}")
+                bp.space_after = Pt(4)
+                bp.font.name = FONT_APTOS
+                bp.font.size = Pt(PT_DOC)
+                bp.font.bold = False
+                bp.font.color.rgb = RGBColor(15, 23, 42)
 
     if leyenda:
         foot_top_emu = int(slide_h) - int(margin) - footer_h_emu
@@ -264,7 +301,25 @@ def anadir_portada_lote(prs: Presentation, titulo: str) -> None:
     p.font.color.rgb = RGBColor(15, 23, 42)
 
 
-def construir_pptx_lote(titulo_portada: str, secciones: list[SeccionPptx]) -> bytes:
+def construir_pptx_lote(
+    titulo_portada: str,
+    secciones: list[SeccionPptx],
+    *,
+    template_path: str | None = None,
+) -> bytes:
+    _log = logging.getLogger(__name__)
+    if template_path:
+        from core import presentacion_plantilla as tpl
+
+        if tpl.pptx_template_file_usable(template_path):
+            try:
+                return tpl.construir_pptx_lote_desde_plantilla(
+                    template_path, titulo_portada, secciones
+                )
+            except tpl.PlantillaPptxError:
+                raise
+            except Exception as e:
+                _log.warning("PPTX plantilla no usable, se usa legacy: %s", e)
     prs = Presentation()
     anadir_portada_lote(prs, titulo_portada)
     for sec in secciones:
@@ -280,7 +335,27 @@ def construir_pptx_bytes(
     origen: OrigenAnalisis,
     imagen_png: bytes | None,
     leyenda_fuente: str | None = None,
+    *,
+    template_path: str | None = None,
 ) -> bytes:
+    _log = logging.getLogger(__name__)
+    if template_path:
+        from core import presentacion_plantilla as tpl
+
+        if tpl.pptx_template_file_usable(template_path):
+            try:
+                return tpl.construir_pptx_bytes_desde_plantilla(
+                    template_path,
+                    titulo_indicador,
+                    cuerpo_analisis,
+                    origen,
+                    imagen_png,
+                    leyenda_fuente,
+                )
+            except tpl.PlantillaPptxError:
+                raise
+            except Exception as e:
+                _log.warning("PPTX plantilla no usable, se usa legacy: %s", e)
     prs = Presentation()
     sec = SeccionPptx(
         titulo_indicador,

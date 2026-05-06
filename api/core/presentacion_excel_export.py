@@ -152,21 +152,25 @@ def construir_xlsx_lote_bytes(
                 ws.add_chart(chart, "F2")
 
         analisis_row = max(row + 2, hdr + 18)
-        etiqueta = etiqueta_origen_analisis(origen)
-        ws.cell(row=analisis_row, column=1, value=etiqueta)
-        ws.cell(row=analisis_row, column=1).font = Font(bold=True)
+        etiqueta = (etiqueta_origen_analisis(origen) or "").strip()
+        if etiqueta:
+            ws.cell(row=analisis_row, column=1, value=etiqueta)
+            ws.cell(row=analisis_row, column=1).font = Font(bold=True)
+            body_top = analisis_row + 1
+        else:
+            body_top = analisis_row
         ws.merge_cells(
-            start_row=analisis_row + 1,
+            start_row=body_top,
             start_column=1,
-            end_row=analisis_row + 8,
+            end_row=body_top + 8,
             end_column=8,
         )
-        cell = ws.cell(row=analisis_row + 1, column=1, value=_cell_text(cuerpo) or "—")
+        cell = ws.cell(row=body_top, column=1, value=_cell_text(cuerpo) or "—")
         cell.alignment = Alignment(wrap_text=True, vertical="top")
         cell.font = body_font
 
         if leyenda and str(leyenda).strip():
-            foot = analisis_row + 10
+            foot = body_top + 9
             ws.cell(row=foot, column=1, value=str(leyenda).strip())
             ws.cell(row=foot, column=1).font = Font(name="Calibri", size=9, italic=True)
             ws.merge_cells(start_row=foot, start_column=1, end_row=foot, end_column=8)

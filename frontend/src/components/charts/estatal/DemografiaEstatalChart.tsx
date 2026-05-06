@@ -116,7 +116,7 @@ export default function DemografiaEstatalChart({ estado }: Props) {
   nivelGeografico="estatal"
   entidadClave={estado}
   titulo={titles[tab]}
-  subtitulo="Dashboard AEDMI"
+  subtitulo=""
   datosSerie={mapDatosForGammaExport(edoDatos)}
   leyendaFuente="INEGI — Censos de Población y Vivienda"
   excelChartKind="column"

@@ -86,7 +86,7 @@ export default function ITAEEEstatalChart({ estado }: Props) {
   nivelGeografico="estatal"
   entidadClave={estado}
   titulo="Actividad Económica (ITAEE) — {estado}"
-  subtitulo="Dashboard AEDMI"
+  subtitulo=""
   datosSerie={mapDatosForGammaExport(edoDatos)}
   leyendaFuente="INEGI — Indicador Trimestral de la Actividad Económica Estatal (ITAEE)"
   excelChartKind="column"

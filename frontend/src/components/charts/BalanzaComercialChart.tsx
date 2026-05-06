@@ -87,7 +87,7 @@ export default function BalanzaComercialChart() {
   nivelGeografico="nacional"
   entidadClave={null}
   titulo={titles[tab]}
-  subtitulo="Dashboard AEDMI"
+  subtitulo=""
   datosSerie={mapDatosForGammaExport(datos)}
   leyendaFuente="INEGI / DataMéxico — Comercio exterior de México"
   excelChartKind="column"

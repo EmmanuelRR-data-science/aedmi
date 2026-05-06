@@ -113,7 +113,7 @@ export default function TurismoRankingChart() {
   nivelGeografico="nacional"
   entidadClave={null}
   titulo="Ranking Mundial de Ingresos Turísticos (Top 10)"
-  subtitulo="Dashboard AEDMI"
+  subtitulo=""
   datosSerie={mapDatosForGammaExport(datos)}
   leyendaFuente="OMT / World Bank — International tourism receipts (ST.INT.RCPT.CD). México resaltado."
   excelChartKind="column"

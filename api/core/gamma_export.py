@@ -191,7 +191,12 @@ def build_dataset_markdown(bloques: list[GammaIndicadorBloque]) -> str:
         sub = (b.subtitulo or "").strip()
         geo = b.nivel_geografico
         ctx = f"{sub} — nivel **{geo}**" if sub else f"Nivel **{geo}**"
-        label = etiqueta_origen_analisis(b.origen)
+        label = (etiqueta_origen_analisis(b.origen) or "").strip()
+        label_line = (
+            f"**{label}** (reproducir **completo** en la diapositiva, sin resumir)\n\n"
+            if label
+            else ""
+        )
         tabla = ""
         if b.datos_serie:
             tabla = _tabla_datos_markdown(b.datos_serie) + "\n\n"
@@ -199,7 +204,7 @@ def build_dataset_markdown(bloques: list[GammaIndicadorBloque]) -> str:
             f"### {b.orden}. {b.titulo.strip()}\n\n"
             f"**Contexto:** {ctx}\n\n"
             f"{tabla}"
-            f"**{label}** (reproducir **completo** en la diapositiva, sin resumir)\n\n"
+            f"{label_line}"
             f"{b.texto_analisis.strip()}\n\n"
         )
         img_line = ""

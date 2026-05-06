@@ -33,7 +33,9 @@ from core.presentacion_export import (
     construir_pptx_lote,
     decodificar_png_base64,
     resolver_texto_analisis_exportacion,
+    subtitulo_contexto_para_exportacion,
 )
+from core.presentacion_plantilla import PlantillaPptxError
 from routers.auth import get_current_user
 from schemas.export_presentacion import (
     MAX_PRESENTACION_LOTE,
@@ -43,6 +45,11 @@ from schemas.export_presentacion import (
 )
 
 router = APIRouter(prefix="/export", tags=["export"])
+
+
+def _pptx_template_path_optional() -> str | None:
+    p = (get_settings().pptx_template_path or "").strip()
+    return p or None
 
 
 async def _cargar_analisis_por_filtro(
@@ -146,7 +153,20 @@ async def exportar_presentacion(
 
     imagen = decodificar_png_base64(body.imagen_grafica_png_base64)
     leyenda = await _leyenda_fuente_resuelta(db, body.grafica_id, body.leyenda_fuente)
-    pptx_bytes = construir_pptx_bytes(body.titulo, texto, origen, imagen, leyenda)
+    try:
+        pptx_bytes = construir_pptx_bytes(
+            body.titulo,
+            texto,
+            origen,
+            imagen,
+            leyenda,
+            template_path=_pptx_template_path_optional(),
+        )
+    except PlantillaPptxError as exc:
+        raise HTTPException(
+            status_code=HTTPStatus.INTERNAL_SERVER_ERROR,
+            detail=str(exc),
+        ) from exc
     # Nombre de archivo solo ASCII (evita cabeceras inválidas en clientes y TestClient)
     base = re.sub(r"[^A-Za-z0-9._-]+", "_", body.titulo).strip("._") or "aedmi"
     safe = f"{base[:64]}.pptx"
@@ -211,10 +231,11 @@ async def exportar_presentacion_lote(
                 texto, origen = resolver_texto_analisis_exportacion(None, None)
         img = decodificar_png_base64(it.imagen_grafica_png_base64)
         leyenda = await _leyenda_fuente_resuelta(db, it.grafica_id, it.leyenda_fuente)
+        sub_ctx = subtitulo_contexto_para_exportacion(it.subtitulo_contexto)
         secciones.append(
             SeccionPptx(
                 titulo=it.titulo,
-                subtitulo_contexto=it.subtitulo_contexto,
+                subtitulo_contexto=sub_ctx,
                 cuerpo_analisis=texto,
                 origen=origen,
                 imagen_png=img,
@@ -228,7 +249,7 @@ async def exportar_presentacion_lote(
         excel_payload.append(
             (
                 it.titulo,
-                it.subtitulo_contexto,
+                sub_ctx,
                 texto,
                 origen,
                 leyenda,
@@ -245,7 +266,17 @@ async def exportar_presentacion_lote(
     base = base[:64]
 
     if modo == "pptx":
-        raw = construir_pptx_lote(body.titulo_presentacion, secciones)
+        try:
+            raw = construir_pptx_lote(
+                body.titulo_presentacion,
+                secciones,
+                template_path=_pptx_template_path_optional(),
+            )
+        except PlantillaPptxError as exc:
+            raise HTTPException(
+                status_code=HTTPStatus.INTERNAL_SERVER_ERROR,
+                detail=str(exc),
+            ) from exc
         safe = f"{base}.pptx"
         return Response(
             content=raw,
@@ -266,7 +297,17 @@ async def exportar_presentacion_lote(
             headers={"Content-Disposition": f'attachment; filename="{safe}"'},
         )
 
-    pptx_bytes = construir_pptx_lote(body.titulo_presentacion, secciones)
+    try:
+        pptx_bytes = construir_pptx_lote(
+            body.titulo_presentacion,
+            secciones,
+            template_path=_pptx_template_path_optional(),
+        )
+    except PlantillaPptxError as exc:
+        raise HTTPException(
+            status_code=HTTPStatus.INTERNAL_SERVER_ERROR,
+            detail=str(exc),
+        ) from exc
     buf = BytesIO()
     with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as zf:
         zf.writestr(f"{base}.pptx", pptx_bytes)
@@ -337,7 +378,7 @@ async def exportar_presentacion_gamma(
             GammaIndicadorBloque(
                 orden=idx,
                 titulo=it.titulo,
-                subtitulo=it.subtitulo_contexto,
+                subtitulo=subtitulo_contexto_para_exportacion(it.subtitulo_contexto),
                 nivel_geografico=it.nivel_geografico,
                 origen=origen,
                 texto_analisis=texto,

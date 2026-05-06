@@ -39,6 +39,9 @@ class Settings(BaseSettings):
     gamma_id: str = ""  # legado; ya no se usa (solo theme_id + generación desde texto)
     theme_id: str = ""
 
+    # PPTX corporativo (plantilla con shapes AEDMI_*; vacío = generación legacy)
+    pptx_template_path: str = ""
+
     class Config:
         env_file = ".env"
         case_sensitive = False

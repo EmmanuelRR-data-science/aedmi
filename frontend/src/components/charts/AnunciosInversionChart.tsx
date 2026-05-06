@@ -111,7 +111,7 @@ export default function AnunciosInversionChart() {
   nivelGeografico="nacional"
   entidadClave={null}
   titulo={titles[tab]}
-  subtitulo="Dashboard AEDMI"
+  subtitulo=""
   datosSerie={mapDatosForGammaExport(datos)}
   leyendaFuente="DataMéxico (Secretaría de Economía) — API fdi_10_year_country"
   excelChartKind="column"

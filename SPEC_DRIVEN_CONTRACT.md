@@ -1,8 +1,9 @@
 # SPEC_DRIVEN_CONTRACT — Exportación de lote: PPTX, Excel nativo y Gamma
 
 **Proyecto:** AEDMI — Market Study App  
-**Estado:** Borrador para aprobación (no implementar lógica de aplicación hasta firma explícita de este contrato).  
-**Trazabilidad:** Amplía `.kiro/specs/market-study-app/requisitos-export-pptx-seleccion.md` y la cola existente (`PresentationQueueContext`, `POST /export/presentacion/lote`).
+**Estado:** Borrador para aprobación de producto/arquitectura sobre el bloque Excel/ZIP/Gamma del checklist; **la plantilla PPTX (HU-5, §12) ya está implementada en API** y enlazada a este contrato.  
+**Trazabilidad:** Amplía `.kiro/specs/market-study-app/requisitos-export-pptx-seleccion.md` y la cola existente (`PresentationQueueContext`, `POST /export/presentacion/lote`).  
+**Ampliación:** §12 — PPTX desde plantilla corporativa (preserva marca tipográfica y logos definidos en el `.pptx`).
 
 ---
 
@@ -16,6 +17,8 @@
 
 4. **HU-4** — Como revisor SDD, quiero que el contrato de API y los tipos del cliente estén **cerrados** antes de implementar, para evitar deriva entre UI, payload y archivos generados.
 
+5. **HU-5** — Como analista, quiero que el **PPTX descargado** respete la **plantilla corporativa** (fuentes, colores y logos definidos en el archivo base) y que la aplicación **solo inserte** el título, subtítulo de contexto, imagen de la gráfica, análisis y leyenda de fuente en los **huecos previstos**, sin regenerar el diseño desde cero.
+
 ---
 
 ## 2. Glosario
@@ -25,6 +28,8 @@
 | **Cola** | Lista ordenada de ítems exportables (misma semántica que hoy: `PresentationQueueItem`). |
 | **Lote** | Conjunto de ítems de la cola enviado en una sola petición. |
 | **`datos_serie`** | Lista de puntos `{ periodo, valor, entidad_clave?, unidad? }` alineada a `DatoSeriePresentacionItem` en API. |
+| **PPTX legacy** | Generación actual: presentación vacía (`python-pptx`) con cajas de texto y estilos fijados en código (`presentacion_export.py`). |
+| **PPTX plantilla** | Generación abriendo un `.pptx` aportado por negocio/diseño; solo se sustituye contenido en shapes acordados (§12). |
 
 ---
 
@@ -43,6 +48,12 @@
 | **D-09** | Series y `entidad_clave` | **MVP Closed:** tabla con columnas **Período**, **Valor** y, si algún punto trae `entidad_clave` no nulo, columna **Entidad**. Para el eje de categorías del gráfico (salvo `pie`/`none`), si existe columna Entidad con valores no vacíos, usar etiqueta compuesta **`{periodo} — {entidad_clave}`** en una columna auxiliar “Categoría” como fuente del eje X; si no, usar solo **Período**. |
 | **D-10** | Límite de ítems | Reutilizar **`MAX_PRESENTACION_LOTE` = 30** para todos los modos. |
 | **D-11** | Autenticación | Misma política que hoy: rutas bajo usuario autenticado. |
+| **D-12** | Activación modo plantilla PPTX | **Closed:** Si la variable de entorno **`PPTX_TEMPLATE_PATH`** (o equivalente leído por `core.config`, un único nombre documentado) apunta a un archivo `.pptx` **existente y legible** al arrancar la petición de exportación, el servidor genera PPTX en modo **plantilla** (§12). Si está **vacía**, ausente o el archivo no existe / no es legible: modo **legacy** (comportamiento actual sin plantilla). **Sin nuevo campo en el JSON** del cliente en el MVP (el toggle es despliegue/config). |
+| **D-13** | Estructura mínima del `.pptx` plantilla | **Closed:** El archivo debe tener **exactamente dos** diapositivas en este orden: **slide índice 0** = portada; **slide índice 1** = diapositiva “tipo” que se **replica** por cada gráfica del lote (o una sola vez en exportación unitaria). Logos y estilos globales viven en **slide masters** o en shapes de la plantilla que **no** están en la tabla de nombres §12.2. |
+| **D-14** | Algoritmo lote en modo plantilla | **Closed:** Cargar plantilla → para cada ítem del lote, **duplicar** la diapositiva índice 1 y **rellenar** la copia → **eliminar** la diapositiva índice 1 original (la plantilla vacía) → **rellenar** slide 0 (portada) con `titulo_presentacion`. Orden final: portada, luego copias en **el mismo orden** que `items`. Exportación **unitaria** (`POST /export/presentacion`): misma plantilla; portada con `titulo` del cuerpo de petición; **una** copia rellena de slide 1; eliminar slide 1 original. |
+| **D-15** | Qué puede tocar el código en plantilla | **Closed:** Únicamente: texto en los shapes §12.2; imagen PNG en el shape de imagen §12.2 (`AEDMI_IMAGEN`) (reemplazo del contenido pictórico, sin añadir formas nuevas que tapen marca). **Prohibido** en MVP: cambiar `font.name`, `font.size`, `font.bold`, colores de runs, fondos de slide o eliminar shapes no listados como “rellenables”. |
+| **D-16** | Imagen ausente | **Closed:** Mismo criterio semántico que legacy: si no hay PNG válido, el shape de imagen se **deja vacío** o muestra un **texto de aviso acordado** solo dentro del shape `AEDMI_IMAGEN` (sin crear cajas extra), según implementación única documentada en tests. |
+| **D-17** | ZIP y Gamma con plantilla | **Closed:** `zip_pptx_xlsx` usa el mismo PPTX que `modo_salida: pptx` (plantilla o legacy según D-12). **Gamma** (`POST /export/presentacion/gamma`) **no** usa el `.pptx` local; sin cambio de contrato. |
 
 ---
 
@@ -83,7 +94,7 @@ Campos **obligatorios** existentes sin cambio semántico: `grafica_id`, `titulo`
 
 | `modo_salida` | `Content-Type` | Cuerpo |
 |---------------|----------------|--------|
-| `pptx` | `application/vnd.openxmlformats-officedocument.presentationml.presentation` | Bytes PPTX (igual que hoy). |
+| `pptx` | `application/vnd.openxmlformats-officedocument.presentationml.presentation` | Bytes PPTX: **legacy** o **plantilla** según D-12; mismos campos de entrada que hoy. |
 | `xlsx` | `application/vnd.openxmlformats-officedocument.spreadsheetml.sheet` | Bytes XLSX. |
 | `zip_pptx_xlsx` | `application/zip` | ZIP con `.pptx` + `.xlsx`. |
 
@@ -143,7 +154,8 @@ Estados de carga: `exportingKind: 'pptx' | 'xlsx' | 'zip' | 'gamma' | null`.
 
 - **CA-1** Dado una cola con ≥1 gráfica con `datos_serie`, cuando el usuario pulsa **Descargar Excel (lote)**, entonces recibe un `.xlsx` con una hoja por ítem y gráficos ligados a celdas (salvo `excel_chart_kind: none`).
 - **CA-2** Dado una cola donde falta `datos_serie` en algún ítem, cuando el usuario pulsa **Descargar Excel** o **ZIP (PPTX + Excel)**, entonces la API responde **422** con identificación del ítem problemático.
-- **CA-3** Dado el mismo lote, cuando el usuario pulsa **Descargar PPTX (lote)**, entonces el comportamiento y el archivo son equivalentes al contrato previo (imágenes + análisis), sin exigir `datos_serie`.
+- **CA-3** Dado el mismo lote y modo **legacy** (D-12: sin plantilla válida), cuando el usuario pulsa **Descargar PPTX (lote)**, entonces el archivo conserva el comportamiento previo (diapositivas generadas en código con imagen + análisis), sin exigir `datos_serie`.
+- **CA-3b** Dado el mismo lote y modo **plantilla** (D-12: plantilla válida), cuando el usuario pulsa **Descargar PPTX (lote)**, entonces recibe un archivo que **respeta** masters/logos de la plantilla y contiene los **mismos datos** (título de portada, por ítem: título, subtítulo, análisis con prioridad revisado/IA, imagen si se envió, leyenda) mapeados según §12.2.
 - **CA-4** Dado el mismo lote, cuando el usuario pulsa **ZIP (PPTX + Excel)**, entonces recibe un `.zip` con dos archivos cuyos nombres base coinciden.
 - **CA-5** Dado el usuario autenticado, cuando pulsa **Generar en Gamma (lote)**, entonces se mantiene el comportamiento actual de Gamma (URLs / mensajes).
 - **CA-6** Dado una gráfica con `datosSerie`, cuando el usuario pulsa **↓ XLSX** en la tarjeta, entonces se descarga un `.xlsx` de un solo ítem con gráfico nativo (según `excel_chart_kind`).
@@ -153,8 +165,8 @@ Estados de carga: `exportingKind: 'pptx' | 'xlsx' | 'zip' | 'gamma' | null`.
 ## 9. Requisitos no funcionales
 
 - Tamaño de cuerpo y timeouts: alineados a `requisitos-export-pptx-seleccion.md` (RNF-01 a RNF-04).
-- No persistir binarios en disco en servidor; generación en memoria.
-- Tests: TDD — tests de contrato para generación XLSX y para respuesta ZIP antes o en paralelo al código de producción.
+- No persistir **salidas** generadas (PPTX/XLSX/ZIP) en disco en servidor; generación en memoria. **Excepción:** lectura del archivo **plantilla** desde la ruta configurada (D-12), permitida en cada petición o con caché en memoria según implementación.
+- Tests: TDD — tests de contrato para generación XLSX y para respuesta ZIP antes o en paralelo al código de producción; añadir tests de plantilla PPTX según §12.4.
 
 ---
 
@@ -169,15 +181,74 @@ Estados de carga: `exportingKind: 'pptx' | 'xlsx' | 'zip' | 'gamma' | null`.
 ## 11. Compatibilidad hacia atrás
 
 - **Closed:** Las peticiones existentes a `POST /export/presentacion/lote` **sin** `modo_salida` se interpretan como **`modo_salida: "pptx"`** (mismo comportamiento y media type que hoy). Las nuevas implementaciones deben documentar deprecación opcional de omisión del campo tras una versión acordada.
+- **Closed:** Con **`PPTX_TEMPLATE_PATH`** no configurado o inválido, el PPTX generado sigue siendo el **legacy**; ningún cambio obligatorio en el cliente.
 
 ---
 
-## 12. Checklist de aprobación
+## 12. Contrato de plantilla PPTX (HU-5)
+
+### 12.1 Entrega y versionado
+
+- El archivo plantilla lo **aporta el negocio** (diseño en PowerPoint). Se versiona fuera del flujo de datos de la app (repositorio de infra, artifact o ruta en servidor); la ruta efectiva es la de D-12.
+- **SmartArt, objetos agrupados complejos o animaciones** no son soporte garantizado en MVP; la plantilla debe usar **cajas de texto** y **un marcador de imagen** (picture placeholder o shape de imagen según convención acordada con implementación).
+
+### 12.2 Nombres de forma obligatorios (Selection Pane)
+
+Todas las formas listadas deben existir en **slide 0** (portada) o en **slide 1** (diapositiva tipo). El código las localiza por `shape.name` (coincidencia exacta).
+
+| `shape.name` | Slide | Contenido a escribir |
+|--------------|-------|----------------------|
+| `AEDMI_PORTADA_TITULO` | 0 | `titulo_presentacion` (lote) o `titulo` (exportación unitaria). |
+| `AEDMI_TITULO` | 1 (y copias) | Título del ítem / indicador. |
+| `AEDMI_SUBTITULO` | 1 | `subtitulo_contexto` si existe; si no, cadena vacía o eliminar solo el texto visible sin tocar estilo (implementación única). |
+| `AEDMI_IMAGEN` | 1 | Imagen PNG de la gráfica; sustitución in-place del bitmap. |
+| `AEDMI_ANALISIS` | 1 | Texto de análisis (misma prioridad revisado → IA → placeholder que hoy en API). |
+| `AEDMI_FUENTE` | 1 | `leyenda_fuente` si existe; si no, vacío. |
+
+Si falta **cualquier** nombre requerido en la plantilla al servir una petición con modo plantilla activo, la API responde **500** con mensaje interno claro (y log) indicando el shape faltante; **no** fallback silencioso a legacy salvo decisión explícita futura.
+
+### 12.3 Texto y formato
+
+- Sustitución de texto debe **preservar** el formato de runs definido en plantilla cuando la implementación use sustitución por párrafo/run sin reasignar `.font.*` (D-15).
+- El análisis puede insertarse como **texto plano multilínea** o como viñetas **solo si** la plantilla ya define estilo de lista; el contrato no exige bullets si la plantilla es párrafo único.
+
+### 12.4 Tests de contrato
+
+- Test con plantilla **fixture** mínima (repo `api/tests/fixtures/` o generada en test) que contenga los seis nombres; assert de que el PPTX resultante tiene el número de slides esperado y textos clave presentes tras generación.
+
+### 12.5 Implementación vigente (trazabilidad código)
+
+| Elemento | Ubicación |
+|----------|-----------|
+| Variable de entorno / settings | `PPTX_TEMPLATE_PATH` → `Settings.pptx_template_path` en `api/core/config.py`. |
+| Lógica plantilla (duplicado de slide, shapes AEDMI_*) | `api/core/presentacion_plantilla.py`. |
+| Selección plantilla vs legacy y fallback | `api/core/presentacion_export.py` (`construir_pptx_bytes`, `construir_pptx_lote`). |
+| HTTP 500 ante `PlantillaPptxError` | `api/routers/export_presentacion.py`. |
+| Fixture y pruebas §12.4 | `api/tests/fixtures_pptx_plantilla.py`, `api/tests/test_presentacion_export.py`. |
+| Guía para administradores y analistas | `docs/guias/plantilla-pptx-corporativa.md`. |
+| Plantilla `.pptx` mínima de partida | `uv run python scripts/generar_plantilla_ejemplo_pptx.py` (desde `api/`). |
+| Plantilla de estudio de mercado lista para API | `api/assets/plantilla-aedmi-export.pptx`; regenerar con `uv run python scripts/preparar_plantilla_aedmi_export.py`. |
+
+**Closed (comportamiento resuelto en código):** Si la ruta está configurada y el archivo existe y no está vacío, se intenta modo plantilla. **`PlantillaPptxError`** (plantilla abierta pero incompleta: faltan shapes de §12.2) → **500**. Cualquier **otra** excepción al abrir o procesar el `.pptx` en ese intento → **fallback a legacy** con log (warning), sin 500; así se cubre archivo corrupto o incongruencias de OOXML no previstas.
+
+---
+
+## 13. Checklist de aprobación
 
 - [x] Producto aprueba D-01 (botones en barra **y** por gráfica).
 - [ ] Producto aprueba D-09 (manejo MVP de `entidad_clave` en Excel).
-- [ ] Arquitectura aprueba D-03 y D-11.
-- [ ] Contrato congelado en schemas Pydantic y tipos TypeScript antes del primer merge de lógica.
+- [x] **Dev:** Lógica plantilla PPTX + tests §12.4 en repo (ver §12.5).
+- [ ] Producto / diseño aprueba **plantilla física** `.pptx` de producción con nombres §12.2 y estructura D-13.
+- [ ] Arquitectura aprueba D-03, D-11 y D-12 (config y despliegue de `PPTX_TEMPLATE_PATH` en cada entorno).
+- [ ] Contrato congelado en schemas Pydantic (Excel/ZIP) y tipos TypeScript antes del primer merge de lógica pendiente del checklist.
+
+---
+
+## 14. Fuera de alcance (plantilla PPTX)
+
+- Selector de varias plantillas desde la UI (multi-marca).
+- Edición del archivo PPTX por el usuario final dentro de la app.
+- Garantía visual pixel-perfect frente a edición manual en PowerPoint tras inyección de datos.
 
 ---
 

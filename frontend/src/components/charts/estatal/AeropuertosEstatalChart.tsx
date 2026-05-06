@@ -128,7 +128,7 @@ export default function AeropuertosEstatalChart({ estado }: Props) {
   nivelGeografico="estatal"
   entidadClave={estado}
   titulo={titles[tab]}
-  subtitulo="Dashboard AEDMI"
+  subtitulo=""
   datosSerie={mapDatosForGammaExport(datos)}
   leyendaFuente="DGAC / AFAC (serie referencial sintética para desarrollo) — Operaciones por aeropuerto."
   excelChartKind="column"

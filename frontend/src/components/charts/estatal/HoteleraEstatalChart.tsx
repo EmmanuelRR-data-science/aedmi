@@ -87,7 +87,7 @@ export default function HoteleraEstatalChart({ estado }: Props) {
   nivelGeografico="estatal"
   entidadClave={estado}
   titulo="Actividad Hotelera — {estado} (2025)"
-  subtitulo="Dashboard AEDMI"
+  subtitulo=""
   datosSerie={mapDatosForGammaExport(edoDatos)}
   leyendaFuente="Datatur / SECTUR — Estadísticas de ocupación hotelera"
   excelChartKind="column"

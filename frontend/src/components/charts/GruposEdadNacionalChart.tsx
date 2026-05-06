@@ -106,7 +106,7 @@ export default function GruposEdadNacionalChart() {
   nivelGeografico="nacional"
   entidadClave={null}
   titulo="Distribución de la Población por Grupos de Edad"
-  subtitulo="Dashboard AEDMI"
+  subtitulo=""
   datosSerie={mapDatosForGammaExport(datos)}
   leyendaFuente="INEGI — Censos y Conteos de Población y Vivienda (2000, 2005, 2010, 2020)"
   excelChartKind="column"

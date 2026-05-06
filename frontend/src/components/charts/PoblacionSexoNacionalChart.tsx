@@ -99,7 +99,7 @@ export default function PoblacionSexoNacionalChart() {
   nivelGeografico="nacional"
   entidadClave={null}
   titulo="Distribución de la Población por Sexo"
-  subtitulo="Dashboard AEDMI"
+  subtitulo=""
   datosSerie={mapDatosForGammaExport(datos)}
   leyendaFuente="INEGI — Censos y Conteos de Población y Vivienda (series 1002000002 y 1002000003)"
   excelChartKind="column"

@@ -143,7 +143,7 @@ export default function ExportacionesEstatalChart({ estado }: Props) {
   nivelGeografico="estatal"
   entidadClave={estado}
   titulo={titles[tab]}
-  subtitulo="Dashboard AEDMI"
+  subtitulo=""
   datosSerie={mapDatosForGammaExport(datos)}
   leyendaFuente="DataMéxico / Secretaría de Economía — Exportaciones por entidad federativa."
   excelChartKind="column"

@@ -224,6 +224,8 @@ uv run ruff check . && uv run ruff format --check .
 
 **Exportación a PowerPoint (Requisito 25):** con sesión iniciada, en el dashboard usa el botón **Exportar a PowerPoint** en el bloque de la gráfica. El backend genera un PPTX vía `POST /export/presentacion` (JWT). El texto del análisis prioriza el **análisis revisado**; si no hay, el **análisis IA**. Si la captura de la gráfica falla, aún se genera la presentación con título y texto.
 
+**Plantilla corporativa (PPTX):** opcionalmente configura en el `.env` de la API `PPTX_TEMPLATE_PATH` apuntando a tu `.pptx` corporativo (la app **no** ofrece subida desde el navegador). En el repo, **`api/assets/plantilla-aedmi-export.pptx`** ya cumple la convención `AEDMI_*` (deriva del estudio de mercado de ejemplo). Guía: **[docs/guias/plantilla-pptx-corporativa.md](docs/guias/plantilla-pptx-corporativa.md)**. Ejemplo Docker: `PPTX_TEMPLATE_PATH=/app/assets/plantilla-aedmi-export.pptx`. Contrato: `SPEC_DRIVEN_CONTRACT.md` §12 y §12.5.
+
 ### Frontend (Node.js)
 
 ```bash

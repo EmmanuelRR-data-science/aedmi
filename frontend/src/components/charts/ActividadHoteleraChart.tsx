@@ -96,7 +96,7 @@ export default function ActividadHoteleraChart() {
         nivelGeografico="nacional"
         entidadClave={null}
         titulo={titles[tab]}
-        subtitulo="Dashboard AEDMI"
+        subtitulo=""
         datosSerie={mapDatosForGammaExport(
           tab === 'historico'
             ? datos.filter((d) => d.entidad_clave?.startsWith('hist:'))

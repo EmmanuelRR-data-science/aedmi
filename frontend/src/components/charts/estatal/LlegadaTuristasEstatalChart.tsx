@@ -89,7 +89,7 @@ export default function LlegadaTuristasEstatalChart({ estado }: Props) {
   nivelGeografico="estatal"
   entidadClave={estado}
   titulo="Llegada de Turistas — {estado}"
-  subtitulo="Dashboard AEDMI"
+  subtitulo=""
   datosSerie={mapDatosForGammaExport(datos.filter((d) => d.entidad_clave?.endsWith(`:${estado}`) && d.entidad_clave?.startsWith('tur_lleg:')))}
   leyendaFuente="Datatur / SECTUR — Llegada de turistas por entidad federativa."
   excelChartKind="column"

@@ -99,7 +99,7 @@ export default function BalanzaVisitantesChart() {
   nivelGeografico="nacional"
   entidadClave={null}
   titulo="Balanza de Visitantes Internacionales"
-  subtitulo="Dashboard AEDMI"
+  subtitulo=""
   datosSerie={mapDatosForGammaExport(datos)}
   leyendaFuente="INEGI / Banxico — Balanza turística de México"
   excelChartKind="column"

@@ -175,7 +175,7 @@ export default function PoblacionNacionalChart() {
   nivelGeografico="nacional"
   entidadClave={null}
   titulo="Crecimiento Poblacional Nacional"
-  subtitulo="Dashboard AEDMI"
+  subtitulo=""
   datosSerie={mapDatosForGammaExport(datos)}
   leyendaFuente="INEGI — Censos y Conteos de Población y Vivienda (serie 1002000001)"
   excelChartKind="column"

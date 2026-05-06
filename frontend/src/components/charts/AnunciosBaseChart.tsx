@@ -97,7 +97,7 @@ export default function AnunciosBaseChart() {
   nivelGeografico="nacional"
   entidadClave={null}
   titulo={titles[tab]}
-  subtitulo="Dashboard AEDMI"
+  subtitulo=""
   datosSerie={mapDatosForGammaExport(datos)}
   leyendaFuente="DataMéxico (Secretaría de Economía)"
   excelChartKind="column"

@@ -88,7 +88,7 @@ export default function IEDPaisChart() {
   nivelGeografico="nacional"
   entidadClave={null}
   titulo="IED por País de Origen ({selectedYear})"
-  subtitulo="Dashboard AEDMI"
+  subtitulo=""
   datosSerie={mapDatosForGammaExport(datos)}
   leyendaFuente="Secretaría de Economía — Comisión Nacional de Inversiones Extranjeras"
   excelChartKind="pie"

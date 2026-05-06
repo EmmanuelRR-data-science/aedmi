@@ -104,7 +104,7 @@ export default function InflacionNacionalChart() {
   nivelGeografico="nacional"
   entidadClave={null}
   titulo="Inflación Nacional (Variación Anual del INPC)"
-  subtitulo="Dashboard AEDMI"
+  subtitulo=""
   datosSerie={mapDatosForGammaExport(datos)}
   leyendaFuente="Banxico — Variación anual del INPC (serie SP30578). Línea verde = meta de inflación 3%."
   excelChartKind="column"

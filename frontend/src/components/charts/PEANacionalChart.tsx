@@ -113,7 +113,7 @@ export default function PEANacionalChart() {
   nivelGeografico="nacional"
   entidadClave={null}
   titulo="Población Económicamente Activa (PEA)"
-  subtitulo="Dashboard AEDMI"
+  subtitulo=""
   datosSerie={mapDatosForGammaExport(datos)}
   leyendaFuente="INEGI — Encuesta Nacional de Ocupación y Empleo (ENOE)"
   excelChartKind="column"

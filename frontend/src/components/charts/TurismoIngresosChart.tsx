@@ -90,7 +90,7 @@ export default function TurismoIngresosChart() {
   nivelGeografico="nacional"
   entidadClave={null}
   titulo="Ingresos por Divisas Turísticas (USD)"
-  subtitulo="Dashboard AEDMI"
+  subtitulo=""
   datosSerie={mapDatosForGammaExport(datos)}
   leyendaFuente="World Bank (ST.INT.RCPT.CD) / SECTUR-Banxico para años recientes"
   excelChartKind="column"

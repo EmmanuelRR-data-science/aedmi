@@ -68,7 +68,7 @@ export default function PIBSectorChart() {
   nivelGeografico="nacional"
   entidadClave={null}
   titulo="PIB por Sector Económico (2024)"
-  subtitulo="Dashboard AEDMI"
+  subtitulo=""
   datosSerie={mapDatosForGammaExport(datos)}
   leyendaFuente="INEGI — Cuentas Nacionales / DataMéxico"
   excelChartKind="column"

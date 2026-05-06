@@ -92,7 +92,7 @@ export default function IEDSectorChart() {
   nivelGeografico="nacional"
   entidadClave={null}
   titulo="Inversión Extranjera Directa por Sector ({selectedYear})"
-  subtitulo="Dashboard AEDMI"
+  subtitulo=""
   datosSerie={mapDatosForGammaExport(datos)}
   leyendaFuente="Secretaría de Economía — Comisión Nacional de Inversiones Extranjeras"
   excelChartKind="column"

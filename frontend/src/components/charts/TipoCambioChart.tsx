@@ -110,7 +110,7 @@ export default function TipoCambioChart() {
   nivelGeografico="nacional"
   entidadClave={null}
   titulo="Tipo de Cambio USD/MXN (FIX Diario)"
-  subtitulo="Dashboard AEDMI"
+  subtitulo=""
   datosSerie={mapDatosForGammaExport(datos)}
   leyendaFuente="Banxico — Tipo de cambio FIX (serie SF43718). Actualización diaria a las 12:00 hrs MX."
   excelChartKind="column"

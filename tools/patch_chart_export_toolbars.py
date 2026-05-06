@@ -172,7 +172,7 @@ def build_toolbar(
         parts.append(f'  nivelGeografico="{nivel}"')
         parts.append(f"  entidadClave={ent}")
         parts.append(f"  {t2}")
-        parts.append('  subtitulo="Dashboard AEDMI"')
+        parts.append('  subtitulo=""')
         parts.append(f"  datosSerie={{{ds}}}")
     else:
         parts.append("  indicadorId={null}")

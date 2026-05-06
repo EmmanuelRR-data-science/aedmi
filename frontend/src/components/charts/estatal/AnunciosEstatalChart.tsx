@@ -83,7 +83,7 @@ export default function AnunciosEstatalChart({ estado }: Props) {
   nivelGeografico="estatal"
   entidadClave={estado}
   titulo="Anuncios de Inversión — {estado}"
-  subtitulo="Dashboard AEDMI"
+  subtitulo=""
   datosSerie={mapDatosForGammaExport(edoDatos)}
   leyendaFuente="DataMéxico (Secretaría de Economía) — Anuncios de inversión"
   excelChartKind="column"

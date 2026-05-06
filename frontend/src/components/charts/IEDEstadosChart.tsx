@@ -80,7 +80,7 @@ export default function IEDEstadosChart() {
   nivelGeografico="nacional"
   entidadClave={null}
   titulo="Flujo de IED por Estado (2024)"
-  subtitulo="Dashboard AEDMI"
+  subtitulo=""
   datosSerie={mapDatosForGammaExport(datos)}
   leyendaFuente="Secretaría de Economía — Comisión Nacional de Inversiones Extranjeras"
   excelChartKind="column"
